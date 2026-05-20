@@ -35,6 +35,7 @@
         <div class="collapse {{ $is('proposal') ? 'show' : '' }}" id="proposalMenu">
             <a href="{{ route('operator.proposal.index') }}" class="{{ $linkClass('proposal.data') }} ms-3">Data Proposal</a>
             <a href="{{ route('operator.proposal.index', ['status' => 'submitted']) }}" class="{{ $linkClass('proposal.verifikasi') }} ms-3">Verifikasi Proposal</a>
+            <a href="{{ route('operator.proposal.status') }}" class="{{ $linkClass('proposal.status') }} ms-3">Status Proposal</a>
         </div>
 
         <a href="#reviewerMenu" data-bs-toggle="collapse" role="button"
@@ -64,6 +65,7 @@
             <i class="ri-arrow-down-s-line"></i>
         </a>
         <div class="collapse {{ $is('rekap') ? 'show' : '' }}" id="rekapMenu">
+            <a href="{{ route('operator.rekap.export') }}" class="{{ $linkClass('rekap.export') }} ms-3">Export Laporan</a>
             <a href="{{ route('operator.rekap.proposal') }}" class="{{ $linkClass('rekap.proposal') }} ms-3">Rekap Proposal</a>
             <a href="{{ route('operator.rekap.hasil') }}" class="{{ $linkClass('rekap.hasil') }} ms-3">Rekap Hasil Review</a>
         </div>

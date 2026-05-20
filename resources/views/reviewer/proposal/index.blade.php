@@ -94,7 +94,10 @@
                                 </td>
                                 <td class="text-end">
                                     <div class="btn-group btn-group-sm">
-                                        <a href="{{ route('reviewer.proposal.show', $p) }}" class="btn btn-outline-primary"><i class="ri-eye-line"></i></a>
+                                        <a href="{{ route('reviewer.proposal.show', $p) }}" class="btn btn-outline-primary" title="Lihat"><i class="ri-eye-line"></i></a>
+                                        @if ($myPen)
+                                            <a href="{{ route('reviewer.proposal.pdf', $p) }}" class="btn btn-outline-secondary" title="Unduh PDF"><i class="ri-download-line"></i></a>
+                                        @endif
                                         @if ($myPen && in_array($myPen->status, ['ditugaskan', 'sedang_review']))
                                             <a href="{{ route('reviewer.penilaian.form', $myPen) }}" class="btn btn-primary"><i class="ri-edit-line"></i> Nilai</a>
                                         @elseif ($myPen?->status === 'selesai')

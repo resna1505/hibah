@@ -9,11 +9,14 @@ use App\Models\Transaction\LaporanKemajuan;
 use App\Models\Transaction\Luaran;
 use App\Models\Transaction\PeriodeLaporan;
 use App\Models\Transaction\Proposal;
+use App\Services\NotifikasiService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
 class LaporanController extends Controller
 {
+    public function __construct(private NotifikasiService $notif) {}
+
     /**
      * Halaman laporan untuk 1 proposal (Penelitian atau PKM).
      */
@@ -90,6 +93,8 @@ class LaporanController extends Controller
             ]);
         }
 
+        $this->notif->onLaporanUploaded($proposal->load('ketua'), 'Kemajuan ' . $periode->label);
+
         return back()->with('success', "Laporan kemajuan {$periode->label} berhasil diunggah.");
     }
 
@@ -121,6 +126,8 @@ class LaporanController extends Controller
                 'status' => 'menunggu',
             ]);
         }
+
+        $this->notif->onLaporanUploaded($proposal->load('ketua'), 'Akhir');
 
         return back()->with('success', 'Laporan akhir berhasil diunggah.');
     }
@@ -171,6 +178,8 @@ class LaporanController extends Controller
         } else {
             Luaran::create($payload);
         }
+
+        $this->notif->onLaporanUploaded($proposal->load('ketua'), "Luaran ({$jenisLuaran->nama})");
 
         return back()->with('success', "Luaran '{$jenisLuaran->nama}' berhasil diunggah.");
     }

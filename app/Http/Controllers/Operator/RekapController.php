@@ -16,6 +16,11 @@ class RekapController extends Controller
 {
     public function __construct(private PenilaianService $service) {}
 
+    public function exportPage(Request $request)
+    {
+        return view('operator.rekap.export');
+    }
+
     /**
      * Rekap Proposal: total per fakultas × status.
      */

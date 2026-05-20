@@ -18,10 +18,12 @@ use App\Http\Controllers\Operator\ProposalController as OperatorProposal;
 use App\Http\Controllers\Operator\RekapController as OperatorRekap;
 use App\Http\Controllers\Operator\ReviewerController as OperatorReviewer;
 use App\Http\Controllers\Operator\VerifikasiLaporanController as OperatorVerifLaporan;
+use App\Http\Controllers\NotifikasiController;
 use App\Http\Controllers\Reviewer\DashboardController as ReviewerDashboard;
 use App\Http\Controllers\Reviewer\HasilReviewController as ReviewerHasil;
 use App\Http\Controllers\Reviewer\JadwalReviewController as ReviewerJadwal;
 use App\Http\Controllers\Reviewer\PenilaianController as ReviewerPenilaian;
+use App\Http\Controllers\Reviewer\ProfilController as ReviewerProfil;
 use App\Http\Controllers\Reviewer\ProposalController as ReviewerProposal;
 use Illuminate\Support\Facades\Route;
 
@@ -56,6 +58,11 @@ Route::get('index/{locale}', [HomeController::class, 'lang']);
 Route::middleware('auth')->group(function () {
     Route::get('/logout', [HomeController::class, 'logout'])->name('logout');
 
+    // Notifikasi (shared semua role)
+    Route::get('/notifikasi',                  [NotifikasiController::class, 'index'])->name('notifikasi.index');
+    Route::get('/notifikasi/{notifikasi}/read',[NotifikasiController::class, 'markRead'])->name('notifikasi.read');
+    Route::post('/notifikasi/mark-all-read',   [NotifikasiController::class, 'markAllRead'])->name('notifikasi.mark-all-read');
+
     // Root redirect berdasarkan role
     Route::get('/', function () {
         $user = auth()->user();
@@ -74,6 +81,7 @@ Route::middleware('auth')->group(function () {
         // Proposal
         Route::prefix('proposal')->name('proposal.')->group(function () {
             Route::get('/',                       [OperatorProposal::class, 'index'])->name('index');
+            Route::get('/status',                 [OperatorProposal::class, 'statusIndex'])->name('status');
             Route::get('/{proposal}',             [OperatorProposal::class, 'show'])->name('show');
             Route::get('/{proposal}/verifikasi',  [OperatorProposal::class, 'verifikasiForm'])->name('verifikasi');
             Route::post('/{proposal}/verifikasi', [OperatorProposal::class, 'submitVerifikasi'])->name('verifikasi.submit');
@@ -82,6 +90,8 @@ Route::middleware('auth')->group(function () {
         // Reviewer
         Route::prefix('reviewer')->name('reviewer.')->group(function () {
             Route::get('/data',                  [OperatorReviewer::class, 'dataIndex'])->name('data');
+            Route::get('/data/create',           [OperatorReviewer::class, 'createForm'])->name('create');
+            Route::post('/data',                 [OperatorReviewer::class, 'storeNew'])->name('store-new');
             Route::patch('/data/{dosen}/toggle', [OperatorReviewer::class, 'toggleReviewer'])->name('toggle');
             Route::get('/penugasan',             [OperatorReviewer::class, 'penugasanIndex'])->name('penugasan');
             Route::get('/penugasan/{proposal}',  [OperatorReviewer::class, 'assignForm'])->name('assign.form');
@@ -95,6 +105,9 @@ Route::middleware('auth')->group(function () {
             Route::get('/{proposal}',           [OperatorPenilaian::class, 'show'])->name('show');
             Route::post('/{proposal}/finalize', [OperatorPenilaian::class, 'finalize'])->name('finalize');
         });
+
+        // Export Laporan dedicated page
+        Route::get('/rekap/export', [OperatorRekap::class, 'exportPage'])->name('rekap.export');
 
         // Jadwal Hibah
         Route::prefix('jadwal')->name('jadwal.')->group(function () {
@@ -225,5 +238,8 @@ Route::middleware('auth')->group(function () {
 
         // Jadwal Review
         Route::get('/jadwal', [ReviewerJadwal::class, 'index'])->name('jadwal');
+
+        // Profil Reviewer (dedicated page)
+        Route::get('/profil', [ReviewerProfil::class, 'show'])->name('profil');
     });
 });

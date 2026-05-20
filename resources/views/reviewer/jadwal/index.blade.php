@@ -63,4 +63,53 @@
         </div>
         <div class="card-footer bg-white">{{ $list->links() }}</div>
     </div>
+
+    <div class="card border-0 shadow-sm mt-3">
+        <div class="card-header bg-white"><h6 class="mb-0"><i class="ri-calendar-line me-2"></i>Timeline Deadline Review</h6></div>
+        <div class="card-body">
+            @php
+                $todayCarbon = now();
+                $countTerlambat = $stats['terlambat'];
+                $countDekat = 0; $countAkanDatang = 0; $countBerikutnya = 0;
+                foreach ($list as $pr) {
+                    if ($pr->status === 'selesai') continue;
+                    $diff = $todayCarbon->diffInDays($pr->deadline, false);
+                    if ($diff < 0) continue;
+                    elseif ($diff <= 5) $countDekat++;
+                    elseif ($diff <= 14) $countAkanDatang++;
+                    else $countBerikutnya++;
+                }
+            @endphp
+            <div class="d-flex flex-wrap justify-content-between gap-2 text-center">
+                <div style="flex:1;">
+                    <div class="rounded-circle bg-danger text-white d-inline-flex align-items-center justify-content-center mb-2" style="width:60px;height:60px;">
+                        <strong class="fs-4">{{ $countTerlambat }}</strong>
+                    </div>
+                    <p class="small mb-0 fw-medium text-danger">Terlambat</p>
+                    <small class="text-muted">≤ {{ $todayCarbon->format('d M') }}</small>
+                </div>
+                <div style="flex:1;">
+                    <div class="rounded-circle bg-warning text-dark d-inline-flex align-items-center justify-content-center mb-2" style="width:60px;height:60px;">
+                        <strong class="fs-4">{{ $countDekat }}</strong>
+                    </div>
+                    <p class="small mb-0 fw-medium text-warning">Deadline Dekat</p>
+                    <small class="text-muted">5 hari ke depan</small>
+                </div>
+                <div style="flex:1;">
+                    <div class="rounded-circle bg-info text-white d-inline-flex align-items-center justify-content-center mb-2" style="width:60px;height:60px;">
+                        <strong class="fs-4">{{ $countAkanDatang }}</strong>
+                    </div>
+                    <p class="small mb-0 fw-medium text-info">Akan Datang</p>
+                    <small class="text-muted">6-14 hari</small>
+                </div>
+                <div style="flex:1;">
+                    <div class="rounded-circle bg-light text-muted d-inline-flex align-items-center justify-content-center mb-2 border" style="width:60px;height:60px;">
+                        <strong class="fs-4">{{ $countBerikutnya }}</strong>
+                    </div>
+                    <p class="small mb-0 fw-medium text-muted">Jadwal Berikutnya</p>
+                    <small class="text-muted">&gt; 14 hari</small>
+                </div>
+            </div>
+        </div>
+    </div>
 @endsection

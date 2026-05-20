@@ -10,6 +10,7 @@ use App\Models\Transaction\PeriodeHibah;
 use App\Models\Transaction\Proposal;
 use App\Models\Transaction\ProposalAnggota;
 use App\Models\Transaction\ProposalRab;
+use App\Services\NotifikasiService;
 use App\Services\ProposalService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
@@ -17,7 +18,7 @@ use Illuminate\Support\Facades\DB;
 
 class UsulanController extends Controller
 {
-    public function __construct(private ProposalService $service) {}
+    public function __construct(private ProposalService $service, private NotifikasiService $notif) {}
 
     public function index(Request $request)
     {
@@ -156,6 +157,8 @@ class UsulanController extends Controller
             'tgl_submit' => now(),
             'total_anggaran' => $this->service->totalRab($penelitian),
         ]);
+
+        $this->notif->onProposalSubmitted($penelitian->fresh()->load('skemaHibah', 'ketua'));
 
         return redirect()->route('dosen.penelitian.show', $penelitian)
             ->with('success', 'Proposal berhasil disubmit. Operator akan memverifikasi.');

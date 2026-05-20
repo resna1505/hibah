@@ -13,16 +13,14 @@
 
     <div class="d-flex align-items-center gap-3">
         {{-- Bell --}}
-        <div class="position-relative">
-            <button class="btn btn-light position-relative" type="button">
-                <i class="ri-notification-3-line fs-5"></i>
-                @if ($unreadCount > 0)
-                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size:.65rem;">
-                        {{ $unreadCount > 9 ? '9+' : $unreadCount }}
-                    </span>
-                @endif
-            </button>
-        </div>
+        <a href="{{ route('notifikasi.index') }}" class="btn btn-light position-relative text-decoration-none">
+            <i class="ri-notification-3-line fs-5"></i>
+            @if ($unreadCount > 0)
+                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size:.65rem;">
+                    {{ $unreadCount > 9 ? '9+' : $unreadCount }}
+                </span>
+            @endif
+        </a>
 
         {{-- User dropdown --}}
         <div class="dropdown">

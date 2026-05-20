@@ -61,7 +61,18 @@
             </li>
         </ul>
 
+        @php
+            $unread = \App\Models\Transaction\Notifikasi::where('user_id', $u->id)->whereNull('dibaca_at')->count();
+        @endphp
         <div class="ms-auto d-flex align-items-center gap-3">
+            <a href="{{ route('notifikasi.index') }}" class="text-white text-decoration-none position-relative me-2">
+                <i class="ri-notification-3-line fs-5"></i>
+                @if ($unread > 0)
+                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size:.6rem;">
+                        {{ $unread > 9 ? '9+' : $unread }}
+                    </span>
+                @endif
+            </a>
             @if ($dosen?->is_reviewer)
                 <a href="{{ route('reviewer.dashboard') }}" class="btn btn-sm btn-warning">
                     <i class="ri-user-star-line me-1"></i>Mode Reviewer

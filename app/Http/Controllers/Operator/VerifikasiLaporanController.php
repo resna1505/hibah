@@ -8,10 +8,13 @@ use App\Models\Transaction\LaporanKemajuan;
 use App\Models\Transaction\Luaran;
 use App\Models\Transaction\PeriodeHibah;
 use App\Models\Transaction\Proposal;
+use App\Services\NotifikasiService;
 use Illuminate\Http\Request;
 
 class VerifikasiLaporanController extends Controller
 {
+    public function __construct(private NotifikasiService $notif) {}
+
     /**
      * List proposal yang berstatus disetujui/berjalan/selesai
      * dengan ringkasan jumlah laporan menunggu verifikasi.
@@ -76,6 +79,8 @@ class VerifikasiLaporanController extends Controller
             'verifikator_id'      => $request->user()->id,
         ]);
 
+        $this->notif->onLaporanVerified($laporan->proposal->load('skemaHibah', 'ketua'), 'Kemajuan ' . $laporan->periodeLaporan?->label, $data['status']);
+
         return back()->with('success', "Laporan kemajuan {$laporan->periodeLaporan?->label} → {$data['status']}.");
     }
 
@@ -100,6 +105,8 @@ class VerifikasiLaporanController extends Controller
             }
         }
 
+        $this->notif->onLaporanVerified($laporanAkhir->proposal->load('skemaHibah', 'ketua'), 'Akhir', $data['status']);
+
         return back()->with('success', "Laporan akhir → {$data['status']}.");
     }
 
@@ -115,6 +122,8 @@ class VerifikasiLaporanController extends Controller
             'catatan_verifikator' => $data['catatan'] ?? null,
             'verifikator_id'      => $request->user()->id,
         ]);
+
+        $this->notif->onLaporanVerified($luaran->proposal->load('skemaHibah', 'ketua'), "Luaran ({$luaran->jenisLuaran?->nama})", $data['status']);
 
         return back()->with('success', "Luaran {$luaran->jenisLuaran?->nama} → {$data['status']}.");
     }

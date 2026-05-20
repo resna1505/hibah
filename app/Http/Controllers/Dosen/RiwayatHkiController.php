@@ -48,6 +48,35 @@ class RiwayatHkiController extends Controller
         return back()->with('success', 'Riwayat HKI berhasil ditambahkan.');
     }
 
+    public function update(Request $request, RiwayatHki $riwayat_hki)
+    {
+        $dosen = $request->user()->dosen;
+        abort_unless($dosen && $riwayat_hki->dosen_id === $dosen->id, 403);
+
+        $data = $request->validate([
+            'jenis_hki'       => 'required|in:Hak Cipta,Paten,Merek,Desain Industri,Rahasia Dagang,Lainnya',
+            'judul'           => 'required|string|max:500',
+            'no_pendaftaran'  => 'nullable|string|max:100',
+            'no_sertifikat'   => 'nullable|string|max:100',
+            'tahun_pengajuan' => 'nullable|integer|min:1990|max:' . (now()->year + 1),
+            'tahun_terbit'    => 'nullable|integer|min:1990|max:' . (now()->year + 1),
+            'status_hki'      => 'required|in:Terdaftar,Proses,Granted',
+            'peran'           => 'required|in:ketua,anggota',
+            'file'            => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
+        ]);
+
+        if ($request->hasFile('file')) {
+            if ($riwayat_hki->file_path && Storage::disk('public')->exists($riwayat_hki->file_path)) {
+                Storage::disk('public')->delete($riwayat_hki->file_path);
+            }
+            $data['file_path'] = $request->file('file')->store('dosen/hki', 'public');
+        }
+        unset($data['file']);
+
+        $riwayat_hki->update($data);
+        return back()->with('success', 'Riwayat HKI diperbarui.');
+    }
+
     public function destroy(Request $request, RiwayatHki $riwayat_hki)
     {
         $dosen = $request->user()->dosen;

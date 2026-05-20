@@ -37,7 +37,7 @@
         <a href="{{ route('reviewer.jadwal') }}" class="{{ $linkClass('jadwal') }}">
             <i class="ri-calendar-line"></i><span>Jadwal Review</span>
         </a>
-        <a href="{{ route('dosen.profil.edit') }}" class="{{ $linkClass('profil') }}">
+        <a href="{{ route('reviewer.profil') }}" class="{{ $linkClass('profil') }}">
             <i class="ri-user-line"></i><span>Profil Reviewer</span>
         </a>
 

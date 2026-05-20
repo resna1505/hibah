@@ -82,6 +82,43 @@ class ProposalController extends Controller
         ]);
     }
 
+    /**
+     * Status Proposal — page dedicated dengan legend status.
+     */
+    public function statusIndex(Request $request)
+    {
+        $periodeAktif = PeriodeHibah::aktif()->latest('tahun')->first();
+
+        $list = Proposal::with(['ketua.fakultas', 'skemaHibah', 'periodeHibah'])
+            ->when($periodeAktif, fn($q) => $q->where('periode_hibah_id', $periodeAktif->id))
+            ->when($request->status, fn($q, $s) => $q->where('status', $s))
+            ->when($request->skema_id, fn($q, $id) => $q->where('skema_hibah_id', $id))
+            ->when($request->fakultas_id, fn($q, $id) => $q->whereHas('ketua', fn($q2) => $q2->where('fakultas_id', $id)))
+            ->latest('tgl_submit')
+            ->paginate(15)->withQueryString();
+
+        $stats = [];
+        if ($periodeAktif) {
+            $base = Proposal::where('periode_hibah_id', $periodeAktif->id);
+            $stats = [
+                'total'       => (clone $base)->count(),
+                'disetujui'   => (clone $base)->whereIn('status', ['disetujui', 'berjalan', 'selesai'])->count(),
+                'dalam_proses'=> (clone $base)->whereIn('status', ['submitted', 'verifikasi', 'direview', 'revisi_minor', 'revisi_mayor'])->count(),
+                'ditolak'     => (clone $base)->where('status', 'ditolak')->count(),
+                'ditarik'     => (clone $base)->where('status', 'ditarik')->count(),
+            ];
+        }
+
+        return view('operator.proposal.status', [
+            'list'         => $list,
+            'periodeAktif' => $periodeAktif,
+            'stats'        => $stats,
+            'skemaList'    => SkemaHibah::orderBy('nama')->get(),
+            'fakultasList' => Fakultas::orderBy('nama')->get(),
+            'filters'      => $request->only(['status', 'skema_id', 'fakultas_id']),
+        ]);
+    }
+
     public function submitVerifikasi(Request $request, Proposal $proposal)
     {
         abort_unless(in_array($proposal->status, ['submitted', 'verifikasi', 'dikembalikan']),

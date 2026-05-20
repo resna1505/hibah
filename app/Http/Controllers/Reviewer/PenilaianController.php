@@ -4,12 +4,13 @@ namespace App\Http\Controllers\Reviewer;
 
 use App\Http\Controllers\Controller;
 use App\Models\Transaction\PenugasanReviewer;
+use App\Services\NotifikasiService;
 use App\Services\PenilaianService;
 use Illuminate\Http\Request;
 
 class PenilaianController extends Controller
 {
-    public function __construct(private PenilaianService $service) {}
+    public function __construct(private PenilaianService $service, private NotifikasiService $notif) {}
 
     /**
      * Form penilaian: prefilled kalau sudah pernah disubmit (boleh revisi sebelum selesai).
@@ -86,6 +87,9 @@ class PenilaianController extends Controller
         }
 
         $penilaian = $this->service->simpan($penugasan, $rows, $data['rekomendasi'], $data['catatan_umum']);
+
+        $penugasan->load('proposal.skemaHibah', 'proposal.ketua', 'reviewer');
+        $this->notif->onPenilaianSubmitted($penugasan->proposal, $penugasan->reviewer, (float) $penilaian->nilai_total);
 
         return redirect()->route('reviewer.hasil.index')
             ->with('success', 'Penilaian berhasil disimpan. Nilai akhir: ' . number_format($penilaian->nilai_total, 2));

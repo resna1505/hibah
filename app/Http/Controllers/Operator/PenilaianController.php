@@ -6,13 +6,14 @@ use App\Http\Controllers\Controller;
 use App\Models\Transaction\LogAktivitas;
 use App\Models\Transaction\PeriodeHibah;
 use App\Models\Transaction\Proposal;
+use App\Services\NotifikasiService;
 use App\Services\PenilaianService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class PenilaianController extends Controller
 {
-    public function __construct(private PenilaianService $service) {}
+    public function __construct(private PenilaianService $service, private NotifikasiService $notif) {}
 
     /**
      * List proposal yang sudah/sedang direview untuk operator finalize.
@@ -123,6 +124,8 @@ class PenilaianController extends Controller
                 'created_at' => now(),
             ]);
         });
+
+        $this->notif->onProposalFinalized($proposal->fresh()->load('skemaHibah', 'ketua'), $data['keputusan']);
 
         $msg = match ($data['keputusan']) {
             'disetujui'    => 'Proposal disetujui. Dosen dapat mulai melaksanakan kegiatan & upload laporan.',

@@ -118,14 +118,54 @@
         <div class="card border-0 shadow-sm mt-3">
             <div class="card-header bg-white"><h6 class="mb-0">Distribusi Kategori Nilai</h6></div>
             <div class="card-body">
-                <div class="row text-center">
-                    <div class="col"><div class="badge bg-primary fs-6 mb-1">{{ $stats['distribusi']['sangat_baik'] }}</div><br><small class="text-muted">Sangat Baik (≥85)</small></div>
-                    <div class="col"><div class="badge bg-success fs-6 mb-1">{{ $stats['distribusi']['baik'] }}</div><br><small class="text-muted">Baik (70-84)</small></div>
-                    <div class="col"><div class="badge bg-info fs-6 mb-1">{{ $stats['distribusi']['cukup'] }}</div><br><small class="text-muted">Cukup (55-69)</small></div>
-                    <div class="col"><div class="badge bg-warning text-dark fs-6 mb-1">{{ $stats['distribusi']['kurang'] }}</div><br><small class="text-muted">Kurang (40-54)</small></div>
-                    <div class="col"><div class="badge bg-danger fs-6 mb-1">{{ $stats['distribusi']['sangat_kurang'] }}</div><br><small class="text-muted">Sangat Kurang (&lt;40)</small></div>
+                <div class="row align-items-center">
+                    <div class="col-md-5">
+                        <canvas id="chartDistribusi" style="max-height:280px;"></canvas>
+                    </div>
+                    <div class="col-md-7">
+                        <table class="table table-sm mb-0">
+                            <tr><td><span class="badge bg-primary me-2">&nbsp;</span> Sangat Baik (≥85)</td><td class="text-end"><strong>{{ $stats['distribusi']['sangat_baik'] }}</strong> proposal</td></tr>
+                            <tr><td><span class="badge bg-success me-2">&nbsp;</span> Baik (70-84)</td><td class="text-end"><strong>{{ $stats['distribusi']['baik'] }}</strong> proposal</td></tr>
+                            <tr><td><span class="badge bg-info me-2">&nbsp;</span> Cukup (55-69)</td><td class="text-end"><strong>{{ $stats['distribusi']['cukup'] }}</strong> proposal</td></tr>
+                            <tr><td><span class="badge bg-warning me-2">&nbsp;</span> Kurang (40-54)</td><td class="text-end"><strong>{{ $stats['distribusi']['kurang'] }}</strong> proposal</td></tr>
+                            <tr><td><span class="badge bg-danger me-2">&nbsp;</span> Sangat Kurang (&lt;40)</td><td class="text-end"><strong>{{ $stats['distribusi']['sangat_kurang'] }}</strong> proposal</td></tr>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
     @endif
+@endsection
+
+@section('scripts')
+@if ($stats['total_dinilai'] > 0)
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const ctx = document.getElementById('chartDistribusi');
+    if (!ctx) return;
+    new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Sangat Baik (≥85)', 'Baik (70-84)', 'Cukup (55-69)', 'Kurang (40-54)', 'Sangat Kurang (<40)'],
+            datasets: [{
+                data: [
+                    {{ $stats['distribusi']['sangat_baik'] }},
+                    {{ $stats['distribusi']['baik'] }},
+                    {{ $stats['distribusi']['cukup'] }},
+                    {{ $stats['distribusi']['kurang'] }},
+                    {{ $stats['distribusi']['sangat_kurang'] }},
+                ],
+                backgroundColor: ['#0d6efd', '#198754', '#0dcaf0', '#ffc107', '#dc3545'],
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } }
+        }
+    });
+});
+</script>
+@endif
 @endsection

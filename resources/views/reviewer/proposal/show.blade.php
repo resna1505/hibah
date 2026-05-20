@@ -12,6 +12,9 @@
         </div>
         <div class="d-flex gap-2">
             <a href="{{ route('reviewer.proposal.index') }}" class="btn btn-sm btn-outline-secondary"><i class="ri-arrow-left-line"></i> Kembali</a>
+            @if ($myPenugasan)
+                <a href="{{ route('reviewer.proposal.pdf', $p) }}" class="btn btn-sm btn-outline-secondary"><i class="ri-download-line"></i> Unduh PDF</a>
+            @endif
             @if ($myPenugasan && in_array($myPenugasan->status, ['ditugaskan', 'sedang_review']))
                 <a href="{{ route('reviewer.penilaian.form', $myPenugasan) }}" class="btn btn-sm btn-primary"><i class="ri-edit-line"></i> Nilai Proposal</a>
             @elseif ($myPenugasan?->status === 'selesai')

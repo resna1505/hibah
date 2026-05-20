@@ -80,4 +80,49 @@
         </div>
         <div class="card-footer bg-white">{{ $list->links() }}</div>
     </div>
+
+    @php
+        $periodeAktif = $list->where('status', 'aktif')->first();
+        if ($periodeAktif) {
+            $periodeAktif->load(['jadwalTahapan.tahapanHibah' => fn($q) => $q->orderBy('urutan')]);
+        }
+    @endphp
+    @if ($periodeAktif && $periodeAktif->jadwalTahapan->count() > 0)
+        <div class="card border-0 shadow-sm mt-3">
+            <div class="card-header bg-white">
+                <h6 class="mb-0">Timeline Tahapan Periode Aktif ({{ $periodeAktif->nama }})</h6>
+            </div>
+            <div class="card-body">
+                <div class="d-flex flex-wrap justify-content-between align-items-start gap-2">
+                    @foreach ($periodeAktif->jadwalTahapan->sortBy('tahapanHibah.urutan') as $j)
+                        @php
+                            $iconMap = [
+                                'pengajuan' => 'ri-file-text-line',
+                                'review' => 'ri-team-line',
+                                'revisi' => 'ri-edit-line',
+                                'penetapan' => 'ri-checkbox-circle-line',
+                                'pengumuman' => 'ri-megaphone-line',
+                                'pelaksanaan' => 'ri-briefcase-line',
+                            ];
+                            $kode = $j->tahapanHibah?->kode ?? '';
+                            $icon = $iconMap[$kode] ?? 'ri-calendar-line';
+                            $cls = match ($j->status) {
+                                'selesai' => 'bg-success text-white',
+                                'berjalan' => 'bg-warning text-dark',
+                                default => 'bg-light text-muted',
+                            };
+                            $isLast = $loop->last;
+                        @endphp
+                        <div class="text-center" style="flex:1; min-width:120px;">
+                            <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-2 {{ $cls }}" style="width:54px;height:54px;">
+                                <i class="{{ $icon }} fs-4"></i>
+                            </div>
+                            <p class="fw-medium mb-0 small">{{ $j->tahapanHibah?->nama }}</p>
+                            <small class="text-muted">{{ $j->tgl_mulai?->format('d M') }} - {{ $j->tgl_selesai?->format('d M Y') }}</small>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+        </div>
+    @endif
 @endsection

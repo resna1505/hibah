@@ -8,8 +8,11 @@
     <div class="d-flex justify-content-between align-items-center mb-3">
         <div>
             <h4 class="mb-0">Data Reviewer</h4>
-            <p class="text-muted small mb-0">Aktifkan / nonaktifkan dosen sebagai reviewer</p>
+            <p class="text-muted small mb-0">Aktifkan / nonaktifkan dosen sebagai reviewer, atau tambah reviewer baru</p>
         </div>
+        <a href="{{ route('operator.reviewer.create') }}" class="btn btn-primary">
+            <i class="ri-user-add-line"></i> Tambah Reviewer
+        </a>
     </div>
 
     {{-- Filter --}}

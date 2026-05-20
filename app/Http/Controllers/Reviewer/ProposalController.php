@@ -5,10 +5,35 @@ namespace App\Http\Controllers\Reviewer;
 use App\Http\Controllers\Controller;
 use App\Models\Transaction\PeriodeHibah;
 use App\Models\Transaction\Proposal;
+use App\Services\ProposalService;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 
 class ProposalController extends Controller
 {
+    /**
+     * Download PDF proposal — reviewer yang ditugaskan boleh akses.
+     */
+    public function pdf(Request $request, Proposal $proposal)
+    {
+        $dosen = $request->user()->dosen;
+        $isAssigned = $proposal->penugasanReviewer()
+            ->where('reviewer_dosen_id', $dosen->id)
+            ->exists();
+        abort_unless($isAssigned, 403, 'Anda bukan reviewer yang ditugaskan untuk proposal ini.');
+
+        $proposal->load(['skemaHibah', 'periodeHibah', 'ketua.fakultas', 'ketua.prodi',
+            'anggota.dosen.prodi', 'mitra', 'rab.kategori']);
+
+        $view = $proposal->skemaHibah?->jenis === 'pkm' ? 'dosen.pkm.pdf' : 'dosen.penelitian.pdf';
+        $jenis = $proposal->skemaHibah?->jenis === 'pkm' ? 'PKM' : 'Penelitian';
+        $totalRab = (int) $proposal->rab->sum('sub_total');
+
+        $pdf = Pdf::loadView($view, ['p' => $proposal, 'totalRab' => $totalRab])->setPaper('a4');
+        $filename = "Proposal_{$jenis}_" . preg_replace('/[^A-Za-z0-9_-]/', '_', $proposal->judul) . '.pdf';
+        return $pdf->download($filename);
+    }
+
     public function index(Request $request)
     {
         $dosen = $request->user()->dosen;

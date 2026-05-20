@@ -5,14 +5,21 @@ namespace App\Http\Controllers\Operator;
 use App\Http\Controllers\Controller;
 use App\Models\Master\Dosen;
 use App\Models\Master\Fakultas;
+use App\Models\Master\Keahlian;
+use App\Models\Master\Prodi;
 use App\Models\Transaction\PenugasanReviewer;
 use App\Models\Transaction\PeriodeHibah;
 use App\Models\Transaction\Proposal;
+use App\Models\User;
+use App\Services\NotifikasiService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rules\Password;
 
 class ReviewerController extends Controller
 {
+    public function __construct(private NotifikasiService $notif) {}
+
     /**
      * Data Reviewer — list dosen, toggle flag is_reviewer.
      */
@@ -31,6 +38,69 @@ class ReviewerController extends Controller
             'fakultasList' => Fakultas::orderBy('nama')->get(),
             'filters'      => $request->only(['search', 'fakultas_id', 'filter']),
         ]);
+    }
+
+    /**
+     * Form tambah reviewer baru (sekaligus create dosen baru).
+     */
+    public function createForm(Request $request)
+    {
+        return view('operator.reviewer.create', [
+            'fakultasList' => Fakultas::orderBy('nama')->get(),
+            'prodiList'    => Prodi::orderBy('nama')->get(['id', 'fakultas_id', 'nama']),
+            'keahlianList' => Keahlian::orderBy('nama')->get(),
+        ]);
+    }
+
+    /**
+     * Simpan dosen baru sebagai reviewer (set is_reviewer=true).
+     */
+    public function storeNew(Request $request)
+    {
+        $data = $request->validate([
+            'nik'                 => 'required|string|max:30|unique:users_m,nik',
+            'email'               => 'required|email|max:255|unique:users_m,email',
+            'password'            => ['required', 'confirmed', Password::min(6)],
+            'nama_lengkap'        => 'required|string|max:200',
+            'nidn'                => 'nullable|string|max:20|unique:dosen_m,nidn',
+            'fakultas_id'         => 'required|exists:fakultas_m,id',
+            'prodi_id'            => 'required|exists:prodi_m,id',
+            'jabatan_fungsional'  => 'nullable|in:Tenaga Pengajar,Asisten Ahli,Lektor,Lektor Kepala,Profesor',
+            'pendidikan_terakhir' => 'nullable|in:S1,S2,S3',
+            'no_hp'               => 'nullable|string|max:25',
+            'keahlian_ids'        => 'array',
+            'keahlian_ids.*'      => 'exists:keahlian_m,id',
+        ]);
+
+        DB::transaction(function () use ($data) {
+            $user = User::create([
+                'nik'       => $data['nik'],
+                'email'     => $data['email'],
+                'password'  => $data['password'],
+                'role'      => 'dosen',
+                'is_active' => true,
+            ]);
+
+            $dosen = Dosen::create([
+                'user_id'             => $user->id,
+                'fakultas_id'         => $data['fakultas_id'],
+                'prodi_id'            => $data['prodi_id'],
+                'nama_lengkap'        => $data['nama_lengkap'],
+                'nidn'                => $data['nidn'] ?? null,
+                'jabatan_fungsional'  => $data['jabatan_fungsional'] ?? null,
+                'pendidikan_terakhir' => $data['pendidikan_terakhir'] ?? null,
+                'no_hp'               => $data['no_hp'] ?? null,
+                'status_aktif_mengajar' => true,
+                'is_reviewer'         => true, // langsung set sebagai reviewer
+            ]);
+
+            if (! empty($data['keahlian_ids'])) {
+                $dosen->keahlian()->sync($data['keahlian_ids']);
+            }
+        });
+
+        return redirect()->route('operator.reviewer.data')
+            ->with('success', "Reviewer baru '{$data['nama_lengkap']}' berhasil ditambahkan.");
     }
 
     public function toggleReviewer(Request $request, Dosen $dosen)
@@ -135,6 +205,12 @@ class ReviewerController extends Controller
 
             $proposal->update(['status' => 'direview']);
         });
+
+        // Notifikasi ke kedua reviewer
+        $r1 = Dosen::find($data['reviewer_1_id']);
+        $r2 = Dosen::find($data['reviewer_2_id']);
+        $this->notif->onReviewerAssigned($proposal, $r1, 'reviewer_1', $data['deadline']);
+        $this->notif->onReviewerAssigned($proposal, $r2, 'reviewer_2', $data['deadline']);
 
         return redirect()->route('operator.reviewer.penugasan')
             ->with('success', 'Reviewer berhasil ditugaskan. Status proposal: direview.');
