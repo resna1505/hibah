@@ -124,16 +124,65 @@
                 </div>
             </div>
 
-            @if ($p->hasil_diharapkan_json)
+            @if ($p->bidangStrategis)
                 <div class="card border-0 shadow-sm mb-3">
-                    <div class="card-header bg-white"><h6 class="mb-0">Hasil yang Diharapkan</h6></div>
+                    <div class="card-header bg-white"><h6 class="mb-0">Bidang Strategis</h6></div>
+                    <div class="card-body small">
+                        <p class="mb-1"><strong>{{ $p->bidangStrategis->kode }}. {{ $p->bidangStrategis->nama }}</strong></p>
+                        @if ($p->rumusan_masalah_bidang)
+                            <p class="mb-1"><span class="text-muted">Rumusan Masalah:</span><br>{{ $p->rumusan_masalah_bidang }}</p>
+                        @endif
+                        @if ($p->uraian_bidang)
+                            <p class="mb-0"><span class="text-muted">Uraian:</span><br>{{ $p->uraian_bidang }}</p>
+                        @endif
+                    </div>
+                </div>
+            @endif
+
+            @if ($p->mitra->isNotEmpty())
+                <div class="card border-0 shadow-sm mb-3">
+                    <div class="card-header bg-white"><h6 class="mb-0">Mitra Penelitian</h6></div>
                     <div class="card-body">
-                        @foreach ($p->hasil_diharapkan_json as $h)
+                        @foreach ($p->mitra as $m)
                             <div class="small mb-2 pb-2 border-bottom">
-                                <strong>{{ $h['jenis'] ?? '-' }}</strong><br>
-                                <span class="text-muted">Target: {{ $h['target'] ?? '-' }}</span>
+                                <strong>{{ $m->nama_mitra }}</strong>
+                                @if ($m->pimpinan_mitra) <br><span class="text-muted">Pimpinan: {{ $m->pimpinan_mitra }}</span>@endif
+                                @if ($m->alamat_mitra) <br><span class="text-muted">{{ $m->alamat_mitra }}</span>@endif
+                                @if ($m->permasalahan_mitra) <br><em class="text-muted">{{ $m->permasalahan_mitra }}</em>@endif
                             </div>
                         @endforeach
+                    </div>
+                </div>
+            @endif
+        </div>
+
+        <div class="col-12">
+            @if ($p->rencanaLuaran->isNotEmpty())
+                <div class="card border-0 shadow-sm mb-3">
+                    <div class="card-header bg-white"><h6 class="mb-0">Rencana Luaran</h6></div>
+                    <div class="card-body p-0">
+                        <table class="table mb-0 small">
+                            <thead class="table-light">
+                                <tr>
+                                    <th width="80">Tahun ke-</th>
+                                    <th width="100">Kategori</th>
+                                    <th>Jenis Luaran</th>
+                                    <th>Status Target</th>
+                                    <th>Keterangan</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach ($p->rencanaLuaran as $rl)
+                                    <tr>
+                                        <td>{{ $rl->tahun_ke }}</td>
+                                        <td>{{ ucfirst($rl->kategori) }}</td>
+                                        <td>{{ $rl->jenisLuaran?->nama ?? $rl->jenis_luaran_text ?? '-' }}</td>
+                                        <td>{{ $rl->status_target ?? '-' }}</td>
+                                        <td class="text-muted">{{ $rl->keterangan ?? '-' }}</td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             @endif

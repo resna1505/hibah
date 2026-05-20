@@ -133,22 +133,53 @@
                 </div>
             </div>
 
-            @if ($p->hasil_diharapkan_json)
+            @if ($p->bidangStrategis)
                 <div class="card border-0 shadow-sm mb-3">
-                    <div class="card-header bg-white"><h6 class="mb-0">Hasil yang Diharapkan</h6></div>
-                    <div class="card-body">
-                        @foreach ($p->hasil_diharapkan_json as $h)
-                            <div class="small mb-2 pb-2 border-bottom">
-                                <strong>{{ $h['jenis'] ?? '-' }}</strong><br>
-                                <span class="text-muted">Target: {{ $h['target'] ?? '-' }}</span>
-                            </div>
-                        @endforeach
+                    <div class="card-header bg-white"><h6 class="mb-0">Bidang Strategis</h6></div>
+                    <div class="card-body small">
+                        <p class="mb-1"><strong>{{ $p->bidangStrategis->kode }}. {{ $p->bidangStrategis->nama }}</strong></p>
+                        @if ($p->rumusan_masalah_bidang)
+                            <p class="mb-1"><span class="text-muted">Rumusan Masalah:</span><br>{{ $p->rumusan_masalah_bidang }}</p>
+                        @endif
+                        @if ($p->uraian_bidang)
+                            <p class="mb-0"><span class="text-muted">Uraian:</span><br>{{ $p->uraian_bidang }}</p>
+                        @endif
                     </div>
                 </div>
             @endif
         </div>
 
         <div class="col-12">
+            @if ($p->rencanaLuaran->isNotEmpty())
+                <div class="card border-0 shadow-sm mb-3">
+                    <div class="card-header bg-white"><h6 class="mb-0">Rencana Luaran</h6></div>
+                    <div class="card-body p-0">
+                        <table class="table mb-0 small">
+                            <thead class="table-light">
+                                <tr>
+                                    <th width="80">Tahun ke-</th>
+                                    <th width="100">Kategori</th>
+                                    <th>Jenis Luaran</th>
+                                    <th>Status Target</th>
+                                    <th>Keterangan</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach ($p->rencanaLuaran as $rl)
+                                    <tr>
+                                        <td>{{ $rl->tahun_ke }}</td>
+                                        <td>{{ ucfirst($rl->kategori) }}</td>
+                                        <td>{{ $rl->jenisLuaran?->nama ?? $rl->jenis_luaran_text ?? '-' }}</td>
+                                        <td>{{ $rl->status_target ?? '-' }}</td>
+                                        <td class="text-muted">{{ $rl->keterangan ?? '-' }}</td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            @endif
+
             <div class="card border-0 shadow-sm mb-3">
                 <div class="card-header bg-white d-flex justify-content-between">
                     <h6 class="mb-0">RAB</h6>

@@ -109,6 +109,55 @@
             </div>
         </div>
 
+        {{-- Section 2b: Bidang Strategis --}}
+        <div class="card border-0 shadow-sm mb-3">
+            <div class="card-header bg-white"><h6 class="mb-0"><i class="ri-compass-3-line text-primary me-2"></i>2b. Bidang Strategis</h6></div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-12">
+                        <label class="form-label">Pilih Bidang Strategis <span class="text-muted small">(sesuai prioritas riset nasional)</span></label>
+                        <select name="bidang_strategis_id" class="form-select">
+                            <option value="">-- Pilih Bidang --</option>
+                            @foreach ($bidangList as $b)
+                                <option value="{{ $b->id }}" @selected(old('bidang_strategis_id', $proposal?->bidang_strategis_id) == $b->id)>
+                                    {{ $b->kode }}. {{ $b->nama }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-md-12">
+                        <label class="form-label">Rumusan Masalah Bidang</label>
+                        <textarea name="rumusan_masalah_bidang" rows="3" class="form-control">{{ old('rumusan_masalah_bidang', $proposal?->rumusan_masalah_bidang) }}</textarea>
+                    </div>
+                    <div class="col-md-12">
+                        <label class="form-label">Uraian Bidang <span class="text-muted small">(relevansi penelitian dengan bidang strategis)</span></label>
+                        <textarea name="uraian_bidang" rows="3" class="form-control">{{ old('uraian_bidang', $proposal?->uraian_bidang) }}</textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{-- Section 2c: Mitra Penelitian (opsional) --}}
+        <div class="card border-0 shadow-sm mb-3">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h6 class="mb-0"><i class="ri-shake-hands-line text-primary me-2"></i>2c. Mitra Penelitian <span class="text-muted small">(opsional)</span></h6>
+                <button type="button" class="btn btn-sm btn-outline-primary" onclick="addMitra()"><i class="ri-add-line"></i> Tambah Mitra</button>
+            </div>
+            <div class="card-body">
+                <div id="mitraList">
+                    @foreach ($mitraList as $m)
+                        <div class="row g-2 mb-2 mitra-row align-items-start">
+                            <div class="col-md-3"><input type="text" name="mitra_nama[]" class="form-control" placeholder="Nama mitra" value="{{ $m->nama_mitra }}"></div>
+                            <div class="col-md-3"><input type="text" name="mitra_pimpinan[]" class="form-control" placeholder="Pimpinan" value="{{ $m->pimpinan_mitra }}"></div>
+                            <div class="col-md-3"><textarea name="mitra_alamat[]" class="form-control" rows="1" placeholder="Alamat">{{ $m->alamat_mitra }}</textarea></div>
+                            <div class="col-md-2"><textarea name="mitra_permasalahan[]" class="form-control" rows="1" placeholder="Permasalahan / kontribusi">{{ $m->permasalahan_mitra }}</textarea></div>
+                            <div class="col-md-1"><button type="button" class="btn btn-outline-danger w-100" onclick="this.closest('.mitra-row').remove()"><i class="ri-delete-bin-line"></i></button></div>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+        </div>
+
         {{-- Section 3: Pendahuluan --}}
         <div class="card border-0 shadow-sm mb-3">
             <div class="card-header bg-white"><h6 class="mb-0"><i class="ri-book-open-line text-primary me-2"></i>3. Pendahuluan <span class="text-muted small">(maks 1000 kata)</span></h6></div>
@@ -135,25 +184,48 @@
             </div>
         </div>
 
-        {{-- Section 5: Hasil yang Diharapkan --}}
+        {{-- Section 5: Rencana Luaran --}}
         <div class="card border-0 shadow-sm mb-3">
-            <div class="card-header bg-white"><h6 class="mb-0"><i class="ri-target-line text-primary me-2"></i>5. Hasil yang Diharapkan</h6></div>
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h6 class="mb-0"><i class="ri-target-line text-primary me-2"></i>5. Rencana Luaran</h6>
+                <button type="button" class="btn btn-sm btn-outline-primary" onclick="addLuaran()"><i class="ri-add-line"></i> Tambah Baris</button>
+            </div>
             <div class="card-body">
+                <p class="text-muted small mb-2">Isi target capaian luaran per tahun. Pilih jenis dari daftar; bila tidak terdaftar gunakan kolom isian bebas.</p>
                 <div class="table-responsive">
-                    <table class="table align-middle">
+                    <table class="table table-bordered align-middle">
                         <thead class="table-light">
                             <tr>
-                                <th width="50">#</th>
+                                <th width="80">Tahun ke-</th>
+                                <th width="120">Kategori</th>
                                 <th>Jenis Luaran</th>
-                                <th>Target</th>
+                                <th width="180">Status Target Capaian</th>
+                                <th>Keterangan</th>
+                                <th width="50"></th>
                             </tr>
                         </thead>
-                        <tbody>
-                            @foreach ($hasilJson as $i => $h)
-                                <tr>
-                                    <td>{{ $i + 1 }}</td>
-                                    <td><input type="text" name="hasil_diharapkan[{{ $i }}][jenis]" class="form-control form-control-sm" value="{{ $h['jenis'] ?? '' }}"></td>
-                                    <td><input type="text" name="hasil_diharapkan[{{ $i }}][target]" class="form-control form-control-sm" value="{{ $h['target'] ?? '' }}"></td>
+                        <tbody id="luaranBody">
+                            @foreach ($rencanaLuaran as $i => $rl)
+                                <tr class="luaran-row">
+                                    <td><input type="number" min="1" max="5" name="luaran_tahun_ke[]" class="form-control form-control-sm" value="{{ $rl->tahun_ke }}"></td>
+                                    <td>
+                                        <select name="luaran_kategori[]" class="form-select form-select-sm">
+                                            <option value="wajib" @selected($rl->kategori === 'wajib')>Wajib</option>
+                                            <option value="tambahan" @selected($rl->kategori === 'tambahan')>Tambahan</option>
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <select name="luaran_jenis_id[]" class="form-select form-select-sm mb-1">
+                                            <option value="">-- Pilih dari daftar --</option>
+                                            @foreach ($jenisLuaranList as $j)
+                                                <option value="{{ $j->id }}" @selected($rl->jenis_luaran_id == $j->id)>{{ $j->nama }}</option>
+                                            @endforeach
+                                        </select>
+                                        <input type="text" name="luaran_jenis_text[]" class="form-control form-control-sm" placeholder="atau isi bebas" value="{{ $rl->jenis_luaran_text }}">
+                                    </td>
+                                    <td><input type="text" name="luaran_status_target[]" class="form-control form-control-sm" placeholder="Submitted/Accepted/Published/Granted" value="{{ $rl->status_target }}"></td>
+                                    <td><textarea name="luaran_keterangan[]" rows="1" class="form-control form-control-sm">{{ $rl->keterangan }}</textarea></td>
+                                    <td><button type="button" class="btn btn-sm btn-outline-danger" onclick="this.closest('.luaran-row').remove()"><i class="ri-delete-bin-line"></i></button></td>
                                 </tr>
                             @endforeach
                         </tbody>
@@ -289,6 +361,40 @@
         </div>
     </template>
 
+    <template id="mitraTpl">
+        <div class="row g-2 mb-2 mitra-row align-items-start">
+            <div class="col-md-3"><input type="text" name="mitra_nama[]" class="form-control" placeholder="Nama mitra"></div>
+            <div class="col-md-3"><input type="text" name="mitra_pimpinan[]" class="form-control" placeholder="Pimpinan"></div>
+            <div class="col-md-3"><textarea name="mitra_alamat[]" class="form-control" rows="1" placeholder="Alamat"></textarea></div>
+            <div class="col-md-2"><textarea name="mitra_permasalahan[]" class="form-control" rows="1" placeholder="Permasalahan / kontribusi"></textarea></div>
+            <div class="col-md-1"><button type="button" class="btn btn-outline-danger w-100" onclick="this.closest('.mitra-row').remove()"><i class="ri-delete-bin-line"></i></button></div>
+        </div>
+    </template>
+
+    <template id="luaranTpl">
+        <tr class="luaran-row">
+            <td><input type="number" min="1" max="5" name="luaran_tahun_ke[]" class="form-control form-control-sm" value="1"></td>
+            <td>
+                <select name="luaran_kategori[]" class="form-select form-select-sm">
+                    <option value="wajib">Wajib</option>
+                    <option value="tambahan">Tambahan</option>
+                </select>
+            </td>
+            <td>
+                <select name="luaran_jenis_id[]" class="form-select form-select-sm mb-1">
+                    <option value="">-- Pilih dari daftar --</option>
+                    @foreach ($jenisLuaranList as $j)
+                        <option value="{{ $j->id }}">{{ $j->nama }}</option>
+                    @endforeach
+                </select>
+                <input type="text" name="luaran_jenis_text[]" class="form-control form-control-sm" placeholder="atau isi bebas">
+            </td>
+            <td><input type="text" name="luaran_status_target[]" class="form-control form-control-sm" placeholder="Submitted/Accepted/Published/Granted"></td>
+            <td><textarea name="luaran_keterangan[]" rows="1" class="form-control form-control-sm"></textarea></td>
+            <td><button type="button" class="btn btn-sm btn-outline-danger" onclick="this.closest('.luaran-row').remove()"><i class="ri-delete-bin-line"></i></button></td>
+        </tr>
+    </template>
+
     <template id="rabTpl">
         <tr class="rab-row">
             <td>
@@ -323,6 +429,14 @@ function addRab() {
     const tpl = document.getElementById('rabTpl').content.cloneNode(true);
     document.getElementById('rabBody').appendChild(tpl);
     attachRabListeners();
+}
+function addMitra() {
+    const tpl = document.getElementById('mitraTpl').content.cloneNode(true);
+    document.getElementById('mitraList').appendChild(tpl);
+}
+function addLuaran() {
+    const tpl = document.getElementById('luaranTpl').content.cloneNode(true);
+    document.getElementById('luaranBody').appendChild(tpl);
 }
 function removeRab(btn) {
     btn.closest('tr').remove();

@@ -97,6 +97,29 @@
     </table>
 @endif
 
+{{-- Bidang Strategis --}}
+@if ($p->bidangStrategis)
+    <h4>3b. Bidang Strategis</h4>
+    <table class="bordered">
+        <tr>
+            <td width="30%"><small>Bidang Strategis</small></td>
+            <td><strong>{{ $p->bidangStrategis->kode }}. {{ $p->bidangStrategis->nama }}</strong></td>
+        </tr>
+        @if ($p->rumusan_masalah_bidang)
+            <tr>
+                <td><small>Rumusan Masalah Bidang</small></td>
+                <td style="white-space: pre-wrap;">{{ $p->rumusan_masalah_bidang }}</td>
+            </tr>
+        @endif
+        @if ($p->uraian_bidang)
+            <tr>
+                <td><small>Uraian Bidang</small></td>
+                <td style="white-space: pre-wrap;">{{ $p->uraian_bidang }}</td>
+            </tr>
+        @endif
+    </table>
+@endif
+
 @if ($p->ringkasan)
     <h4>4. Ringkasan</h4>
     <p>{{ $p->ringkasan }}</p>
@@ -124,13 +147,29 @@
     @endif
 @endif
 
-@if ($p->hasil_diharapkan_json)
-    <h4>8. Hasil yang Diharapkan</h4>
-    <table class="bordered">
-        <thead><tr><th width="5%">No</th><th>Jenis Luaran</th><th width="30%">Target</th></tr></thead>
+@if ($p->rencanaLuaran->isNotEmpty())
+    <h4>8. Rencana Luaran</h4>
+    <table class="bordered small">
+        <thead>
+            <tr>
+                <th width="5%">No</th>
+                <th width="10%">Tahun ke-</th>
+                <th width="12%">Kategori</th>
+                <th>Jenis Luaran</th>
+                <th width="18%">Status Target Capaian</th>
+                <th width="20%">Keterangan</th>
+            </tr>
+        </thead>
         <tbody>
-            @foreach ($p->hasil_diharapkan_json as $i => $h)
-                <tr><td>{{ $i + 1 }}</td><td>{{ $h['jenis'] ?? '' }}</td><td>{{ $h['target'] ?? '' }}</td></tr>
+            @foreach ($p->rencanaLuaran as $rl)
+                <tr>
+                    <td>{{ $loop->iteration }}</td>
+                    <td>{{ $rl->tahun_ke }}</td>
+                    <td>{{ ucfirst($rl->kategori) }}</td>
+                    <td>{{ $rl->jenisLuaran?->nama ?? $rl->jenis_luaran_text ?? '-' }}</td>
+                    <td>{{ $rl->status_target ?? '-' }}</td>
+                    <td>{{ $rl->keterangan ?? '-' }}</td>
+                </tr>
             @endforeach
         </tbody>
     </table>

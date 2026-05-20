@@ -16,6 +16,9 @@ class Proposal extends Model
     protected $fillable = [
         'periode_hibah_id',
         'skema_hibah_id',
+        'bidang_strategis_id',
+        'rumusan_masalah_bidang',
+        'uraian_bidang',
         'ketua_dosen_id',
         'judul',
         'ringkasan',
@@ -51,6 +54,11 @@ class Proposal extends Model
     public function skemaHibah(): BelongsTo
     {
         return $this->belongsTo(SkemaHibah::class, 'skema_hibah_id');
+    }
+
+    public function bidangStrategis(): BelongsTo
+    {
+        return $this->belongsTo(\App\Models\Master\BidangStrategis::class, 'bidang_strategis_id');
     }
 
     public function ketua(): BelongsTo
@@ -106,5 +114,10 @@ class Proposal extends Model
     public function luaran(): HasMany
     {
         return $this->hasMany(Luaran::class, 'proposal_id');
+    }
+
+    public function rencanaLuaran(): HasMany
+    {
+        return $this->hasMany(RencanaLuaran::class, 'proposal_id');
     }
 }

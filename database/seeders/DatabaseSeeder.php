@@ -17,6 +17,7 @@ class DatabaseSeeder extends Seeder
             KriteriaPenilaianSeeder::class,
             JenisLuaranSeeder::class,
             KategoriRabSeeder::class,
+            BidangStrategisSeeder::class,
             UserDosenSeeder::class,
             PeriodeHibahSeeder::class,
             ProposalDummySeeder::class,

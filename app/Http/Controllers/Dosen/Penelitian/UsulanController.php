@@ -3,13 +3,17 @@
 namespace App\Http\Controllers\Dosen\Penelitian;
 
 use App\Http\Controllers\Controller;
+use App\Models\Master\BidangStrategis;
 use App\Models\Master\Dosen;
+use App\Models\Master\JenisLuaran;
 use App\Models\Master\KategoriRab;
 use App\Models\Master\SkemaHibah;
 use App\Models\Transaction\PeriodeHibah;
 use App\Models\Transaction\Proposal;
 use App\Models\Transaction\ProposalAnggota;
+use App\Models\Transaction\ProposalMitra;
 use App\Models\Transaction\ProposalRab;
+use App\Models\Transaction\RencanaLuaran;
 use App\Services\NotifikasiService;
 use App\Services\ProposalService;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -67,9 +71,13 @@ class UsulanController extends Controller
             'periode'       => $periode,
             'dosenList'     => Dosen::where('id', '!=', $dosen->id)->orderBy('nama_lengkap')->get(['id', 'nama_lengkap']),
             'kategoriRab'   => KategoriRab::orderBy('urutan')->get(),
+            'bidangList'    => BidangStrategis::where('is_active', true)->orderBy('kode')->get(),
+            'jenisLuaranList' => JenisLuaran::penelitian()->where('is_active', true)->orderBy('urutan')->get(),
             'anggotaDosen'  => collect(),
             'mahasiswa'     => collect(),
+            'mitraList'     => collect(),
             'rabItems'      => collect(),
+            'rencanaLuaran' => collect(),
         ]);
     }
 
@@ -92,7 +100,9 @@ class UsulanController extends Controller
             ]));
 
             $this->syncAnggota($proposal, $request);
+            $this->syncMitra($proposal, $request);
             $this->syncRab($proposal, $request);
+            $this->syncRencanaLuaran($proposal, $request);
 
             return $proposal;
         });
@@ -116,9 +126,13 @@ class UsulanController extends Controller
             'periode'       => $penelitian->periodeHibah,
             'dosenList'     => Dosen::where('id', '!=', $request->user()->dosen->id)->orderBy('nama_lengkap')->get(['id', 'nama_lengkap']),
             'kategoriRab'   => KategoriRab::orderBy('urutan')->get(),
+            'bidangList'    => BidangStrategis::where('is_active', true)->orderBy('kode')->get(),
+            'jenisLuaranList' => JenisLuaran::penelitian()->where('is_active', true)->orderBy('urutan')->get(),
             'anggotaDosen'  => $penelitian->anggota()->where('peran', 'anggota_dosen')->with('dosen')->get(),
             'mahasiswa'     => $penelitian->anggota()->where('peran', 'mahasiswa')->get(),
+            'mitraList'     => $penelitian->mitra,
             'rabItems'      => $penelitian->rab()->orderBy('kategori_rab_id')->get(),
+            'rencanaLuaran' => $penelitian->rencanaLuaran()->orderBy('tahun_ke')->orderBy('urutan')->get(),
         ]);
     }
 
@@ -134,7 +148,9 @@ class UsulanController extends Controller
         DB::transaction(function () use ($penelitian, $data, $request) {
             $penelitian->update($data['proposal']);
             $this->syncAnggota($penelitian, $request);
+            $this->syncMitra($penelitian, $request);
             $this->syncRab($penelitian, $request);
+            $this->syncRencanaLuaran($penelitian, $request);
         });
 
         return back()->with('success', 'Perubahan disimpan.');
@@ -179,7 +195,8 @@ class UsulanController extends Controller
         $this->authorizeOwner($request, $penelitian);
 
         $penelitian->load(['skemaHibah', 'periodeHibah', 'ketua.fakultas', 'ketua.prodi',
-            'anggota.dosen', 'rab.kategori']);
+            'anggota.dosen', 'mitra', 'rab.kategori', 'bidangStrategis',
+            'rencanaLuaran.jenisLuaran']);
 
         return view('dosen.penelitian.show', [
             'p' => $penelitian,
@@ -193,7 +210,8 @@ class UsulanController extends Controller
         $this->authorizeOwner($request, $penelitian);
 
         $penelitian->load(['skemaHibah', 'periodeHibah', 'ketua.fakultas', 'ketua.prodi',
-            'anggota.dosen.prodi', 'rab.kategori']);
+            'anggota.dosen.prodi', 'mitra', 'rab.kategori', 'bidangStrategis',
+            'rencanaLuaran.jenisLuaran']);
 
         $pdf = Pdf::loadView('dosen.penelitian.pdf', [
             'p' => $penelitian,
@@ -230,6 +248,11 @@ class UsulanController extends Controller
             'durasi_bulan'       => 'required|integer|min:1|max:' . $skema->max_durasi_bulan,
             'pernyataan_setuju'  => 'nullable|boolean',
 
+            // Bidang Strategis
+            'bidang_strategis_id'      => 'nullable|exists:bidang_strategis_m,id',
+            'rumusan_masalah_bidang'   => 'nullable|string',
+            'uraian_bidang'            => 'nullable|string',
+
             // Anggota
             'anggota_dosen_id'        => 'array',
             'anggota_dosen_id.*'      => 'exists:dosen_m,id',
@@ -239,6 +262,12 @@ class UsulanController extends Controller
             'mahasiswa_prodi'         => 'array',
             'mahasiswa_bidang_tugas'  => 'array',
 
+            // Mitra (opsional untuk Penelitian)
+            'mitra_nama'              => 'array',
+            'mitra_pimpinan'          => 'array',
+            'mitra_alamat'            => 'array',
+            'mitra_permasalahan'      => 'array',
+
             // RAB
             'rab_kategori_id'   => 'array',
             'rab_item'          => 'array',
@@ -246,6 +275,14 @@ class UsulanController extends Controller
             'rab_kuantitas'     => 'array',
             'rab_satuan'        => 'array',
             'rab_harga_satuan'  => 'array',
+
+            // Rencana Luaran (5 kolom)
+            'luaran_tahun_ke'       => 'array',
+            'luaran_kategori'       => 'array',
+            'luaran_jenis_id'       => 'array',
+            'luaran_jenis_text'     => 'array',
+            'luaran_status_target'  => 'array',
+            'luaran_keterangan'     => 'array',
         ]);
 
         $proposal = [
@@ -259,6 +296,9 @@ class UsulanController extends Controller
             'daftar_pustaka'    => $data['daftar_pustaka'] ?? null,
             'durasi_bulan'      => $data['durasi_bulan'],
             'pernyataan_setuju' => (bool) ($data['pernyataan_setuju'] ?? false),
+            'bidang_strategis_id'    => $data['bidang_strategis_id'] ?? null,
+            'rumusan_masalah_bidang' => $data['rumusan_masalah_bidang'] ?? null,
+            'uraian_bidang'          => $data['uraian_bidang'] ?? null,
         ];
 
         if ($request->hasFile('metode_diagram')) {
@@ -321,5 +361,49 @@ class UsulanController extends Controller
         }
 
         $proposal->update(['total_anggaran' => $proposal->rab()->sum('sub_total')]);
+    }
+
+    private function syncMitra(Proposal $proposal, Request $request): void
+    {
+        $proposal->mitra()->delete();
+
+        foreach ((array) $request->input('mitra_nama', []) as $i => $nama) {
+            if (! trim($nama ?? '')) continue;
+            ProposalMitra::create([
+                'proposal_id'        => $proposal->id,
+                'nama_mitra'         => $nama,
+                'pimpinan_mitra'     => $request->input("mitra_pimpinan.$i"),
+                'alamat_mitra'       => $request->input("mitra_alamat.$i"),
+                'permasalahan_mitra' => $request->input("mitra_permasalahan.$i"),
+            ]);
+        }
+    }
+
+    private function syncRencanaLuaran(Proposal $proposal, Request $request): void
+    {
+        $proposal->rencanaLuaran()->delete();
+
+        $tahunArr = (array) $request->input('luaran_tahun_ke', []);
+        foreach ($tahunArr as $i => $tahun) {
+            $jenisId = $request->input("luaran_jenis_id.$i");
+            $jenisText = $request->input("luaran_jenis_text.$i");
+            $statusTarget = $request->input("luaran_status_target.$i");
+            $keterangan = $request->input("luaran_keterangan.$i");
+
+            if (! $jenisId && ! trim((string) $jenisText) && ! trim((string) $statusTarget) && ! trim((string) $keterangan)) {
+                continue;
+            }
+
+            RencanaLuaran::create([
+                'proposal_id'        => $proposal->id,
+                'tahun_ke'           => (int) ($tahun ?: 1),
+                'kategori'           => $request->input("luaran_kategori.$i", 'wajib'),
+                'jenis_luaran_id'    => $jenisId ?: null,
+                'jenis_luaran_text'  => $jenisText ?: null,
+                'status_target'      => $statusTarget ?: null,
+                'keterangan'         => $keterangan ?: null,
+                'urutan'             => $i,
+            ]);
+        }
     }
 }

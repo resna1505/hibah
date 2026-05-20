@@ -82,6 +82,56 @@
     </tbody>
 </table>
 
+{{-- Section 2b: Mitra Penelitian (jika ada) --}}
+@if ($p->mitra->isNotEmpty())
+    <h4>2b. Mitra Penelitian</h4>
+    <table class="bordered">
+        <thead>
+            <tr>
+                <th width="5%">No</th>
+                <th width="25%">Nama Mitra</th>
+                <th width="20%">Pimpinan</th>
+                <th width="25%">Alamat</th>
+                <th>Permasalahan / Kontribusi</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach ($p->mitra as $m)
+                <tr>
+                    <td>{{ $loop->iteration }}</td>
+                    <td>{{ $m->nama_mitra }}</td>
+                    <td>{{ $m->pimpinan_mitra ?? '-' }}</td>
+                    <td>{{ $m->alamat_mitra ?? '-' }}</td>
+                    <td>{{ $m->permasalahan_mitra ?? '-' }}</td>
+                </tr>
+            @endforeach
+        </tbody>
+    </table>
+@endif
+
+{{-- Section 2c: Bidang Strategis --}}
+@if ($p->bidangStrategis)
+    <h4>2c. Bidang Strategis</h4>
+    <table class="bordered">
+        <tr>
+            <td width="30%"><small>Bidang Strategis</small></td>
+            <td><strong>{{ $p->bidangStrategis->kode }}. {{ $p->bidangStrategis->nama }}</strong></td>
+        </tr>
+        @if ($p->rumusan_masalah_bidang)
+            <tr>
+                <td><small>Rumusan Masalah Bidang</small></td>
+                <td style="white-space: pre-wrap;">{{ $p->rumusan_masalah_bidang }}</td>
+            </tr>
+        @endif
+        @if ($p->uraian_bidang)
+            <tr>
+                <td><small>Uraian Bidang</small></td>
+                <td style="white-space: pre-wrap;">{{ $p->uraian_bidang }}</td>
+            </tr>
+        @endif
+    </table>
+@endif
+
 {{-- Section 3: Ringkasan --}}
 @if ($p->ringkasan)
     <h4>3. Ringkasan</h4>
@@ -109,14 +159,30 @@
     @endif
 @endif
 
-{{-- Section 6: Hasil yang Diharapkan --}}
-@if ($p->hasil_diharapkan_json)
-    <h4>6. Hasil yang Diharapkan</h4>
-    <table class="bordered">
-        <thead><tr><th width="5%">No</th><th>Jenis Luaran</th><th width="30%">Target</th></tr></thead>
+{{-- Section 6: Rencana Luaran --}}
+@if ($p->rencanaLuaran->isNotEmpty())
+    <h4>6. Rencana Luaran</h4>
+    <table class="bordered small">
+        <thead>
+            <tr>
+                <th width="5%">No</th>
+                <th width="10%">Tahun ke-</th>
+                <th width="12%">Kategori</th>
+                <th>Jenis Luaran</th>
+                <th width="18%">Status Target Capaian</th>
+                <th width="20%">Keterangan</th>
+            </tr>
+        </thead>
         <tbody>
-            @foreach ($p->hasil_diharapkan_json as $i => $h)
-                <tr><td>{{ $i + 1 }}</td><td>{{ $h['jenis'] ?? '' }}</td><td>{{ $h['target'] ?? '' }}</td></tr>
+            @foreach ($p->rencanaLuaran as $rl)
+                <tr>
+                    <td>{{ $loop->iteration }}</td>
+                    <td>{{ $rl->tahun_ke }}</td>
+                    <td>{{ ucfirst($rl->kategori) }}</td>
+                    <td>{{ $rl->jenisLuaran?->nama ?? $rl->jenis_luaran_text ?? '-' }}</td>
+                    <td>{{ $rl->status_target ?? '-' }}</td>
+                    <td>{{ $rl->keterangan ?? '-' }}</td>
+                </tr>
             @endforeach
         </tbody>
     </table>
