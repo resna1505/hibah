@@ -51,13 +51,13 @@
         <a href="{{ route('operator.penilaian.index') }}" class="{{ $linkClass('penilaian') }}">
             <i class="ri-checkbox-circle-line"></i><span>Penilaian</span>
         </a>
-        <a href="#" class="{{ $linkClass('jadwal') }}">
+        <a href="{{ route('operator.jadwal.index') }}" class="{{ $linkClass('jadwal') }}">
             <i class="ri-calendar-line"></i><span>Jadwal</span>
         </a>
         <a href="#" class="{{ $linkClass('laporan') }}">
             <i class="ri-bar-chart-line"></i><span>Laporan</span>
         </a>
-        <a href="#" class="{{ $linkClass('profil') }}">
+        <a href="{{ route('operator.profil.edit') }}" class="{{ $linkClass('profil') }}">
             <i class="ri-user-line"></i><span>Profil Operator</span>
         </a>
     </nav>

@@ -11,7 +11,9 @@ use App\Http\Controllers\Dosen\RiwayatPenelitianController as DosenRiwayatPeneli
 use App\Http\Controllers\Dosen\RiwayatPkmController as DosenRiwayatPkm;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\Operator\DashboardController as OperatorDashboard;
+use App\Http\Controllers\Operator\JadwalController as OperatorJadwal;
 use App\Http\Controllers\Operator\PenilaianController as OperatorPenilaian;
+use App\Http\Controllers\Operator\ProfilController as OperatorProfil;
 use App\Http\Controllers\Operator\ProposalController as OperatorProposal;
 use App\Http\Controllers\Operator\ReviewerController as OperatorReviewer;
 use App\Http\Controllers\Reviewer\DashboardController as ReviewerDashboard;
@@ -91,6 +93,22 @@ Route::middleware('auth')->group(function () {
             Route::get('/{proposal}',           [OperatorPenilaian::class, 'show'])->name('show');
             Route::post('/{proposal}/finalize', [OperatorPenilaian::class, 'finalize'])->name('finalize');
         });
+
+        // Jadwal Hibah
+        Route::prefix('jadwal')->name('jadwal.')->group(function () {
+            Route::get('/',                  [OperatorJadwal::class, 'index'])->name('index');
+            Route::get('/create',            [OperatorJadwal::class, 'create'])->name('create');
+            Route::post('/',                 [OperatorJadwal::class, 'store'])->name('store');
+            Route::get('/{jadwal}/edit',     [OperatorJadwal::class, 'edit'])->name('edit');
+            Route::put('/{jadwal}',          [OperatorJadwal::class, 'update'])->name('update');
+            Route::patch('/{jadwal}/activate',[OperatorJadwal::class, 'activate'])->name('activate');
+            Route::delete('/{jadwal}',       [OperatorJadwal::class, 'destroy'])->name('destroy');
+        });
+
+        // Profil Operator
+        Route::get('/profil',          [OperatorProfil::class, 'edit'])->name('profil.edit');
+        Route::put('/profil',          [OperatorProfil::class, 'update'])->name('profil.update');
+        Route::put('/profil/password', [OperatorProfil::class, 'updatePassword'])->name('profil.password');
     });
 
     /*
