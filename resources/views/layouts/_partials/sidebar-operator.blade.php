@@ -69,6 +69,9 @@
             <a href="{{ route('operator.rekap.proposal') }}" class="{{ $linkClass('rekap.proposal') }} ms-3">Rekap Proposal</a>
             <a href="{{ route('operator.rekap.hasil') }}" class="{{ $linkClass('rekap.hasil') }} ms-3">Rekap Hasil Review</a>
         </div>
+        <a href="{{ route('operator.pengaturan.index') }}" class="{{ $linkClass('pengaturan') }}">
+            <i class="ri-settings-3-line"></i><span>Pengaturan</span>
+        </a>
         <a href="{{ route('operator.profil.edit') }}" class="{{ $linkClass('profil') }}">
             <i class="ri-user-line"></i><span>Profil Operator</span>
         </a>

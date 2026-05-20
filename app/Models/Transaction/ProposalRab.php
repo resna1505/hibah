@@ -3,6 +3,7 @@
 namespace App\Models\Transaction;
 
 use App\Models\Master\KategoriRab;
+use App\Models\Master\KomponenRab;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -13,6 +14,7 @@ class ProposalRab extends Model
     protected $fillable = [
         'proposal_id',
         'kategori_rab_id',
+        'komponen_rab_id',
         'item',
         'justifikasi',
         'kuantitas',
@@ -35,5 +37,10 @@ class ProposalRab extends Model
     public function kategori(): BelongsTo
     {
         return $this->belongsTo(KategoriRab::class, 'kategori_rab_id');
+    }
+
+    public function komponen(): BelongsTo
+    {
+        return $this->belongsTo(KomponenRab::class, 'komponen_rab_id');
     }
 }

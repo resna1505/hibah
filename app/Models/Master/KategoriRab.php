@@ -3,6 +3,7 @@
 namespace App\Models\Master;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class KategoriRab extends Model
 {
@@ -13,4 +14,9 @@ class KategoriRab extends Model
     protected $casts = [
         'is_active' => 'boolean',
     ];
+
+    public function komponen(): HasMany
+    {
+        return $this->hasMany(KomponenRab::class, 'kategori_rab_id')->orderBy('urutan');
+    }
 }

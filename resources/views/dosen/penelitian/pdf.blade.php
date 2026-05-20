@@ -203,33 +203,40 @@
 {{-- Section 9: RAB --}}
 @if ($p->rab->isNotEmpty())
     <h4>9. Rencana Anggaran Biaya (RAB)</h4>
-    @php $rabByKategori = $p->rab->groupBy('kategori.nama'); @endphp
+    @php $rabByKategori = $p->rab->groupBy(fn($r) => $r->kategori?->nama ?? '-'); @endphp
     @foreach ($rabByKategori as $namaKategori => $items)
         <p style="margin-top:8px;"><strong>{{ $loop->iteration }}. {{ $namaKategori }}</strong></p>
         <table class="bordered small">
             <thead>
                 <tr>
+                    <th width="20%">Komponen</th>
                     <th>Item</th>
-                    <th width="30%">Justifikasi</th>
-                    <th width="10%" class="text-end">Kuantitas</th>
-                    <th width="8%">Satuan</th>
-                    <th width="15%" class="text-end">Harga Satuan</th>
-                    <th width="15%" class="text-end">Sub Total</th>
+                    <th width="22%">Justifikasi</th>
+                    <th width="8%" class="text-end">Qty</th>
+                    <th width="7%">Satuan</th>
+                    <th width="13%" class="text-end">Harga Satuan</th>
+                    <th width="13%" class="text-end">Sub Total</th>
                 </tr>
             </thead>
             <tbody>
-                @foreach ($items as $r)
-                    <tr>
-                        <td>{{ $r->item }}</td>
-                        <td>{{ $r->justifikasi }}</td>
-                        <td class="text-end">{{ rtrim(rtrim(number_format($r->kuantitas, 2, ',', '.'), '0'), ',') }}</td>
-                        <td>{{ $r->satuan }}</td>
-                        <td class="text-end">Rp {{ number_format($r->harga_satuan, 0, ',', '.') }}</td>
-                        <td class="text-end">Rp {{ number_format($r->sub_total, 0, ',', '.') }}</td>
-                    </tr>
+                @php $byKomp = $items->groupBy(fn($r) => $r->komponen?->nama ?? '(tanpa komponen)'); @endphp
+                @foreach ($byKomp as $namaKomp => $rows)
+                    @foreach ($rows as $idx => $r)
+                        <tr>
+                            @if ($idx === 0)
+                                <td rowspan="{{ $rows->count() }}" style="vertical-align: top;"><em>{{ $namaKomp }}</em></td>
+                            @endif
+                            <td>{{ $r->item }}</td>
+                            <td>{{ $r->justifikasi }}</td>
+                            <td class="text-end">{{ rtrim(rtrim(number_format($r->kuantitas, 2, ',', '.'), '0'), ',') }}</td>
+                            <td>{{ $r->satuan }}</td>
+                            <td class="text-end">Rp {{ number_format($r->harga_satuan, 0, ',', '.') }}</td>
+                            <td class="text-end">Rp {{ number_format($r->sub_total, 0, ',', '.') }}</td>
+                        </tr>
+                    @endforeach
                 @endforeach
                 <tr>
-                    <td colspan="5" class="text-end"><strong>SUB TOTAL</strong></td>
+                    <td colspan="6" class="text-end"><strong>SUB TOTAL</strong></td>
                     <td class="text-end"><strong>Rp {{ number_format($items->sum('sub_total'), 0, ',', '.') }}</strong></td>
                 </tr>
             </tbody>
@@ -250,6 +257,56 @@
     <p><strong>{{ $p->ketua->nama_lengkap }}</strong><br>
     NIDN. {{ $p->ketua->nidn ?? '-' }}</p>
 </div>
+
+{{-- Halaman Persetujuan LPPM --}}
+@php
+    use App\Models\Master\Pengaturan;
+    $lppmNama    = Pengaturan::get('lppm_ketua_nama', 'Ketua LPPM');
+    $lppmNidn    = Pengaturan::get('lppm_ketua_nidn', '-');
+    $lppmJabatan = Pengaturan::get('lppm_ketua_jabatan', 'Ketua LPPM');
+    $institusi   = Pengaturan::get('institusi_nama', 'Universitas Batam');
+    $kota        = Pengaturan::get('institusi_kota', 'Batam');
+    $ttdPath     = Pengaturan::get('lppm_ttd_path');
+    $ttdFile     = $ttdPath ? storage_path('app/public/' . $ttdPath) : null;
+@endphp
+
+<div style="page-break-before: always;"></div>
+<div class="header">
+    <h2>LEMBAR PENGESAHAN PROPOSAL PENELITIAN</h2>
+    <h3>{{ strtoupper($institusi) }}</h3>
+</div>
+
+<table class="bordered">
+    <tr><td width="35%"><small>Judul Penelitian</small></td><td><strong>{{ $p->judul }}</strong></td></tr>
+    <tr><td><small>Skema Hibah</small></td><td>{{ $p->skemaHibah->nama }}</td></tr>
+    <tr><td><small>Bidang Strategis</small></td><td>{{ $p->bidangStrategis?->nama ?? '-' }}</td></tr>
+    <tr><td><small>Ketua Pengusul</small></td><td>{{ $p->ketua->nama_lengkap }} (NIDN. {{ $p->ketua->nidn ?? '-' }})</td></tr>
+    <tr><td><small>Program Studi / Fakultas</small></td><td>{{ $p->ketua->prodi?->nama ?? '-' }} / {{ $p->ketua->fakultas?->nama ?? '-' }}</td></tr>
+    <tr><td><small>Jumlah Anggota</small></td><td>{{ $p->anggota->count() }} orang</td></tr>
+    <tr><td><small>Lama Kegiatan</small></td><td>{{ $p->durasi_bulan }} bulan</td></tr>
+    <tr><td><small>Total Usulan Dana</small></td><td><strong>Rp {{ number_format($totalRab, 0, ',', '.') }}</strong></td></tr>
+</table>
+
+<table style="margin-top:30px;">
+    <tr>
+        <td width="50%" style="vertical-align: top; text-align: center;">
+            <p>Mengetahui,<br>{{ $lppmJabatan }}</p>
+            @if ($ttdFile && file_exists($ttdFile))
+                <img src="{{ $ttdFile }}" style="height:70px; margin: 4px 0;">
+            @else
+                <br><br><br><br>
+            @endif
+            <p><strong><u>{{ $lppmNama }}</u></strong><br>
+            NIDN/NIP. {{ $lppmNidn }}</p>
+        </td>
+        <td width="50%" style="vertical-align: top; text-align: center;">
+            <p>{{ $kota }}, {{ ($p->tgl_submit ?? now())->translatedFormat('d F Y') }}<br>Ketua Pengusul,</p>
+            <br><br><br><br>
+            <p><strong><u>{{ $p->ketua->nama_lengkap }}</u></strong><br>
+            NIDN. {{ $p->ketua->nidn ?? '-' }}</p>
+        </td>
+    </tr>
+</table>
 
 </body>
 </html>

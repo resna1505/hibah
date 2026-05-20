@@ -197,12 +197,13 @@
                 <div class="card-body p-0">
                     <table class="table mb-0 small">
                         <thead class="table-light">
-                            <tr><th>Kategori</th><th>Item</th><th>Justifikasi</th><th class="text-end">Kuantitas</th><th class="text-end">Harga Satuan</th><th class="text-end">Sub Total</th></tr>
+                            <tr><th>Kelompok</th><th>Komponen</th><th>Item</th><th>Justifikasi</th><th class="text-end">Kuantitas</th><th class="text-end">Harga Satuan</th><th class="text-end">Sub Total</th></tr>
                         </thead>
                         <tbody>
                             @forelse ($p->rab as $r)
                                 <tr>
                                     <td>{{ $r->kategori?->nama }}</td>
+                                    <td class="text-muted"><em>{{ $r->komponen?->nama ?? '-' }}</em></td>
                                     <td>{{ $r->item }}</td>
                                     <td class="text-muted">{{ $r->justifikasi }}</td>
                                     <td class="text-end">{{ rtrim(rtrim(number_format($r->kuantitas, 2, ',', '.'), '0'), ',') }} {{ $r->satuan }}</td>
@@ -210,7 +211,7 @@
                                     <td class="text-end">Rp {{ number_format($r->sub_total, 0, ',', '.') }}</td>
                                 </tr>
                             @empty
-                                <tr><td colspan="6" class="text-center text-muted py-3">RAB belum diisi.</td></tr>
+                                <tr><td colspan="7" class="text-center text-muted py-3">RAB belum diisi.</td></tr>
                             @endforelse
                         </tbody>
                     </table>

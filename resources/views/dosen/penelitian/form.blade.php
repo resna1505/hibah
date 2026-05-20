@@ -262,23 +262,34 @@
                     <table class="table table-bordered align-middle">
                         <thead class="table-light">
                             <tr>
-                                <th width="180">Kategori</th>
+                                <th width="150">Kelompok</th>
+                                <th width="180">Komponen</th>
                                 <th>Item / Material</th>
                                 <th>Justifikasi</th>
-                                <th width="80">Kuantitas</th>
-                                <th width="80">Satuan</th>
-                                <th width="140">Harga Satuan</th>
-                                <th width="140">Sub Total</th>
-                                <th width="50"></th>
+                                <th width="75">Qty</th>
+                                <th width="75">Satuan</th>
+                                <th width="130">Harga Satuan</th>
+                                <th width="130">Sub Total</th>
+                                <th width="40"></th>
                             </tr>
                         </thead>
                         <tbody id="rabBody">
                             @foreach ($rabItems as $i => $r)
                                 <tr class="rab-row">
                                     <td>
-                                        <select name="rab_kategori_id[]" class="form-select form-select-sm">
+                                        <select name="rab_kategori_id[]" class="form-select form-select-sm rab-kategori">
                                             @foreach ($kategoriRab as $k)
                                                 <option value="{{ $k->id }}" @selected($r->kategori_rab_id == $k->id)>{{ $k->nama }}</option>
+                                            @endforeach
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <select name="rab_komponen_id[]" class="form-select form-select-sm rab-komponen">
+                                            <option value="">-- Pilih --</option>
+                                            @foreach ($kategoriRab as $k)
+                                                @foreach ($k->komponen as $kp)
+                                                    <option value="{{ $kp->id }}" data-kategori="{{ $k->id }}" @selected($r->komponen_rab_id == $kp->id)>{{ $kp->nama }}</option>
+                                                @endforeach
                                             @endforeach
                                         </select>
                                     </td>
@@ -294,7 +305,7 @@
                         </tbody>
                         <tfoot>
                             <tr class="fw-bold">
-                                <td colspan="6" class="text-end">TOTAL:</td>
+                                <td colspan="7" class="text-end">TOTAL:</td>
                                 <td id="rabTotal" class="text-end">Rp 0</td>
                                 <td></td>
                             </tr>
@@ -398,9 +409,19 @@
     <template id="rabTpl">
         <tr class="rab-row">
             <td>
-                <select name="rab_kategori_id[]" class="form-select form-select-sm">
+                <select name="rab_kategori_id[]" class="form-select form-select-sm rab-kategori">
                     @foreach ($kategoriRab as $k)
                         <option value="{{ $k->id }}">{{ $k->nama }}</option>
+                    @endforeach
+                </select>
+            </td>
+            <td>
+                <select name="rab_komponen_id[]" class="form-select form-select-sm rab-komponen">
+                    <option value="">-- Pilih --</option>
+                    @foreach ($kategoriRab as $k)
+                        @foreach ($k->komponen as $kp)
+                            <option value="{{ $kp->id }}" data-kategori="{{ $k->id }}">{{ $kp->nama }}</option>
+                        @endforeach
                     @endforeach
                 </select>
             </td>
@@ -456,12 +477,34 @@ function updateRabTotal() {
     });
     document.getElementById('rabTotal').textContent = formatRupiah(total);
 }
+function filterKomponen(kategoriSelect) {
+    const row = kategoriSelect.closest('tr');
+    const kategoriId = kategoriSelect.value;
+    const komponenSelect = row.querySelector('.rab-komponen');
+    const currentVal = komponenSelect.value;
+    let firstMatch = '';
+    komponenSelect.querySelectorAll('option').forEach(opt => {
+        if (!opt.value) { opt.hidden = false; return; }
+        const match = opt.dataset.kategori === kategoriId;
+        opt.hidden = !match;
+        if (match && !firstMatch) firstMatch = opt.value;
+    });
+    // jika current option tidak match, reset ke first match
+    const cur = komponenSelect.querySelector(`option[value="${currentVal}"]`);
+    if (!currentVal || (cur && cur.hidden)) komponenSelect.value = '';
+}
 function attachRabListeners() {
     document.querySelectorAll('.rab-qty, .rab-harga').forEach(el => {
         el.removeEventListener('input', updateRabTotal);
         el.addEventListener('input', updateRabTotal);
     });
+    document.querySelectorAll('.rab-kategori').forEach(el => {
+        el.removeEventListener('change', _rabKategoriHandler);
+        el.addEventListener('change', _rabKategoriHandler);
+        filterKomponen(el);
+    });
 }
+function _rabKategoriHandler(e) { filterKomponen(e.target); }
 
 // Word counter
 function attachWordCounters() {

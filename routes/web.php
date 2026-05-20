@@ -12,6 +12,7 @@ use App\Http\Controllers\Dosen\RiwayatPkmController as DosenRiwayatPkm;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\Operator\DashboardController as OperatorDashboard;
 use App\Http\Controllers\Operator\JadwalController as OperatorJadwal;
+use App\Http\Controllers\Operator\PengaturanController as OperatorPengaturan;
 use App\Http\Controllers\Operator\PenilaianController as OperatorPenilaian;
 use App\Http\Controllers\Operator\ProfilController as OperatorProfil;
 use App\Http\Controllers\Operator\ProposalController as OperatorProposal;
@@ -119,6 +120,10 @@ Route::middleware('auth')->group(function () {
             Route::patch('/{jadwal}/activate',[OperatorJadwal::class, 'activate'])->name('activate');
             Route::delete('/{jadwal}',       [OperatorJadwal::class, 'destroy'])->name('destroy');
         });
+
+        // Pengaturan (LPPM + institusi)
+        Route::get('/pengaturan', [OperatorPengaturan::class, 'index'])->name('pengaturan.index');
+        Route::post('/pengaturan', [OperatorPengaturan::class, 'update'])->name('pengaturan.update');
 
         // Profil Operator
         Route::get('/profil',          [OperatorProfil::class, 'edit'])->name('profil.edit');

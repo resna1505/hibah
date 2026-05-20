@@ -7,6 +7,7 @@ use App\Models\Master\BidangStrategis;
 use App\Models\Master\Dosen;
 use App\Models\Master\JenisLuaran;
 use App\Models\Master\KategoriRab;
+use App\Models\Master\KomponenRab;
 use App\Models\Master\SkemaHibah;
 use App\Models\Transaction\PeriodeHibah;
 use App\Models\Transaction\Proposal;
@@ -70,7 +71,7 @@ class UsulanController extends Controller
             'skema'         => $skemaPenelitian,
             'periode'       => $periode,
             'dosenList'     => Dosen::where('id', '!=', $dosen->id)->orderBy('nama_lengkap')->get(['id', 'nama_lengkap']),
-            'kategoriRab'   => KategoriRab::orderBy('urutan')->get(),
+            'kategoriRab'   => KategoriRab::with('komponen')->orderBy('urutan')->get(),
             'bidangList'    => BidangStrategis::where('is_active', true)->orderBy('kode')->get(),
             'jenisLuaranList' => JenisLuaran::penelitian()->where('is_active', true)->orderBy('urutan')->get(),
             'anggotaDosen'  => collect(),
@@ -125,7 +126,7 @@ class UsulanController extends Controller
             'skema'         => $penelitian->skemaHibah,
             'periode'       => $penelitian->periodeHibah,
             'dosenList'     => Dosen::where('id', '!=', $request->user()->dosen->id)->orderBy('nama_lengkap')->get(['id', 'nama_lengkap']),
-            'kategoriRab'   => KategoriRab::orderBy('urutan')->get(),
+            'kategoriRab'   => KategoriRab::with('komponen')->orderBy('urutan')->get(),
             'bidangList'    => BidangStrategis::where('is_active', true)->orderBy('kode')->get(),
             'jenisLuaranList' => JenisLuaran::penelitian()->where('is_active', true)->orderBy('urutan')->get(),
             'anggotaDosen'  => $penelitian->anggota()->where('peran', 'anggota_dosen')->with('dosen')->get(),
@@ -195,7 +196,7 @@ class UsulanController extends Controller
         $this->authorizeOwner($request, $penelitian);
 
         $penelitian->load(['skemaHibah', 'periodeHibah', 'ketua.fakultas', 'ketua.prodi',
-            'anggota.dosen', 'mitra', 'rab.kategori', 'bidangStrategis',
+            'anggota.dosen', 'mitra', 'rab.kategori', 'rab.komponen', 'bidangStrategis',
             'rencanaLuaran.jenisLuaran']);
 
         return view('dosen.penelitian.show', [
@@ -210,7 +211,7 @@ class UsulanController extends Controller
         $this->authorizeOwner($request, $penelitian);
 
         $penelitian->load(['skemaHibah', 'periodeHibah', 'ketua.fakultas', 'ketua.prodi',
-            'anggota.dosen.prodi', 'mitra', 'rab.kategori', 'bidangStrategis',
+            'anggota.dosen.prodi', 'mitra', 'rab.kategori', 'rab.komponen', 'bidangStrategis',
             'rencanaLuaran.jenisLuaran']);
 
         $pdf = Pdf::loadView('dosen.penelitian.pdf', [
@@ -270,6 +271,7 @@ class UsulanController extends Controller
 
             // RAB
             'rab_kategori_id'   => 'array',
+            'rab_komponen_id'   => 'array',
             'rab_item'          => 'array',
             'rab_justifikasi'   => 'array',
             'rab_kuantitas'     => 'array',
@@ -351,6 +353,7 @@ class UsulanController extends Controller
             ProposalRab::create([
                 'proposal_id'     => $proposal->id,
                 'kategori_rab_id' => (int) $request->input("rab_kategori_id.$i"),
+                'komponen_rab_id' => $request->input("rab_komponen_id.$i") ?: null,
                 'item'            => $item,
                 'justifikasi'     => $request->input("rab_justifikasi.$i"),
                 'kuantitas'       => $qty,
