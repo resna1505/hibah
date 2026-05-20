@@ -16,6 +16,7 @@ use App\Http\Controllers\Operator\PenilaianController as OperatorPenilaian;
 use App\Http\Controllers\Operator\ProfilController as OperatorProfil;
 use App\Http\Controllers\Operator\ProposalController as OperatorProposal;
 use App\Http\Controllers\Operator\ReviewerController as OperatorReviewer;
+use App\Http\Controllers\Operator\VerifikasiLaporanController as OperatorVerifLaporan;
 use App\Http\Controllers\Reviewer\DashboardController as ReviewerDashboard;
 use App\Http\Controllers\Reviewer\HasilReviewController as ReviewerHasil;
 use App\Http\Controllers\Reviewer\JadwalReviewController as ReviewerJadwal;
@@ -109,6 +110,15 @@ Route::middleware('auth')->group(function () {
         Route::get('/profil',          [OperatorProfil::class, 'edit'])->name('profil.edit');
         Route::put('/profil',          [OperatorProfil::class, 'update'])->name('profil.update');
         Route::put('/profil/password', [OperatorProfil::class, 'updatePassword'])->name('profil.password');
+
+        // Verifikasi Laporan dosen
+        Route::prefix('laporan')->name('laporan.')->group(function () {
+            Route::get('/',                     [OperatorVerifLaporan::class, 'index'])->name('index');
+            Route::get('/{proposal}',           [OperatorVerifLaporan::class, 'show'])->name('show');
+            Route::post('/kemajuan/{laporan}',  [OperatorVerifLaporan::class, 'verifikasiKemajuan'])->name('verifikasi-kemajuan');
+            Route::post('/akhir/{laporanAkhir}',[OperatorVerifLaporan::class, 'verifikasiAkhir'])->name('verifikasi-akhir');
+            Route::post('/luaran/{luaran}',     [OperatorVerifLaporan::class, 'verifikasiLuaran'])->name('verifikasi-luaran');
+        });
     });
 
     /*

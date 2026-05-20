@@ -54,8 +54,8 @@
         <a href="{{ route('operator.jadwal.index') }}" class="{{ $linkClass('jadwal') }}">
             <i class="ri-calendar-line"></i><span>Jadwal</span>
         </a>
-        <a href="#" class="{{ $linkClass('laporan') }}">
-            <i class="ri-bar-chart-line"></i><span>Laporan</span>
+        <a href="{{ route('operator.laporan.index') }}" class="{{ $linkClass('laporan') }}">
+            <i class="ri-file-list-3-line"></i><span>Verifikasi Laporan</span>
         </a>
         <a href="{{ route('operator.profil.edit') }}" class="{{ $linkClass('profil') }}">
             <i class="ri-user-line"></i><span>Profil Operator</span>
