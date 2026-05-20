@@ -316,6 +316,65 @@
             </div>
         </div>
 
+        {{-- Section 8b: Dokumen Pendukung (lampiran) --}}
+        @if ($isEdit)
+            <div class="card border-0 shadow-sm mb-3">
+                <div class="card-header bg-white">
+                    <h6 class="mb-0"><i class="ri-attachment-2 text-primary me-2"></i>8b. Dokumen Pendukung (Lampiran)</h6>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted small mb-3">Unggah berkas pendukung opsional: KTP Ketua, SK Mengajar, Pakta Integritas, MoU, dll. PDF / JPG / PNG &middot; maks 5 MB per file.</p>
+                    <table class="table table-sm align-middle mb-3">
+                        <thead class="table-light">
+                            <tr><th width="200">Jenis</th><th>Nama File</th><th width="120">Ukuran</th><th width="200">Tanggal</th><th width="120"></th></tr>
+                        </thead>
+                        <tbody>
+                            @forelse ($dokumenList as $d)
+                                <tr>
+                                    <td><span class="badge bg-secondary-subtle text-dark">{{ $d->jenis }}</span></td>
+                                    <td><a href="{{ asset('storage/' . $d->path) }}" target="_blank" class="text-decoration-none"><i class="ri-file-download-line me-1"></i>{{ $d->nama_file }}</a></td>
+                                    <td class="small text-muted">{{ number_format($d->ukuran / 1024, 1) }} KB</td>
+                                    <td class="small text-muted">{{ $d->created_at->translatedFormat('d M Y H:i') }}</td>
+                                    <td>
+                                        <form method="POST" action="{{ route('dosen.penelitian.dokumen.delete', [$proposal, $d]) }}" class="d-inline" onsubmit="return confirm('Hapus dokumen ini?')">
+                                            @csrf @method('DELETE')
+                                            <button type="submit" class="btn btn-sm btn-outline-danger"><i class="ri-delete-bin-line"></i></button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr><td colspan="5" class="text-center text-muted py-3">Belum ada dokumen pendukung.</td></tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+
+                    <form method="POST" action="{{ route('dosen.penelitian.dokumen.upload', $proposal) }}" enctype="multipart/form-data" class="row g-2 align-items-end">
+                        @csrf
+                        <div class="col-md-4">
+                            <label class="form-label small">Jenis Dokumen</label>
+                            <select name="jenis" class="form-select form-select-sm" required>
+                                <option value="">-- Pilih --</option>
+                                <option value="KTP Ketua">KTP Ketua</option>
+                                <option value="SK Mengajar">SK Mengajar</option>
+                                <option value="Pakta Integritas">Pakta Integritas</option>
+                                <option value="Surat Tugas LPPM">Surat Tugas LPPM</option>
+                                <option value="MoU">MoU / Kerjasama</option>
+                                <option value="Roadmap Penelitian">Roadmap Penelitian</option>
+                                <option value="Lainnya">Lainnya</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small">File <span class="text-muted">(PDF/JPG/PNG, maks 5MB)</span></label>
+                            <input type="file" name="file" class="form-control form-control-sm" accept=".pdf,.jpg,.jpeg,.png" required>
+                        </div>
+                        <div class="col-md-2">
+                            <button type="submit" class="btn btn-sm btn-primary w-100"><i class="ri-upload-line"></i> Unggah</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        @endif
+
         {{-- Section 9: Pernyataan + Submit --}}
         <div class="card border-0 shadow-sm mb-3">
             <div class="card-body">

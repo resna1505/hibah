@@ -12,6 +12,7 @@ use App\Models\Master\SkemaHibah;
 use App\Models\Transaction\PeriodeHibah;
 use App\Models\Transaction\Proposal;
 use App\Models\Transaction\ProposalAnggota;
+use App\Models\Transaction\ProposalDokumen;
 use App\Models\Transaction\ProposalMitra;
 use App\Models\Transaction\ProposalRab;
 use App\Models\Transaction\RencanaLuaran;
@@ -75,6 +76,7 @@ class UsulanController extends Controller
             'mitraList'     => collect(),
             'rabItems'      => collect(),
             'rencanaLuaran' => collect(),
+            'dokumenList'   => collect(),
         ]);
     }
 
@@ -130,6 +132,7 @@ class UsulanController extends Controller
             'mitraList'     => $pkm->mitra,
             'rabItems'      => $pkm->rab()->orderBy('kategori_rab_id')->get(),
             'rencanaLuaran' => $pkm->rencanaLuaran()->orderBy('tahun_ke')->orderBy('urutan')->get(),
+            'dokumenList'   => $pkm->dokumen()->latest()->get(),
         ]);
     }
 
@@ -169,6 +172,9 @@ class UsulanController extends Controller
             'total_anggaran' => $this->service->totalRab($pkm),
         ]);
 
+        $pkm->refresh()->load('skemaHibah', 'periodeHibah');
+        $this->service->generateNoRegistrasi($pkm);
+
         $this->notif->onProposalSubmitted($pkm->fresh()->load('skemaHibah', 'ketua'));
 
         return redirect()->route('dosen.pkm.show', $pkm)
@@ -189,12 +195,50 @@ class UsulanController extends Controller
         $this->authorizeOwner($request, $pkm);
         $pkm->load(['skemaHibah', 'periodeHibah', 'ketua.fakultas', 'ketua.prodi',
             'anggota.dosen', 'mitra', 'rab.kategori', 'rab.komponen', 'bidangStrategis',
-            'rencanaLuaran.jenisLuaran']);
+            'rencanaLuaran.jenisLuaran', 'dokumen']);
 
         return view('dosen.pkm.show', [
             'p' => $pkm,
             'totalRab' => $this->service->totalRab($pkm),
         ]);
+    }
+
+    public function uploadDokumen(Request $request, Proposal $pkm)
+    {
+        $this->authorizeOwner($request, $pkm);
+        abort_unless(in_array($pkm->status, ['draft', 'dikembalikan', 'revisi_minor', 'revisi_mayor']), 403);
+
+        $data = $request->validate([
+            'jenis' => 'required|string|max:100',
+            'file'  => 'required|file|mimes:pdf,jpg,jpeg,png|max:5120',
+        ]);
+
+        $file = $request->file('file');
+        $path = $file->store('proposal/' . $pkm->id . '/dokumen', 'public');
+
+        ProposalDokumen::create([
+            'proposal_id' => $pkm->id,
+            'jenis'       => $data['jenis'],
+            'nama_file'   => $file->getClientOriginalName(),
+            'path'        => $path,
+            'ukuran'      => $file->getSize(),
+        ]);
+
+        return back()->with('success', 'Dokumen pendukung berhasil diunggah.');
+    }
+
+    public function deleteDokumen(Request $request, Proposal $pkm, ProposalDokumen $dokumen)
+    {
+        $this->authorizeOwner($request, $pkm);
+        abort_unless($dokumen->proposal_id === $pkm->id, 404);
+        abort_unless(in_array($pkm->status, ['draft', 'dikembalikan', 'revisi_minor', 'revisi_mayor']), 403);
+
+        if ($dokumen->path) {
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($dokumen->path);
+        }
+        $dokumen->delete();
+
+        return back()->with('success', 'Dokumen dihapus.');
     }
 
     public function pdf(Request $request, Proposal $pkm)
@@ -212,14 +256,28 @@ class UsulanController extends Controller
         return $this->renderPdf($request, $pkm, 'pdf-substansi', 'Substansi_PKM');
     }
 
-    private function renderPdf(Request $request, Proposal $pkm, string $view, string $prefix)
+    public function pdfBiodata(Request $request, Proposal $pkm)
+    {
+        return $this->renderPdf($request, $pkm, '_shared.pdf-biodata', 'Biodata_PKM', shared: true);
+    }
+
+    public function pdfPernyataan(Request $request, Proposal $pkm)
+    {
+        return $this->renderPdf($request, $pkm, '_shared.pdf-pernyataan', 'Pernyataan_PKM', shared: true);
+    }
+
+    private function renderPdf(Request $request, Proposal $pkm, string $view, string $prefix, bool $shared = false)
     {
         $this->authorizeOwner($request, $pkm);
-        $pkm->load(['skemaHibah', 'periodeHibah', 'ketua.fakultas', 'ketua.prodi',
-            'anggota.dosen.prodi', 'mitra', 'rab.kategori', 'rab.komponen', 'bidangStrategis',
-            'rencanaLuaran.jenisLuaran']);
+        $pkm->load(['skemaHibah', 'periodeHibah',
+            'ketua.fakultas', 'ketua.prodi', 'ketua.user', 'ketua.keahlian',
+            'anggota.dosen.prodi', 'anggota.dosen.fakultas', 'anggota.dosen.user', 'anggota.dosen.keahlian',
+            'mitra', 'rab.kategori', 'rab.komponen', 'bidangStrategis',
+            'rencanaLuaran.jenisLuaran', 'dokumen']);
 
-        $pdf = Pdf::loadView('dosen.pkm.' . $view, [
+        $viewName = $shared ? 'dosen.' . $view : 'dosen.pkm.' . $view;
+
+        $pdf = Pdf::loadView($viewName, [
             'p' => $pkm,
             'totalRab' => $this->service->totalRab($pkm),
         ])->setPaper('a4');

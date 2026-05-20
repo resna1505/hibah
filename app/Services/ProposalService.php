@@ -94,6 +94,42 @@ class ProposalService
     }
 
     /**
+     * Generate nomor registrasi proposal sesuai format di Pengaturan.
+     * Idempotent: kalau proposal sudah punya no_registrasi, return saja.
+     */
+    public function generateNoRegistrasi(Proposal $proposal): string
+    {
+        if ($proposal->no_registrasi) return $proposal->no_registrasi;
+
+        $kode    = \App\Models\Master\Pengaturan::get('institusi_kode', 'LPPM');
+        $format  = \App\Models\Master\Pengaturan::get('proposal_no_format', '{kode}/{jenis}/{tahun}/{seq:3}');
+        $jenis   = strtoupper($proposal->skemaHibah?->jenis === 'pkm' ? 'PKM' : 'PNL');
+        $tahun   = $proposal->periodeHibah?->tahun ?? ($proposal->tgl_submit ? $proposal->tgl_submit->year : now()->year);
+
+        // Hitung sequence per (jenis, tahun) berdasarkan jumlah proposal yg sudah punya no_registrasi pada periode itu
+        $seqCount = Proposal::whereNotNull('no_registrasi')
+            ->whereHas('skemaHibah', fn($q) => $q->where('jenis', $proposal->skemaHibah?->jenis))
+            ->whereHas('periodeHibah', fn($q) => $q->where('tahun', $tahun))
+            ->where('id', '!=', $proposal->id)
+            ->count();
+        $seq = $seqCount + 1;
+
+        // Replace token {seq:N} dengan zero-pad N digit
+        $no = preg_replace_callback('/\{seq:(\d+)\}/', fn($m) => str_pad($seq, (int) $m[1], '0', STR_PAD_LEFT), $format);
+        $no = str_replace(['{kode}', '{jenis}', '{tahun}'], [$kode, $jenis, $tahun], $no);
+
+        // Resolve collision (race condition) — append suffix bila duplikat
+        $base = $no; $i = 0;
+        while (Proposal::where('no_registrasi', $no)->where('id', '!=', $proposal->id)->exists()) {
+            $i++;
+            $no = $base . '-' . $i;
+        }
+
+        $proposal->update(['no_registrasi' => $no]);
+        return $no;
+    }
+
+    /**
      * Cek apakah tahapan pengajuan masih berjalan.
      */
     public function tahapanPengajuanAktif(): bool

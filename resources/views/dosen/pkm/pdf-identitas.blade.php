@@ -21,10 +21,21 @@
 </head>
 <body>
 
+@php
+    $kopPath = \App\Models\Master\Pengaturan::get('lppm_kop_path');
+    $kopFile = $kopPath ? storage_path('app/public/' . $kopPath) : null;
+@endphp
 <div class="header">
-    <h2>LEMBAGA PENELITIAN DAN PENGABDIAN KEPADA MASYARAKAT</h2>
-    <h3>UNIVERSITAS BATAM</h3>
+    @if ($kopFile && file_exists($kopFile))
+        <img src="{{ $kopFile }}" style="max-width: 100%; max-height: 90px; margin-bottom: 4px;">
+    @else
+        <h2>LEMBAGA PENELITIAN DAN PENGABDIAN KEPADA MASYARAKAT</h2>
+        <h3>UNIVERSITAS BATAM</h3>
+    @endif
     <h3 style="margin-top:6px;">IDENTITAS DAN URAIAN UMUM PROPOSAL PKM</h3>
+    @if ($p->no_registrasi)
+        <p style="margin: 4px 0; font-size: 10pt;">No. Registrasi: <strong>{{ $p->no_registrasi }}</strong></p>
+    @endif
 </div>
 
 <h4>1. Judul PKM</h4>
@@ -146,6 +157,23 @@
     </table>
 @endif
 
+@if ($p->dokumen->isNotEmpty())
+    <h4>7. Daftar Dokumen Pendukung</h4>
+    <table class="bordered small">
+        <thead><tr><th width="5%">No</th><th width="30%">Jenis</th><th>Nama File</th><th width="15%">Ukuran</th></tr></thead>
+        <tbody>
+            @foreach ($p->dokumen as $d)
+                <tr>
+                    <td>{{ $loop->iteration }}</td>
+                    <td>{{ $d->jenis }}</td>
+                    <td>{{ $d->nama_file }}</td>
+                    <td>{{ number_format($d->ukuran / 1024, 1) }} KB</td>
+                </tr>
+            @endforeach
+        </tbody>
+    </table>
+@endif
+
 {{-- Halaman Persetujuan LPPM --}}
 @php
     use App\Models\Master\Pengaturan;
@@ -165,6 +193,9 @@
 </div>
 
 <table class="bordered">
+    @if ($p->no_registrasi)
+        <tr><td width="35%"><small>No. Registrasi</small></td><td><strong>{{ $p->no_registrasi }}</strong></td></tr>
+    @endif
     <tr><td width="35%"><small>Judul PKM</small></td><td><strong>{{ $p->judul }}</strong></td></tr>
     <tr><td><small>Skema Hibah</small></td><td>{{ $p->skemaHibah->nama }}</td></tr>
     <tr><td><small>Bidang Strategis</small></td><td>{{ $p->bidangStrategis?->nama ?? '-' }}</td></tr>

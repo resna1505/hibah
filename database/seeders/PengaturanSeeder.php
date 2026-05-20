@@ -17,6 +17,8 @@ class PengaturanSeeder extends Seeder
             ['kunci' => 'lppm_kop_path',       'label' => 'Kop Surat (file)',    'tipe' => 'image','grup' => 'lppm', 'nilai' => null],
             ['kunci' => 'institusi_nama',      'label' => 'Nama Institusi',      'tipe' => 'text', 'grup' => 'institusi', 'nilai' => 'Universitas Batam'],
             ['kunci' => 'institusi_kota',      'label' => 'Kota',                'tipe' => 'text', 'grup' => 'institusi', 'nilai' => 'Batam'],
+            ['kunci' => 'institusi_kode',      'label' => 'Kode Institusi (utk no. registrasi)', 'tipe' => 'text', 'grup' => 'institusi', 'nilai' => 'LPPM-UNIBA'],
+            ['kunci' => 'proposal_no_format',  'label' => 'Format Nomor Registrasi Proposal',     'tipe' => 'text', 'grup' => 'institusi', 'nilai' => '{kode}/{jenis}/{tahun}/{seq:3}'],
         ];
 
         foreach ($data as $row) {

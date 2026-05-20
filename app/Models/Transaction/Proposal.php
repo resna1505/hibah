@@ -14,6 +14,7 @@ class Proposal extends Model
     protected $table = 'proposal_t';
 
     protected $fillable = [
+        'no_registrasi',
         'periode_hibah_id',
         'skema_hibah_id',
         'bidang_strategis_id',

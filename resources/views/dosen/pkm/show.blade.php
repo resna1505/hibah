@@ -37,10 +37,14 @@
                     <i class="ri-download-line"></i> Unduh PDF
                 </button>
                 <ul class="dropdown-menu dropdown-menu-end">
+                    <li><h6 class="dropdown-header">Proposal</h6></li>
                     <li><a class="dropdown-item" href="{{ route('dosen.pkm.pdf', $p) }}"><i class="ri-file-pdf-line me-1"></i> PDF Lengkap</a></li>
-                    <li><hr class="dropdown-divider"></li>
                     <li><a class="dropdown-item" href="{{ route('dosen.pkm.pdf.identitas', $p) }}"><i class="ri-file-list-2-line me-1"></i> Identitas + Pengesahan</a></li>
                     <li><a class="dropdown-item" href="{{ route('dosen.pkm.pdf.substansi', $p) }}"><i class="ri-file-text-line me-1"></i> Substansi (Pendahuluan, Metode, RAB)</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><h6 class="dropdown-header">Lampiran Wajib</h6></li>
+                    <li><a class="dropdown-item" href="{{ route('dosen.pkm.pdf.biodata', $p) }}"><i class="ri-user-line me-1"></i> Biodata Ketua &amp; Anggota Tim</a></li>
+                    <li><a class="dropdown-item" href="{{ route('dosen.pkm.pdf.pernyataan', $p) }}"><i class="ri-quill-pen-line me-1"></i> Surat Pernyataan Ketua</a></li>
                 </ul>
             </div>
             @if (in_array($p->status, ['disetujui', 'berjalan', 'selesai']))
@@ -55,6 +59,9 @@
                 <h5 class="mb-0">{{ $p->judul }}</h5>
                 <span class="badge {{ $cls }} fs-6">{{ $label }}</span>
             </div>
+            @if ($p->no_registrasi)
+                <p class="small mb-1">No. Registrasi: <code>{{ $p->no_registrasi }}</code></p>
+            @endif
             <p class="text-muted small mb-3">
                 Ketua: {{ $p->ketua->nama_lengkap }} &middot;
                 Total Anggaran: <strong>Rp {{ number_format($totalRab, 0, ',', '.') }}</strong> &middot;
@@ -160,6 +167,27 @@
         </div>
 
         <div class="col-12">
+            @if ($p->dokumen->isNotEmpty())
+                <div class="card border-0 shadow-sm mb-3">
+                    <div class="card-header bg-white"><h6 class="mb-0">Dokumen Pendukung</h6></div>
+                    <div class="card-body p-0">
+                        <table class="table mb-0 small">
+                            <thead class="table-light"><tr><th width="220">Jenis</th><th>Nama File</th><th width="120">Ukuran</th><th width="160">Tanggal</th></tr></thead>
+                            <tbody>
+                                @foreach ($p->dokumen as $d)
+                                    <tr>
+                                        <td><span class="badge bg-secondary-subtle text-dark">{{ $d->jenis }}</span></td>
+                                        <td><a href="{{ asset('storage/' . $d->path) }}" target="_blank">{{ $d->nama_file }}</a></td>
+                                        <td class="text-muted">{{ number_format($d->ukuran / 1024, 1) }} KB</td>
+                                        <td class="text-muted">{{ $d->created_at->translatedFormat('d M Y') }}</td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            @endif
+
             @if ($p->rencanaLuaran->isNotEmpty())
                 <div class="card border-0 shadow-sm mb-3">
                     <div class="card-header bg-white"><h6 class="mb-0">Rencana Luaran</h6></div>

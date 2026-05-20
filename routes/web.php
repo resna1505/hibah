@@ -205,8 +205,12 @@ Route::middleware('auth')->group(function () {
             Route::post('/{penelitian}/submit',   [DosenPenelitianUsulan::class, 'submit'])->name('submit');
             Route::delete('/{penelitian}',        [DosenPenelitianUsulan::class, 'destroy'])->name('destroy');
             Route::get('/{penelitian}/pdf',           [DosenPenelitianUsulan::class, 'pdf'])->name('pdf');
-            Route::get('/{penelitian}/pdf-identitas', [DosenPenelitianUsulan::class, 'pdfIdentitas'])->name('pdf.identitas');
-            Route::get('/{penelitian}/pdf-substansi', [DosenPenelitianUsulan::class, 'pdfSubstansi'])->name('pdf.substansi');
+            Route::get('/{penelitian}/pdf-identitas',  [DosenPenelitianUsulan::class, 'pdfIdentitas'])->name('pdf.identitas');
+            Route::get('/{penelitian}/pdf-substansi',  [DosenPenelitianUsulan::class, 'pdfSubstansi'])->name('pdf.substansi');
+            Route::get('/{penelitian}/pdf-biodata',    [DosenPenelitianUsulan::class, 'pdfBiodata'])->name('pdf.biodata');
+            Route::get('/{penelitian}/pdf-pernyataan', [DosenPenelitianUsulan::class, 'pdfPernyataan'])->name('pdf.pernyataan');
+            Route::post('/{penelitian}/dokumen',                [DosenPenelitianUsulan::class, 'uploadDokumen'])->name('dokumen.upload');
+            Route::delete('/{penelitian}/dokumen/{dokumen}',    [DosenPenelitianUsulan::class, 'deleteDokumen'])->name('dokumen.delete');
         });
 
         // Usulan PKM
@@ -220,8 +224,12 @@ Route::middleware('auth')->group(function () {
             Route::post('/{pkm}/submit',   [DosenPkmUsulan::class, 'submit'])->name('submit');
             Route::delete('/{pkm}',        [DosenPkmUsulan::class, 'destroy'])->name('destroy');
             Route::get('/{pkm}/pdf',           [DosenPkmUsulan::class, 'pdf'])->name('pdf');
-            Route::get('/{pkm}/pdf-identitas', [DosenPkmUsulan::class, 'pdfIdentitas'])->name('pdf.identitas');
-            Route::get('/{pkm}/pdf-substansi', [DosenPkmUsulan::class, 'pdfSubstansi'])->name('pdf.substansi');
+            Route::get('/{pkm}/pdf-identitas',  [DosenPkmUsulan::class, 'pdfIdentitas'])->name('pdf.identitas');
+            Route::get('/{pkm}/pdf-substansi',  [DosenPkmUsulan::class, 'pdfSubstansi'])->name('pdf.substansi');
+            Route::get('/{pkm}/pdf-biodata',    [DosenPkmUsulan::class, 'pdfBiodata'])->name('pdf.biodata');
+            Route::get('/{pkm}/pdf-pernyataan', [DosenPkmUsulan::class, 'pdfPernyataan'])->name('pdf.pernyataan');
+            Route::post('/{pkm}/dokumen',                [DosenPkmUsulan::class, 'uploadDokumen'])->name('dokumen.upload');
+            Route::delete('/{pkm}/dokumen/{dokumen}',    [DosenPkmUsulan::class, 'deleteDokumen'])->name('dokumen.delete');
         });
 
         // Laporan (Penelitian & PKM)

@@ -12,6 +12,7 @@ use App\Models\Master\SkemaHibah;
 use App\Models\Transaction\PeriodeHibah;
 use App\Models\Transaction\Proposal;
 use App\Models\Transaction\ProposalAnggota;
+use App\Models\Transaction\ProposalDokumen;
 use App\Models\Transaction\ProposalMitra;
 use App\Models\Transaction\ProposalRab;
 use App\Models\Transaction\RencanaLuaran;
@@ -79,6 +80,7 @@ class UsulanController extends Controller
             'mitraList'     => collect(),
             'rabItems'      => collect(),
             'rencanaLuaran' => collect(),
+            'dokumenList'   => collect(),
         ]);
     }
 
@@ -134,6 +136,7 @@ class UsulanController extends Controller
             'mitraList'     => $penelitian->mitra,
             'rabItems'      => $penelitian->rab()->orderBy('kategori_rab_id')->get(),
             'rencanaLuaran' => $penelitian->rencanaLuaran()->orderBy('tahun_ke')->orderBy('urutan')->get(),
+            'dokumenList'   => $penelitian->dokumen()->latest()->get(),
         ]);
     }
 
@@ -175,6 +178,9 @@ class UsulanController extends Controller
             'total_anggaran' => $this->service->totalRab($penelitian),
         ]);
 
+        $penelitian->refresh()->load('skemaHibah', 'periodeHibah');
+        $this->service->generateNoRegistrasi($penelitian);
+
         $this->notif->onProposalSubmitted($penelitian->fresh()->load('skemaHibah', 'ketua'));
 
         return redirect()->route('dosen.penelitian.show', $penelitian)
@@ -197,13 +203,51 @@ class UsulanController extends Controller
 
         $penelitian->load(['skemaHibah', 'periodeHibah', 'ketua.fakultas', 'ketua.prodi',
             'anggota.dosen', 'mitra', 'rab.kategori', 'rab.komponen', 'bidangStrategis',
-            'rencanaLuaran.jenisLuaran']);
+            'rencanaLuaran.jenisLuaran', 'dokumen']);
 
         return view('dosen.penelitian.show', [
             'p' => $penelitian,
             'totalRab' => $this->service->totalRab($penelitian),
             'service' => $this->service,
         ]);
+    }
+
+    public function uploadDokumen(Request $request, Proposal $penelitian)
+    {
+        $this->authorizeOwner($request, $penelitian);
+        abort_unless(in_array($penelitian->status, ['draft', 'dikembalikan', 'revisi_minor', 'revisi_mayor']), 403);
+
+        $data = $request->validate([
+            'jenis' => 'required|string|max:100',
+            'file'  => 'required|file|mimes:pdf,jpg,jpeg,png|max:5120',
+        ]);
+
+        $file = $request->file('file');
+        $path = $file->store('proposal/' . $penelitian->id . '/dokumen', 'public');
+
+        ProposalDokumen::create([
+            'proposal_id' => $penelitian->id,
+            'jenis'       => $data['jenis'],
+            'nama_file'   => $file->getClientOriginalName(),
+            'path'        => $path,
+            'ukuran'      => $file->getSize(),
+        ]);
+
+        return back()->with('success', 'Dokumen pendukung berhasil diunggah.');
+    }
+
+    public function deleteDokumen(Request $request, Proposal $penelitian, ProposalDokumen $dokumen)
+    {
+        $this->authorizeOwner($request, $penelitian);
+        abort_unless($dokumen->proposal_id === $penelitian->id, 404);
+        abort_unless(in_array($penelitian->status, ['draft', 'dikembalikan', 'revisi_minor', 'revisi_mayor']), 403);
+
+        if ($dokumen->path) {
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($dokumen->path);
+        }
+        $dokumen->delete();
+
+        return back()->with('success', 'Dokumen dihapus.');
     }
 
     public function pdf(Request $request, Proposal $penelitian)
@@ -221,15 +265,29 @@ class UsulanController extends Controller
         return $this->renderPdf($request, $penelitian, 'pdf-substansi', 'Substansi_Penelitian');
     }
 
-    private function renderPdf(Request $request, Proposal $penelitian, string $view, string $prefix)
+    public function pdfBiodata(Request $request, Proposal $penelitian)
+    {
+        return $this->renderPdf($request, $penelitian, '_shared.pdf-biodata', 'Biodata_Penelitian', shared: true);
+    }
+
+    public function pdfPernyataan(Request $request, Proposal $penelitian)
+    {
+        return $this->renderPdf($request, $penelitian, '_shared.pdf-pernyataan', 'Pernyataan_Penelitian', shared: true);
+    }
+
+    private function renderPdf(Request $request, Proposal $penelitian, string $view, string $prefix, bool $shared = false)
     {
         $this->authorizeOwner($request, $penelitian);
 
-        $penelitian->load(['skemaHibah', 'periodeHibah', 'ketua.fakultas', 'ketua.prodi',
-            'anggota.dosen.prodi', 'mitra', 'rab.kategori', 'rab.komponen', 'bidangStrategis',
-            'rencanaLuaran.jenisLuaran']);
+        $penelitian->load(['skemaHibah', 'periodeHibah',
+            'ketua.fakultas', 'ketua.prodi', 'ketua.user', 'ketua.keahlian',
+            'anggota.dosen.prodi', 'anggota.dosen.fakultas', 'anggota.dosen.user', 'anggota.dosen.keahlian',
+            'mitra', 'rab.kategori', 'rab.komponen', 'bidangStrategis',
+            'rencanaLuaran.jenisLuaran', 'dokumen']);
 
-        $pdf = Pdf::loadView('dosen.penelitian.' . $view, [
+        $viewName = $shared ? 'dosen.' . $view : 'dosen.penelitian.' . $view;
+
+        $pdf = Pdf::loadView($viewName, [
             'p' => $penelitian,
             'totalRab' => $this->service->totalRab($penelitian),
         ])->setPaper('a4');

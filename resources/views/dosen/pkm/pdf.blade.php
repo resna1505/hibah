@@ -22,10 +22,21 @@
 </head>
 <body>
 
+@php
+    $kopPath = \App\Models\Master\Pengaturan::get('lppm_kop_path');
+    $kopFile = $kopPath ? storage_path('app/public/' . $kopPath) : null;
+@endphp
 <div class="header">
-    <h2>LEMBAGA PENELITIAN DAN PENGABDIAN KEPADA MASYARAKAT</h2>
-    <h3>UNIVERSITAS BATAM</h3>
+    @if ($kopFile && file_exists($kopFile))
+        <img src="{{ $kopFile }}" style="max-width: 100%; max-height: 90px; margin-bottom: 4px;">
+    @else
+        <h2>LEMBAGA PENELITIAN DAN PENGABDIAN KEPADA MASYARAKAT</h2>
+        <h3>UNIVERSITAS BATAM</h3>
+    @endif
     <h3 style="margin-top:6px;">PROPOSAL PENGABDIAN KEPADA MASYARAKAT</h3>
+    @if ($p->no_registrasi)
+        <p style="margin: 4px 0; font-size: 10pt;">No. Registrasi: <strong>{{ $p->no_registrasi }}</strong></p>
+    @endif
 </div>
 
 <h4>1. Judul PKM</h4>
