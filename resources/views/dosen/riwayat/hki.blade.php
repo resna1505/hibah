@@ -1,14 +1,10 @@
-@extends('layouts.master-without-nav')
+@extends('layouts.dosen')
 
 @section('title', 'Riwayat HKI')
 
 @php $activeNav = 'riwayat'; @endphp
 
 @section('content')
-<div class="min-vh-100 bg-light">
-    @include('dosen._partials.topbar')
-
-    <div class="container py-4">
         <div class="d-flex justify-content-between align-items-center mb-3">
             <div>
                 <h4 class="mb-0">Riwayat HKI</h4>
@@ -142,6 +138,4 @@
                 </div>
             </div>
         </div>
-    </div>
-</div>
 @endsection

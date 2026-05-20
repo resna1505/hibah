@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Dosen\DashboardController as DosenDashboard;
 use App\Http\Controllers\Dosen\ProfilController as DosenProfil;
 use App\Http\Controllers\Dosen\RiwayatHkiController as DosenRiwayatHki;
@@ -18,7 +19,10 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('guest')->group(function () {
     Route::get('/login', \App\Http\Livewire\Auth\Login::class)->name('login');
     Route::post('/login', \App\Http\Livewire\Auth\Login::class)->name('login.post');
-    Route::get('/register', \App\Http\Livewire\Auth\Register::class)->name('register');
+
+    Route::get('/register',  [RegisterController::class, 'showRegistrationForm'])->name('register');
+    Route::post('/register', [RegisterController::class, 'register'])->name('register.post');
+
     Route::get('/forget-password', \App\Http\Livewire\Auth\ForgetPassword::class)->name('password.reset');
     Route::get('/new-password/{email?}/{token?}', \App\Http\Livewire\Auth\NewPassword::class);
 });

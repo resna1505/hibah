@@ -1,8 +1,9 @@
-@extends('layouts.master-without-nav')
+@extends('layouts.operator')
 
 @section('title', 'Dashboard Operator')
 
 @php
+    $activeNav = 'dashboard';
     $user = auth()->user();
 
     $statusBadge = [
@@ -37,21 +38,6 @@
 @endphp
 
 @section('content')
-<div class="min-vh-100 bg-light">
-    {{-- Top Navbar --}}
-    <nav class="navbar navbar-expand-lg bg-primary px-4 py-2">
-        <div class="d-flex align-items-center text-white">
-            <strong class="fs-5">UNIVERSITAS BATAM</strong>
-            <span class="ms-2 text-white-50">Hibah Internal</span>
-        </div>
-        <div class="ms-auto d-flex align-items-center gap-3 text-white">
-            <span class="badge bg-light text-primary">OPERATOR</span>
-            <span class="small">{{ $user->username ?? $user->nik }}</span>
-            <a href="{{ route('logout') }}" class="btn btn-sm btn-light">Keluar</a>
-        </div>
-    </nav>
-
-    <div class="container-fluid py-4 px-4">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <div>
                 <h4 class="mb-0">Dashboard</h4>
@@ -241,9 +227,4 @@
             </div>
         </div>
 
-        <p class="text-muted small text-center mt-4 mb-0">
-            &copy; {{ date('Y') }} LPPM Universitas Batam. Semua hak dilindungi.
-        </p>
-    </div>
-</div>
 @endsection

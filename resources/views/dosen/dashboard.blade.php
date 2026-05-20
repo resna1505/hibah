@@ -1,4 +1,4 @@
-@extends('layouts.master-without-nav')
+@extends('layouts.dosen')
 
 @section('title', 'Dashboard Dosen')
 
@@ -22,10 +22,6 @@
 @endphp
 
 @section('content')
-<div class="min-vh-100 bg-light">
-    @include('dosen._partials.topbar')
-
-    <div class="container-fluid py-4 px-4">
         {{-- Welcome banner --}}
         <div class="card border-0 shadow-sm mb-4">
             <div class="card-body bg-primary text-white rounded">
@@ -181,9 +177,4 @@
             </div>
         </div>
 
-        <p class="text-muted small text-center mt-4 mb-0">
-            &copy; {{ date('Y') }} LPPM Universitas Batam.
-        </p>
-    </div>
-</div>
 @endsection
