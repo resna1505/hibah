@@ -2,10 +2,16 @@
 
 namespace App\Models\Master;
 
+use App\Models\Transaction\PenugasanReviewer;
+use App\Models\Transaction\Proposal;
+use App\Models\Transaction\RiwayatHki;
+use App\Models\Transaction\RiwayatPenelitian;
+use App\Models\Transaction\RiwayatPkm;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Dosen extends Model
 {
@@ -56,5 +62,30 @@ class Dosen extends Model
     {
         return $this->belongsToMany(Keahlian::class, 'dosen_keahlian_m', 'dosen_id', 'keahlian_id')
             ->withTimestamps();
+    }
+
+    public function riwayatPenelitian(): HasMany
+    {
+        return $this->hasMany(RiwayatPenelitian::class, 'dosen_id');
+    }
+
+    public function riwayatPkm(): HasMany
+    {
+        return $this->hasMany(RiwayatPkm::class, 'dosen_id');
+    }
+
+    public function riwayatHki(): HasMany
+    {
+        return $this->hasMany(RiwayatHki::class, 'dosen_id');
+    }
+
+    public function proposalSebagaiKetua(): HasMany
+    {
+        return $this->hasMany(Proposal::class, 'ketua_dosen_id');
+    }
+
+    public function penugasanReview(): HasMany
+    {
+        return $this->hasMany(PenugasanReviewer::class, 'reviewer_dosen_id');
     }
 }

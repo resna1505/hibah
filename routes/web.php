@@ -1,34 +1,66 @@
 <?php
 
-use Illuminate\Support\Facades\Auth;
+use App\Http\Controllers\Dosen\DashboardController as DosenDashboard;
+use App\Http\Controllers\HomeController;
+use App\Http\Controllers\Operator\DashboardController as OperatorDashboard;
+use App\Http\Controllers\Reviewer\DashboardController as ReviewerDashboard;
 use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
-| Web Routes
+| Guest Routes (login/register/reset)
 |--------------------------------------------------------------------------
-|
-| Here is where you can register web routes for your application. These
-| routes are loaded by the RouteServiceProvider and all of them will
-| be assigned to the "web" middleware group. Make something great!
-|
 */
+Route::middleware('guest')->group(function () {
+    Route::get('/login', \App\Http\Livewire\Auth\Login::class)->name('login');
+    Route::post('/login', \App\Http\Livewire\Auth\Login::class)->name('login.post');
+    Route::get('/register', \App\Http\Livewire\Auth\Register::class)->name('register');
+    Route::get('/forget-password', \App\Http\Livewire\Auth\ForgetPassword::class)->name('password.reset');
+    Route::get('/new-password/{email?}/{token?}', \App\Http\Livewire\Auth\NewPassword::class);
+});
 
-Route::get('/login', \App\Http\Livewire\Auth\Login::class)->name('login');
-Route::get('/register', \App\Http\Livewire\Auth\Register::class)->name('register');
-Route::get('/forget-password', \App\Http\Livewire\Auth\ForgetPassword::class)->name('password.reset');
-Route::get('/new-password/{email?}/{token?}', \App\Http\Livewire\Auth\NewPassword::class);
-Route::get('/logout', [App\Http\Controllers\HomeController::class, 'logout']);
-Route::get('index/{locale}', [App\Http\Controllers\HomeController::class, 'lang']);
-Route::post('/login', \App\Http\Livewire\Auth\Login::class)->name('login.post');
+/*
+|--------------------------------------------------------------------------
+| Bahasa Switcher
+|--------------------------------------------------------------------------
+*/
+Route::get('index/{locale}', [HomeController::class, 'lang']);
 
-Route::group(['middleware' => 'auth'], function () {
-    Route::get('/test', function () {
-        return view('widgets');
-    });
-    Route::get('{any}', [App\Http\Controllers\HomeController::class, 'index']);
+/*
+|--------------------------------------------------------------------------
+| Authenticated Routes
+|--------------------------------------------------------------------------
+*/
+Route::middleware('auth')->group(function () {
+    Route::get('/logout', [HomeController::class, 'logout'])->name('logout');
 
+    // Root redirect berdasarkan role
     Route::get('/', function () {
-        return view('index');
+        $user = auth()->user();
+        if ($user->isOperator()) {
+            return redirect()->route('operator.dashboard');
+        }
+        return redirect()->route('dosen.dashboard');
+    });
+
+    /*
+    |----- Operator -----
+    */
+    Route::middleware('role:operator')->prefix('operator')->name('operator.')->group(function () {
+        Route::get('/dashboard', [OperatorDashboard::class, 'index'])->name('dashboard');
+    });
+
+    /*
+    |----- Dosen -----
+    */
+    Route::middleware('role:dosen')->prefix('dosen')->name('dosen.')->group(function () {
+        Route::get('/dashboard', [DosenDashboard::class, 'index'])->name('dashboard');
+    });
+
+    /*
+    |----- Reviewer (dosen dengan is_reviewer=true) -----
+    */
+    Route::middleware('role:reviewer')->prefix('reviewer')->name('reviewer.')->group(function () {
+        Route::get('/dashboard', [ReviewerDashboard::class, 'index'])->name('dashboard');
     });
 });

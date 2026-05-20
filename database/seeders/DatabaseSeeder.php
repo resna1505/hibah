@@ -18,6 +18,8 @@ class DatabaseSeeder extends Seeder
             JenisLuaranSeeder::class,
             KategoriRabSeeder::class,
             UserDosenSeeder::class,
+            PeriodeHibahSeeder::class,
+            ProposalDummySeeder::class,
         ]);
     }
 }
