@@ -29,6 +29,7 @@ class Dosen extends Model
         'pendidikan_terakhir',
         'no_hp',
         'foto_path',
+        'ttd_path',
         'scopus_id',
         'google_scholar_id',
         'sinta_id',

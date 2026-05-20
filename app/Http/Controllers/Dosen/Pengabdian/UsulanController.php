@@ -199,17 +199,32 @@ class UsulanController extends Controller
 
     public function pdf(Request $request, Proposal $pkm)
     {
+        return $this->renderPdf($request, $pkm, 'pdf', 'Proposal_PKM');
+    }
+
+    public function pdfIdentitas(Request $request, Proposal $pkm)
+    {
+        return $this->renderPdf($request, $pkm, 'pdf-identitas', 'Identitas_PKM');
+    }
+
+    public function pdfSubstansi(Request $request, Proposal $pkm)
+    {
+        return $this->renderPdf($request, $pkm, 'pdf-substansi', 'Substansi_PKM');
+    }
+
+    private function renderPdf(Request $request, Proposal $pkm, string $view, string $prefix)
+    {
         $this->authorizeOwner($request, $pkm);
         $pkm->load(['skemaHibah', 'periodeHibah', 'ketua.fakultas', 'ketua.prodi',
             'anggota.dosen.prodi', 'mitra', 'rab.kategori', 'rab.komponen', 'bidangStrategis',
             'rencanaLuaran.jenisLuaran']);
 
-        $pdf = Pdf::loadView('dosen.pkm.pdf', [
+        $pdf = Pdf::loadView('dosen.pkm.' . $view, [
             'p' => $pkm,
             'totalRab' => $this->service->totalRab($pkm),
         ])->setPaper('a4');
 
-        $filename = 'Proposal_PKM_' . preg_replace('/[^A-Za-z0-9_-]/', '_', $pkm->judul) . '.pdf';
+        $filename = $prefix . '_' . preg_replace('/[^A-Za-z0-9_-]/', '_', $pkm->judul) . '.pdf';
         return $pdf->download($filename);
     }
 

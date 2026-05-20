@@ -12,6 +12,7 @@ use App\Http\Controllers\Dosen\RiwayatPkmController as DosenRiwayatPkm;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\Operator\DashboardController as OperatorDashboard;
 use App\Http\Controllers\Operator\JadwalController as OperatorJadwal;
+use App\Http\Controllers\Operator\MasterRabController as OperatorMasterRab;
 use App\Http\Controllers\Operator\PengaturanController as OperatorPengaturan;
 use App\Http\Controllers\Operator\PenilaianController as OperatorPenilaian;
 use App\Http\Controllers\Operator\ProfilController as OperatorProfil;
@@ -121,6 +122,17 @@ Route::middleware('auth')->group(function () {
             Route::delete('/{jadwal}',       [OperatorJadwal::class, 'destroy'])->name('destroy');
         });
 
+        // Master RAB (Kelompok + Komponen)
+        Route::prefix('master/rab')->name('master.rab.')->group(function () {
+            Route::get('/', [OperatorMasterRab::class, 'index'])->name('index');
+            Route::post('/kelompok', [OperatorMasterRab::class, 'storeKelompok'])->name('kelompok.store');
+            Route::put('/kelompok/{kelompok}', [OperatorMasterRab::class, 'updateKelompok'])->name('kelompok.update');
+            Route::delete('/kelompok/{kelompok}', [OperatorMasterRab::class, 'destroyKelompok'])->name('kelompok.destroy');
+            Route::post('/kelompok/{kelompok}/komponen', [OperatorMasterRab::class, 'storeKomponen'])->name('komponen.store');
+            Route::put('/komponen/{komponen}', [OperatorMasterRab::class, 'updateKomponen'])->name('komponen.update');
+            Route::delete('/komponen/{komponen}', [OperatorMasterRab::class, 'destroyKomponen'])->name('komponen.destroy');
+        });
+
         // Pengaturan (LPPM + institusi)
         Route::get('/pengaturan', [OperatorPengaturan::class, 'index'])->name('pengaturan.index');
         Route::post('/pengaturan', [OperatorPengaturan::class, 'update'])->name('pengaturan.update');
@@ -192,7 +204,9 @@ Route::middleware('auth')->group(function () {
             Route::put('/{penelitian}',           [DosenPenelitianUsulan::class, 'update'])->name('update');
             Route::post('/{penelitian}/submit',   [DosenPenelitianUsulan::class, 'submit'])->name('submit');
             Route::delete('/{penelitian}',        [DosenPenelitianUsulan::class, 'destroy'])->name('destroy');
-            Route::get('/{penelitian}/pdf',       [DosenPenelitianUsulan::class, 'pdf'])->name('pdf');
+            Route::get('/{penelitian}/pdf',           [DosenPenelitianUsulan::class, 'pdf'])->name('pdf');
+            Route::get('/{penelitian}/pdf-identitas', [DosenPenelitianUsulan::class, 'pdfIdentitas'])->name('pdf.identitas');
+            Route::get('/{penelitian}/pdf-substansi', [DosenPenelitianUsulan::class, 'pdfSubstansi'])->name('pdf.substansi');
         });
 
         // Usulan PKM
@@ -205,7 +219,9 @@ Route::middleware('auth')->group(function () {
             Route::put('/{pkm}',           [DosenPkmUsulan::class, 'update'])->name('update');
             Route::post('/{pkm}/submit',   [DosenPkmUsulan::class, 'submit'])->name('submit');
             Route::delete('/{pkm}',        [DosenPkmUsulan::class, 'destroy'])->name('destroy');
-            Route::get('/{pkm}/pdf',       [DosenPkmUsulan::class, 'pdf'])->name('pdf');
+            Route::get('/{pkm}/pdf',           [DosenPkmUsulan::class, 'pdf'])->name('pdf');
+            Route::get('/{pkm}/pdf-identitas', [DosenPkmUsulan::class, 'pdfIdentitas'])->name('pdf.identitas');
+            Route::get('/{pkm}/pdf-substansi', [DosenPkmUsulan::class, 'pdfSubstansi'])->name('pdf.substansi');
         });
 
         // Laporan (Penelitian & PKM)

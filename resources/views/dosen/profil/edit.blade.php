@@ -133,6 +133,22 @@
                                     @endif
                                 </div>
 
+                                <div class="col-md-8">
+                                    <label class="form-label">Tanda Tangan <span class="text-muted small">(PNG transparan disarankan, max 1MB)</span></label>
+                                    @if ($dosen?->ttd_path)
+                                        <div class="mb-2 d-flex align-items-center gap-3">
+                                            <img src="{{ asset('storage/' . $dosen->ttd_path) }}" style="max-height:60px; background:#f8f9fa;" class="border rounded p-1">
+                                            <div class="form-check">
+                                                <input type="checkbox" name="hapus_ttd" value="1" id="hapusTtd" class="form-check-input">
+                                                <label for="hapusTtd" class="form-check-label small text-danger">Hapus tanda tangan</label>
+                                            </div>
+                                        </div>
+                                    @endif
+                                    <input type="file" name="ttd" class="form-control @error('ttd') is-invalid @enderror" accept="image/jpeg,image/png">
+                                    @error('ttd')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                                    <small class="text-muted">TTD akan otomatis muncul di Lembar Pengesahan PDF proposal Anda.</small>
+                                </div>
+
                                 <div class="col-12">
                                     <label class="form-label">Bidang Keahlian</label>
                                     <div class="row g-2">

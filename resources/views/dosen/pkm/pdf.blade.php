@@ -227,7 +227,12 @@
 <div class="signature">
     <p>Batam, {{ ($p->tgl_submit ?? now())->translatedFormat('d F Y') }}</p>
     <p>Ketua Pengusul,</p>
-    <br><br><br>
+    @php $ketuaTtd = $p->ketua->ttd_path ? storage_path('app/public/' . $p->ketua->ttd_path) : null; @endphp
+    @if ($ketuaTtd && file_exists($ketuaTtd))
+        <img src="{{ $ketuaTtd }}" style="height:70px; margin: 4px 0;">
+    @else
+        <br><br><br>
+    @endif
     <p><strong>{{ $p->ketua->nama_lengkap }}</strong><br>NIDN. {{ $p->ketua->nidn ?? '-' }}</p>
 </div>
 
@@ -274,7 +279,12 @@
         </td>
         <td width="50%" style="vertical-align: top; text-align: center;">
             <p>{{ $kota }}, {{ ($p->tgl_submit ?? now())->translatedFormat('d F Y') }}<br>Ketua Pengusul,</p>
-            <br><br><br><br>
+            @php $ketuaTtdL = $p->ketua->ttd_path ? storage_path('app/public/' . $p->ketua->ttd_path) : null; @endphp
+            @if ($ketuaTtdL && file_exists($ketuaTtdL))
+                <img src="{{ $ketuaTtdL }}" style="height:70px; margin: 4px 0;">
+            @else
+                <br><br><br><br>
+            @endif
             <p><strong><u>{{ $p->ketua->nama_lengkap }}</u></strong><br>NIDN. {{ $p->ketua->nidn ?? '-' }}</p>
         </td>
     </tr>

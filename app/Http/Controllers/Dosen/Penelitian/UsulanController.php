@@ -208,18 +208,33 @@ class UsulanController extends Controller
 
     public function pdf(Request $request, Proposal $penelitian)
     {
+        return $this->renderPdf($request, $penelitian, 'pdf', 'Proposal_Penelitian');
+    }
+
+    public function pdfIdentitas(Request $request, Proposal $penelitian)
+    {
+        return $this->renderPdf($request, $penelitian, 'pdf-identitas', 'Identitas_Penelitian');
+    }
+
+    public function pdfSubstansi(Request $request, Proposal $penelitian)
+    {
+        return $this->renderPdf($request, $penelitian, 'pdf-substansi', 'Substansi_Penelitian');
+    }
+
+    private function renderPdf(Request $request, Proposal $penelitian, string $view, string $prefix)
+    {
         $this->authorizeOwner($request, $penelitian);
 
         $penelitian->load(['skemaHibah', 'periodeHibah', 'ketua.fakultas', 'ketua.prodi',
             'anggota.dosen.prodi', 'mitra', 'rab.kategori', 'rab.komponen', 'bidangStrategis',
             'rencanaLuaran.jenisLuaran']);
 
-        $pdf = Pdf::loadView('dosen.penelitian.pdf', [
+        $pdf = Pdf::loadView('dosen.penelitian.' . $view, [
             'p' => $penelitian,
             'totalRab' => $this->service->totalRab($penelitian),
         ])->setPaper('a4');
 
-        $filename = 'Proposal_Penelitian_' . preg_replace('/[^A-Za-z0-9_-]/', '_', $penelitian->judul) . '.pdf';
+        $filename = $prefix . '_' . preg_replace('/[^A-Za-z0-9_-]/', '_', $penelitian->judul) . '.pdf';
 
         return $pdf->download($filename);
     }

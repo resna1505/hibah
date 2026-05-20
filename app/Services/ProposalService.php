@@ -67,6 +67,29 @@ class ProposalService
             $errors[] = 'Data mitra wajib diisi untuk skema PKM.';
         }
 
+        // Wajib bidang strategis
+        if (! $proposal->bidang_strategis_id) {
+            $errors[] = 'Bidang Strategis belum dipilih.';
+        }
+
+        // Wajib minimal 1 rencana luaran kategori "wajib"
+        $luaranWajib = $proposal->rencanaLuaran()
+            ->where('kategori', 'wajib')
+            ->where(function ($q) {
+                $q->whereNotNull('jenis_luaran_id')
+                  ->orWhere(function ($qq) { $qq->whereNotNull('jenis_luaran_text')->where('jenis_luaran_text', '!=', ''); });
+            })
+            ->count();
+        if ($luaranWajib < 1) {
+            $errors[] = 'Minimal 1 Rencana Luaran kategori Wajib harus diisi.';
+        }
+
+        // Wajib setiap RAB row punya komponen
+        $rabTanpaKomponen = $proposal->rab()->whereNull('komponen_rab_id')->count();
+        if ($rabTanpaKomponen > 0) {
+            $errors[] = "Ada {$rabTanpaKomponen} baris RAB yang belum memilih Komponen.";
+        }
+
         return $errors;
     }
 

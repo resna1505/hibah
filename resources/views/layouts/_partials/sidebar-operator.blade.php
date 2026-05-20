@@ -69,6 +69,14 @@
             <a href="{{ route('operator.rekap.proposal') }}" class="{{ $linkClass('rekap.proposal') }} ms-3">Rekap Proposal</a>
             <a href="{{ route('operator.rekap.hasil') }}" class="{{ $linkClass('rekap.hasil') }} ms-3">Rekap Hasil Review</a>
         </div>
+        <a href="#masterMenu" data-bs-toggle="collapse" role="button"
+            class="sidebar-link {{ $is('master') ? 'active' : '' }}">
+            <i class="ri-database-2-line"></i><span class="flex-grow-1">Data Master</span>
+            <i class="ri-arrow-down-s-line"></i>
+        </a>
+        <div class="collapse {{ $is('master') ? 'show' : '' }}" id="masterMenu">
+            <a href="{{ route('operator.master.rab.index') }}" class="{{ $linkClass('master.rab') }} ms-3">Kelompok &amp; Komponen RAB</a>
+        </div>
         <a href="{{ route('operator.pengaturan.index') }}" class="{{ $linkClass('pengaturan') }}">
             <i class="ri-settings-3-line"></i><span>Pengaturan</span>
         </a>

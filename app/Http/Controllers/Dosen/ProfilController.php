@@ -49,6 +49,8 @@ class ProfilController extends Controller
             'sinta_id'            => 'nullable|string|max:50',
             'sinta_score'         => 'nullable|integer|min:0',
             'foto'                => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'ttd'                 => 'nullable|image|mimes:jpg,jpeg,png|max:1024',
+            'hapus_ttd'           => 'nullable|boolean',
             'keahlian_ids'        => 'array',
             'keahlian_ids.*'      => 'exists:keahlian_m,id',
         ]);
@@ -58,11 +60,22 @@ class ProfilController extends Controller
         ]);
 
         $dosenPayload = collect($data)
-            ->except(['email', 'keahlian_ids', 'foto'])
+            ->except(['email', 'keahlian_ids', 'foto', 'ttd', 'hapus_ttd'])
             ->all();
 
         if ($request->hasFile('foto')) {
             $dosenPayload['foto_path'] = $request->file('foto')->store('dosen/foto', 'public');
+        }
+
+        if ($request->boolean('hapus_ttd') && $dosen->ttd_path) {
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($dosen->ttd_path);
+            $dosenPayload['ttd_path'] = null;
+        }
+        if ($request->hasFile('ttd')) {
+            if ($dosen->ttd_path) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($dosen->ttd_path);
+            }
+            $dosenPayload['ttd_path'] = $request->file('ttd')->store('dosen/ttd', 'public');
         }
 
         $dosen->update($dosenPayload);

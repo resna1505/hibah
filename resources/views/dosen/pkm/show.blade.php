@@ -32,7 +32,17 @@
             @if (in_array($p->status, ['draft', 'dikembalikan', 'revisi_minor', 'revisi_mayor']))
                 <a href="{{ route('dosen.pkm.edit', $p) }}" class="btn btn-sm btn-warning"><i class="ri-edit-line"></i> Edit</a>
             @endif
-            <a href="{{ route('dosen.pkm.pdf', $p) }}" class="btn btn-sm btn-primary"><i class="ri-download-line"></i> Unduh PDF</a>
+            <div class="btn-group">
+                <button type="button" class="btn btn-sm btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="ri-download-line"></i> Unduh PDF
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    <li><a class="dropdown-item" href="{{ route('dosen.pkm.pdf', $p) }}"><i class="ri-file-pdf-line me-1"></i> PDF Lengkap</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item" href="{{ route('dosen.pkm.pdf.identitas', $p) }}"><i class="ri-file-list-2-line me-1"></i> Identitas + Pengesahan</a></li>
+                    <li><a class="dropdown-item" href="{{ route('dosen.pkm.pdf.substansi', $p) }}"><i class="ri-file-text-line me-1"></i> Substansi (Pendahuluan, Metode, RAB)</a></li>
+                </ul>
+            </div>
             @if (in_array($p->status, ['disetujui', 'berjalan', 'selesai']))
                 <a href="{{ route('dosen.laporan.show', $p) }}" class="btn btn-sm btn-success"><i class="ri-file-list-3-line"></i> Kelola Laporan</a>
             @endif

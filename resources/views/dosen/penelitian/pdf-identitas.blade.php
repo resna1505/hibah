@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="utf-8">
-    <title>Proposal Penelitian — {{ $p->judul }}</title>
+    <title>Identitas Proposal Penelitian — {{ $p->judul }}</title>
     <style>
         body { font-family: DejaVu Sans, sans-serif; font-size: 11pt; color: #222; }
         .header { text-align: center; border-bottom: 2px solid #000; padding-bottom: 8px; margin-bottom: 12px; }
@@ -17,7 +17,6 @@
         .text-center { text-align: center; }
         .text-muted { color: #777; }
         p { margin: 4px 0; text-align: justify; }
-        .signature { margin-top: 24px; }
     </style>
 </head>
 <body>
@@ -25,10 +24,9 @@
 <div class="header">
     <h2>LEMBAGA PENELITIAN DAN PENGABDIAN KEPADA MASYARAKAT</h2>
     <h3>UNIVERSITAS BATAM</h3>
-    <h3 style="margin-top:6px;">PROPOSAL PENELITIAN</h3>
+    <h3 style="margin-top:6px;">IDENTITAS DAN URAIAN UMUM PROPOSAL PENELITIAN</h3>
 </div>
 
-{{-- Section 1: Identitas Proposal --}}
 <h4>1. Judul Penelitian</h4>
 <table class="bordered">
     <tr><td colspan="3"><strong>{{ $p->judul }}</strong></td></tr>
@@ -44,7 +42,6 @@
     </tr>
 </table>
 
-{{-- Section 2: Identitas Pengusul --}}
 <h4>2. Identitas Pengusul</h4>
 <table class="bordered">
     <thead>
@@ -82,9 +79,8 @@
     </tbody>
 </table>
 
-{{-- Section 2b: Mitra Penelitian (jika ada) --}}
 @if ($p->mitra->isNotEmpty())
-    <h4>2b. Mitra Penelitian</h4>
+    <h4>3. Mitra Penelitian</h4>
     <table class="bordered">
         <thead>
             <tr>
@@ -109,9 +105,8 @@
     </table>
 @endif
 
-{{-- Section 2c: Bidang Strategis --}}
 @if ($p->bidangStrategis)
-    <h4>2c. Bidang Strategis</h4>
+    <h4>4. Bidang Strategis</h4>
     <table class="bordered">
         <tr>
             <td width="30%"><small>Bidang Strategis</small></td>
@@ -132,34 +127,14 @@
     </table>
 @endif
 
-{{-- Section 3: Ringkasan --}}
 @if ($p->ringkasan)
-    <h4>3. Ringkasan</h4>
+    <h4>5. Ringkasan</h4>
     <p>{{ $p->ringkasan }}</p>
     @if ($p->kata_kunci)
         <p><strong>Kata Kunci:</strong> {{ $p->kata_kunci }}</p>
     @endif
 @endif
 
-{{-- Section 4: Pendahuluan --}}
-@if ($p->pendahuluan)
-    <h4>4. Pendahuluan</h4>
-    <p style="white-space: pre-wrap;">{{ $p->pendahuluan }}</p>
-@endif
-
-{{-- Section 5: Metode --}}
-@if ($p->metode)
-    <h4>5. Metode</h4>
-    <p style="white-space: pre-wrap;">{{ $p->metode }}</p>
-    @if ($p->metode_diagram_path && file_exists(storage_path('app/public/' . $p->metode_diagram_path)))
-        <p class="text-center">
-            <img src="{{ storage_path('app/public/' . $p->metode_diagram_path) }}" style="max-width:80%; max-height:300px;">
-            <br><small class="text-muted">Diagram Alir Penelitian</small>
-        </p>
-    @endif
-@endif
-
-{{-- Section 6: Rencana Luaran --}}
 @if ($p->rencanaLuaran->isNotEmpty())
     <h4>6. Rencana Luaran</h4>
     <table class="bordered small">
@@ -187,81 +162,6 @@
         </tbody>
     </table>
 @endif
-
-{{-- Section 7: Jadwal --}}
-@if ($p->jadwal_json && ! empty($p->jadwal_json['text']))
-    <h4>7. Jadwal Penelitian</h4>
-    <p style="white-space: pre-wrap;">{{ $p->jadwal_json['text'] }}</p>
-@endif
-
-{{-- Section 8: Daftar Pustaka --}}
-@if ($p->daftar_pustaka)
-    <h4>8. Daftar Pustaka</h4>
-    <p style="white-space: pre-wrap;" class="small">{{ $p->daftar_pustaka }}</p>
-@endif
-
-{{-- Section 9: RAB --}}
-@if ($p->rab->isNotEmpty())
-    <h4>9. Rencana Anggaran Biaya (RAB)</h4>
-    @php $rabByKategori = $p->rab->groupBy(fn($r) => $r->kategori?->nama ?? '-'); @endphp
-    @foreach ($rabByKategori as $namaKategori => $items)
-        <p style="margin-top:8px;"><strong>{{ $loop->iteration }}. {{ $namaKategori }}</strong></p>
-        <table class="bordered small">
-            <thead>
-                <tr>
-                    <th width="20%">Komponen</th>
-                    <th>Item</th>
-                    <th width="22%">Justifikasi</th>
-                    <th width="8%" class="text-end">Qty</th>
-                    <th width="7%">Satuan</th>
-                    <th width="13%" class="text-end">Harga Satuan</th>
-                    <th width="13%" class="text-end">Sub Total</th>
-                </tr>
-            </thead>
-            <tbody>
-                @php $byKomp = $items->groupBy(fn($r) => $r->komponen?->nama ?? '(tanpa komponen)'); @endphp
-                @foreach ($byKomp as $namaKomp => $rows)
-                    @foreach ($rows as $idx => $r)
-                        <tr>
-                            @if ($idx === 0)
-                                <td rowspan="{{ $rows->count() }}" style="vertical-align: top;"><em>{{ $namaKomp }}</em></td>
-                            @endif
-                            <td>{{ $r->item }}</td>
-                            <td>{{ $r->justifikasi }}</td>
-                            <td class="text-end">{{ rtrim(rtrim(number_format($r->kuantitas, 2, ',', '.'), '0'), ',') }}</td>
-                            <td>{{ $r->satuan }}</td>
-                            <td class="text-end">Rp {{ number_format($r->harga_satuan, 0, ',', '.') }}</td>
-                            <td class="text-end">Rp {{ number_format($r->sub_total, 0, ',', '.') }}</td>
-                        </tr>
-                    @endforeach
-                @endforeach
-                <tr>
-                    <td colspan="6" class="text-end"><strong>SUB TOTAL</strong></td>
-                    <td class="text-end"><strong>Rp {{ number_format($items->sum('sub_total'), 0, ',', '.') }}</strong></td>
-                </tr>
-            </tbody>
-        </table>
-    @endforeach
-    <table class="bordered">
-        <tr>
-            <td class="text-end"><strong>TOTAL ANGGARAN</strong></td>
-            <td width="20%" class="text-end"><strong>Rp {{ number_format($totalRab, 0, ',', '.') }}</strong></td>
-        </tr>
-    </table>
-@endif
-
-<div class="signature">
-    <p>Batam, {{ ($p->tgl_submit ?? now())->translatedFormat('d F Y') }}</p>
-    <p>Ketua Pengusul,</p>
-    @php $ketuaTtd = $p->ketua->ttd_path ? storage_path('app/public/' . $p->ketua->ttd_path) : null; @endphp
-    @if ($ketuaTtd && file_exists($ketuaTtd))
-        <img src="{{ $ketuaTtd }}" style="height:70px; margin: 4px 0;">
-    @else
-        <br><br><br>
-    @endif
-    <p><strong>{{ $p->ketua->nama_lengkap }}</strong><br>
-    NIDN. {{ $p->ketua->nidn ?? '-' }}</p>
-</div>
 
 {{-- Halaman Persetujuan LPPM --}}
 @php
@@ -301,19 +201,17 @@
             @else
                 <br><br><br><br>
             @endif
-            <p><strong><u>{{ $lppmNama }}</u></strong><br>
-            NIDN/NIP. {{ $lppmNidn }}</p>
+            <p><strong><u>{{ $lppmNama }}</u></strong><br>NIDN/NIP. {{ $lppmNidn }}</p>
         </td>
         <td width="50%" style="vertical-align: top; text-align: center;">
             <p>{{ $kota }}, {{ ($p->tgl_submit ?? now())->translatedFormat('d F Y') }}<br>Ketua Pengusul,</p>
-            @php $ketuaTtdL = $p->ketua->ttd_path ? storage_path('app/public/' . $p->ketua->ttd_path) : null; @endphp
-            @if ($ketuaTtdL && file_exists($ketuaTtdL))
-                <img src="{{ $ketuaTtdL }}" style="height:70px; margin: 4px 0;">
+            @php $ketuaTtd = $p->ketua->ttd_path ? storage_path('app/public/' . $p->ketua->ttd_path) : null; @endphp
+            @if ($ketuaTtd && file_exists($ketuaTtd))
+                <img src="{{ $ketuaTtd }}" style="height:70px; margin: 4px 0;">
             @else
                 <br><br><br><br>
             @endif
-            <p><strong><u>{{ $p->ketua->nama_lengkap }}</u></strong><br>
-            NIDN. {{ $p->ketua->nidn ?? '-' }}</p>
+            <p><strong><u>{{ $p->ketua->nama_lengkap }}</u></strong><br>NIDN. {{ $p->ketua->nidn ?? '-' }}</p>
         </td>
     </tr>
 </table>
