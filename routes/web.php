@@ -15,6 +15,7 @@ use App\Http\Controllers\Operator\JadwalController as OperatorJadwal;
 use App\Http\Controllers\Operator\PenilaianController as OperatorPenilaian;
 use App\Http\Controllers\Operator\ProfilController as OperatorProfil;
 use App\Http\Controllers\Operator\ProposalController as OperatorProposal;
+use App\Http\Controllers\Operator\RekapController as OperatorRekap;
 use App\Http\Controllers\Operator\ReviewerController as OperatorReviewer;
 use App\Http\Controllers\Operator\VerifikasiLaporanController as OperatorVerifLaporan;
 use App\Http\Controllers\Reviewer\DashboardController as ReviewerDashboard;
@@ -110,6 +111,16 @@ Route::middleware('auth')->group(function () {
         Route::get('/profil',          [OperatorProfil::class, 'edit'])->name('profil.edit');
         Route::put('/profil',          [OperatorProfil::class, 'update'])->name('profil.update');
         Route::put('/profil/password', [OperatorProfil::class, 'updatePassword'])->name('profil.password');
+
+        // Rekap & Export
+        Route::prefix('rekap')->name('rekap.')->group(function () {
+            Route::get('/proposal',          [OperatorRekap::class, 'proposal'])->name('proposal');
+            Route::get('/proposal/pdf',      [OperatorRekap::class, 'exportProposalPdf'])->name('proposal.pdf');
+            Route::get('/proposal/csv',      [OperatorRekap::class, 'exportProposalCsv'])->name('proposal.csv');
+            Route::get('/hasil-review',      [OperatorRekap::class, 'hasilReview'])->name('hasil');
+            Route::get('/hasil-review/pdf',  [OperatorRekap::class, 'exportHasilReviewPdf'])->name('hasil.pdf');
+            Route::get('/hasil-review/csv',  [OperatorRekap::class, 'exportHasilReviewCsv'])->name('hasil.csv');
+        });
 
         // Verifikasi Laporan dosen
         Route::prefix('laporan')->name('laporan.')->group(function () {

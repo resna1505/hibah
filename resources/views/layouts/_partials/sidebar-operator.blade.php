@@ -57,6 +57,16 @@
         <a href="{{ route('operator.laporan.index') }}" class="{{ $linkClass('laporan') }}">
             <i class="ri-file-list-3-line"></i><span>Verifikasi Laporan</span>
         </a>
+
+        <a href="#rekapMenu" data-bs-toggle="collapse" role="button"
+            class="sidebar-link {{ $is('rekap') ? 'active' : '' }}">
+            <i class="ri-bar-chart-line"></i><span class="flex-grow-1">Laporan & Rekap</span>
+            <i class="ri-arrow-down-s-line"></i>
+        </a>
+        <div class="collapse {{ $is('rekap') ? 'show' : '' }}" id="rekapMenu">
+            <a href="{{ route('operator.rekap.proposal') }}" class="{{ $linkClass('rekap.proposal') }} ms-3">Rekap Proposal</a>
+            <a href="{{ route('operator.rekap.hasil') }}" class="{{ $linkClass('rekap.hasil') }} ms-3">Rekap Hasil Review</a>
+        </div>
         <a href="{{ route('operator.profil.edit') }}" class="{{ $linkClass('profil') }}">
             <i class="ri-user-line"></i><span>Profil Operator</span>
         </a>

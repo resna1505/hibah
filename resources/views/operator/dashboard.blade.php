@@ -118,13 +118,24 @@
             </div>
         </div>
 
+        {{-- Statistik Proposal (Line Chart) --}}
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white">
+                <h6 class="mb-0">Statistik Proposal</h6>
+                <small class="text-muted">Tren 12 bulan terakhir</small>
+            </div>
+            <div class="card-body">
+                <canvas id="chartProposal" style="max-height:280px;"></canvas>
+            </div>
+        </div>
+
         <div class="row g-3 mb-4">
             {{-- Proposal Terbaru --}}
             <div class="col-lg-8">
                 <div class="card border-0 shadow-sm h-100">
                     <div class="card-header bg-white d-flex justify-content-between align-items-center">
                         <h6 class="mb-0">Proposal Terbaru</h6>
-                        <a href="#" class="text-primary small">Lihat Semua</a>
+                        <a href="{{ route('operator.proposal.index') }}" class="text-primary small">Lihat Semua</a>
                     </div>
                     <div class="card-body p-0">
                         <div class="table-responsive">
@@ -227,4 +238,42 @@
             </div>
         </div>
 
+@endsection
+
+@section('scripts')
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const ctx = document.getElementById('chartProposal');
+    if (!ctx) return;
+
+    const chartData = @json($chartData);
+
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: chartData.labels,
+            datasets: [
+                { label: 'Masuk',     data: chartData.masuk,     borderColor: '#0d6efd', backgroundColor: 'rgba(13,110,253,0.08)', tension: 0.3, fill: true, borderWidth: 2 },
+                { label: 'Disetujui', data: chartData.disetujui, borderColor: '#198754', backgroundColor: 'transparent', tension: 0.3, borderWidth: 2 },
+                { label: 'Revisi',    data: chartData.revisi,    borderColor: '#ffc107', backgroundColor: 'transparent', tension: 0.3, borderWidth: 2 },
+                { label: 'Ditolak',   data: chartData.ditolak,   borderColor: '#dc3545', backgroundColor: 'transparent', tension: 0.3, borderWidth: 2 },
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'top' },
+                tooltip: { mode: 'index', intersect: false },
+            },
+            interaction: { mode: 'nearest', axis: 'x', intersect: false },
+            scales: {
+                y: { beginAtZero: true, ticks: { stepSize: 1, precision: 0 } },
+                x: { grid: { display: false } }
+            }
+        }
+    });
+});
+</script>
 @endsection
