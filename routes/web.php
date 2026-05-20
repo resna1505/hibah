@@ -2,6 +2,9 @@
 
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Dosen\DashboardController as DosenDashboard;
+use App\Http\Controllers\Dosen\LaporanController as DosenLaporan;
+use App\Http\Controllers\Dosen\Penelitian\UsulanController as DosenPenelitianUsulan;
+use App\Http\Controllers\Dosen\Pengabdian\UsulanController as DosenPkmUsulan;
 use App\Http\Controllers\Dosen\ProfilController as DosenProfil;
 use App\Http\Controllers\Dosen\RiwayatHkiController as DosenRiwayatHki;
 use App\Http\Controllers\Dosen\RiwayatPenelitianController as DosenRiwayatPenelitian;
@@ -88,6 +91,40 @@ Route::middleware('auth')->group(function () {
             Route::get('/',                [DosenRiwayatHki::class, 'index'])->name('index');
             Route::post('/',               [DosenRiwayatHki::class, 'store'])->name('store');
             Route::delete('/{riwayat_hki}',[DosenRiwayatHki::class, 'destroy'])->name('destroy');
+        });
+
+        // Usulan Penelitian
+        Route::prefix('penelitian')->name('penelitian.')->group(function () {
+            Route::get('/',                       [DosenPenelitianUsulan::class, 'index'])->name('index');
+            Route::get('/create',                 [DosenPenelitianUsulan::class, 'create'])->name('create');
+            Route::post('/',                      [DosenPenelitianUsulan::class, 'store'])->name('store');
+            Route::get('/{penelitian}',           [DosenPenelitianUsulan::class, 'show'])->name('show');
+            Route::get('/{penelitian}/edit',      [DosenPenelitianUsulan::class, 'edit'])->name('edit');
+            Route::put('/{penelitian}',           [DosenPenelitianUsulan::class, 'update'])->name('update');
+            Route::post('/{penelitian}/submit',   [DosenPenelitianUsulan::class, 'submit'])->name('submit');
+            Route::delete('/{penelitian}',        [DosenPenelitianUsulan::class, 'destroy'])->name('destroy');
+            Route::get('/{penelitian}/pdf',       [DosenPenelitianUsulan::class, 'pdf'])->name('pdf');
+        });
+
+        // Usulan PKM
+        Route::prefix('pkm')->name('pkm.')->group(function () {
+            Route::get('/',                [DosenPkmUsulan::class, 'index'])->name('index');
+            Route::get('/create',          [DosenPkmUsulan::class, 'create'])->name('create');
+            Route::post('/',               [DosenPkmUsulan::class, 'store'])->name('store');
+            Route::get('/{pkm}',           [DosenPkmUsulan::class, 'show'])->name('show');
+            Route::get('/{pkm}/edit',      [DosenPkmUsulan::class, 'edit'])->name('edit');
+            Route::put('/{pkm}',           [DosenPkmUsulan::class, 'update'])->name('update');
+            Route::post('/{pkm}/submit',   [DosenPkmUsulan::class, 'submit'])->name('submit');
+            Route::delete('/{pkm}',        [DosenPkmUsulan::class, 'destroy'])->name('destroy');
+            Route::get('/{pkm}/pdf',       [DosenPkmUsulan::class, 'pdf'])->name('pdf');
+        });
+
+        // Laporan (Penelitian & PKM)
+        Route::prefix('laporan')->name('laporan.')->group(function () {
+            Route::get('/{proposal}',                [DosenLaporan::class, 'show'])->name('show');
+            Route::post('/{proposal}/kemajuan',      [DosenLaporan::class, 'uploadKemajuan'])->name('kemajuan');
+            Route::post('/{proposal}/akhir',         [DosenLaporan::class, 'uploadAkhir'])->name('akhir');
+            Route::post('/{proposal}/luaran',        [DosenLaporan::class, 'uploadLuaran'])->name('luaran');
         });
     });
 

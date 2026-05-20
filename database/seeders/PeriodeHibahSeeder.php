@@ -25,14 +25,15 @@ class PeriodeHibahSeeder extends Seeder
         );
 
         // Jadwal 6 tahapan dengan status yang menggambarkan progress saat ini
+        // Pengajuan & Review dibuat overlap (paralel) supaya dosen masih bisa submit proposal sembari operator sudah mereview yang masuk lebih awal
         $today = Carbon::today();
         $jadwal = [
-            'pengajuan'  => ['mulai' => $today->copy()->subDays(45), 'selesai' => $today->copy()->subDays(15), 'status' => 'selesai'],
-            'review'     => ['mulai' => $today->copy()->subDays(14), 'selesai' => $today->copy()->addDays(5),  'status' => 'berjalan'],
-            'revisi'     => ['mulai' => $today->copy()->addDays(6),  'selesai' => $today->copy()->addDays(20), 'status' => 'belum_mulai'],
-            'penetapan'  => ['mulai' => $today->copy()->addDays(21), 'selesai' => $today->copy()->addDays(25), 'status' => 'belum_mulai'],
-            'pengumuman' => ['mulai' => $today->copy()->addDays(28), 'selesai' => $today->copy()->addDays(28), 'status' => 'belum_mulai'],
-            'pelaksanaan'=> ['mulai' => $today->copy()->addDays(30), 'selesai' => $today->copy()->addDays(210),'status' => 'belum_mulai'],
+            'pengajuan'  => ['mulai' => $today->copy()->subDays(30), 'selesai' => $today->copy()->addDays(15), 'status' => 'berjalan'],
+            'review'     => ['mulai' => $today->copy()->subDays(14), 'selesai' => $today->copy()->addDays(20), 'status' => 'berjalan'],
+            'revisi'     => ['mulai' => $today->copy()->addDays(21), 'selesai' => $today->copy()->addDays(35), 'status' => 'belum_mulai'],
+            'penetapan'  => ['mulai' => $today->copy()->addDays(36), 'selesai' => $today->copy()->addDays(40), 'status' => 'belum_mulai'],
+            'pengumuman' => ['mulai' => $today->copy()->addDays(43), 'selesai' => $today->copy()->addDays(43), 'status' => 'belum_mulai'],
+            'pelaksanaan'=> ['mulai' => $today->copy()->addDays(45), 'selesai' => $today->copy()->addDays(225),'status' => 'belum_mulai'],
         ];
 
         foreach ($jadwal as $kode => $rows) {

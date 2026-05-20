@@ -34,8 +34,8 @@
                     <i class="ri-microscope-line me-1"></i>Penelitian
                 </a>
                 <ul class="dropdown-menu">
-                    <li><a class="dropdown-item" href="#"><i class="ri-add-line me-2"></i>Usulan Penelitian</a></li>
-                    <li><a class="dropdown-item" href="#"><i class="ri-file-list-line me-2"></i>Laporan Penelitian</a></li>
+                    <li><a class="dropdown-item" href="{{ route('dosen.penelitian.index') }}"><i class="ri-add-line me-2"></i>Usulan Penelitian</a></li>
+                    <li><small class="dropdown-item-text text-muted">Laporan diakses via Detail Proposal yang disetujui</small></li>
                 </ul>
             </li>
             <li class="nav-item dropdown">
@@ -44,8 +44,8 @@
                     <i class="ri-community-line me-1"></i>Pengabdian
                 </a>
                 <ul class="dropdown-menu">
-                    <li><a class="dropdown-item" href="#"><i class="ri-add-line me-2"></i>Usulan PKM</a></li>
-                    <li><a class="dropdown-item" href="#"><i class="ri-file-list-line me-2"></i>Laporan PKM</a></li>
+                    <li><a class="dropdown-item" href="{{ route('dosen.pkm.index') }}"><i class="ri-add-line me-2"></i>Usulan PKM</a></li>
+                    <li><small class="dropdown-item-text text-muted">Laporan diakses via Detail Proposal yang disetujui</small></li>
                 </ul>
             </li>
             <li class="nav-item dropdown">
