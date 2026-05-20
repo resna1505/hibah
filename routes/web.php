@@ -1,6 +1,10 @@
 <?php
 
 use App\Http\Controllers\Dosen\DashboardController as DosenDashboard;
+use App\Http\Controllers\Dosen\ProfilController as DosenProfil;
+use App\Http\Controllers\Dosen\RiwayatHkiController as DosenRiwayatHki;
+use App\Http\Controllers\Dosen\RiwayatPenelitianController as DosenRiwayatPenelitian;
+use App\Http\Controllers\Dosen\RiwayatPkmController as DosenRiwayatPkm;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\Operator\DashboardController as OperatorDashboard;
 use App\Http\Controllers\Reviewer\DashboardController as ReviewerDashboard;
@@ -55,6 +59,32 @@ Route::middleware('auth')->group(function () {
     */
     Route::middleware('role:dosen')->prefix('dosen')->name('dosen.')->group(function () {
         Route::get('/dashboard', [DosenDashboard::class, 'index'])->name('dashboard');
+
+        // Profil
+        Route::get('/profil',           [DosenProfil::class, 'edit'])->name('profil.edit');
+        Route::put('/profil',           [DosenProfil::class, 'update'])->name('profil.update');
+        Route::put('/profil/password',  [DosenProfil::class, 'updatePassword'])->name('profil.password');
+
+        // Riwayat Penelitian
+        Route::prefix('riwayat/penelitian')->name('riwayat.penelitian.')->group(function () {
+            Route::get('/',                       [DosenRiwayatPenelitian::class, 'index'])->name('index');
+            Route::post('/',                      [DosenRiwayatPenelitian::class, 'store'])->name('store');
+            Route::delete('/{riwayat_penelitian}',[DosenRiwayatPenelitian::class, 'destroy'])->name('destroy');
+        });
+
+        // Riwayat PKM
+        Route::prefix('riwayat/pkm')->name('riwayat.pkm.')->group(function () {
+            Route::get('/',                [DosenRiwayatPkm::class, 'index'])->name('index');
+            Route::post('/',               [DosenRiwayatPkm::class, 'store'])->name('store');
+            Route::delete('/{riwayat_pkm}',[DosenRiwayatPkm::class, 'destroy'])->name('destroy');
+        });
+
+        // Riwayat HKI
+        Route::prefix('riwayat/hki')->name('riwayat.hki.')->group(function () {
+            Route::get('/',                [DosenRiwayatHki::class, 'index'])->name('index');
+            Route::post('/',               [DosenRiwayatHki::class, 'store'])->name('store');
+            Route::delete('/{riwayat_hki}',[DosenRiwayatHki::class, 'destroy'])->name('destroy');
+        });
     });
 
     /*
