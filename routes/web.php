@@ -11,6 +11,8 @@ use App\Http\Controllers\Dosen\RiwayatPenelitianController as DosenRiwayatPeneli
 use App\Http\Controllers\Dosen\RiwayatPkmController as DosenRiwayatPkm;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\Operator\DashboardController as OperatorDashboard;
+use App\Http\Controllers\Operator\ProposalController as OperatorProposal;
+use App\Http\Controllers\Operator\ReviewerController as OperatorReviewer;
 use App\Http\Controllers\Reviewer\DashboardController as ReviewerDashboard;
 use Illuminate\Support\Facades\Route;
 
@@ -59,6 +61,24 @@ Route::middleware('auth')->group(function () {
     */
     Route::middleware('role:operator')->prefix('operator')->name('operator.')->group(function () {
         Route::get('/dashboard', [OperatorDashboard::class, 'index'])->name('dashboard');
+
+        // Proposal
+        Route::prefix('proposal')->name('proposal.')->group(function () {
+            Route::get('/',                       [OperatorProposal::class, 'index'])->name('index');
+            Route::get('/{proposal}',             [OperatorProposal::class, 'show'])->name('show');
+            Route::get('/{proposal}/verifikasi',  [OperatorProposal::class, 'verifikasiForm'])->name('verifikasi');
+            Route::post('/{proposal}/verifikasi', [OperatorProposal::class, 'submitVerifikasi'])->name('verifikasi.submit');
+        });
+
+        // Reviewer
+        Route::prefix('reviewer')->name('reviewer.')->group(function () {
+            Route::get('/data',                  [OperatorReviewer::class, 'dataIndex'])->name('data');
+            Route::patch('/data/{dosen}/toggle', [OperatorReviewer::class, 'toggleReviewer'])->name('toggle');
+            Route::get('/penugasan',             [OperatorReviewer::class, 'penugasanIndex'])->name('penugasan');
+            Route::get('/penugasan/{proposal}',  [OperatorReviewer::class, 'assignForm'])->name('assign.form');
+            Route::post('/penugasan/{proposal}', [OperatorReviewer::class, 'assignSubmit'])->name('assign.submit');
+            Route::get('/monitoring',            [OperatorReviewer::class, 'monitoringIndex'])->name('monitoring');
+        });
     });
 
     /*

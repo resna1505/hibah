@@ -33,9 +33,8 @@
             <i class="ri-arrow-down-s-line"></i>
         </a>
         <div class="collapse {{ $is('proposal') ? 'show' : '' }}" id="proposalMenu">
-            <a href="#" class="{{ $linkClass('proposal.data') }} ms-3">Data Proposal</a>
-            <a href="#" class="{{ $linkClass('proposal.verifikasi') }} ms-3">Verifikasi Proposal</a>
-            <a href="#" class="{{ $linkClass('proposal.status') }} ms-3">Status Proposal</a>
+            <a href="{{ route('operator.proposal.index') }}" class="{{ $linkClass('proposal.data') }} ms-3">Data Proposal</a>
+            <a href="{{ route('operator.proposal.index', ['status' => 'submitted']) }}" class="{{ $linkClass('proposal.verifikasi') }} ms-3">Verifikasi Proposal</a>
         </div>
 
         <a href="#reviewerMenu" data-bs-toggle="collapse" role="button"
@@ -44,9 +43,9 @@
             <i class="ri-arrow-down-s-line"></i>
         </a>
         <div class="collapse {{ $is('reviewer') ? 'show' : '' }}" id="reviewerMenu">
-            <a href="#" class="{{ $linkClass('reviewer.data') }} ms-3">Data Reviewer</a>
-            <a href="#" class="{{ $linkClass('reviewer.penugasan') }} ms-3">Penugasan Reviewer</a>
-            <a href="#" class="{{ $linkClass('reviewer.monitoring') }} ms-3">Monitoring Reviewer</a>
+            <a href="{{ route('operator.reviewer.data') }}" class="{{ $linkClass('reviewer.data') }} ms-3">Data Reviewer</a>
+            <a href="{{ route('operator.reviewer.penugasan') }}" class="{{ $linkClass('reviewer.penugasan') }} ms-3">Penugasan Reviewer</a>
+            <a href="{{ route('operator.reviewer.monitoring') }}" class="{{ $linkClass('reviewer.monitoring') }} ms-3">Monitoring Reviewer</a>
         </div>
 
         <a href="#" class="{{ $linkClass('penilaian') }}">
