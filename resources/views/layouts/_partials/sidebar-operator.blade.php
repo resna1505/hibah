@@ -48,7 +48,7 @@
             <a href="{{ route('operator.reviewer.monitoring') }}" class="{{ $linkClass('reviewer.monitoring') }} ms-3">Monitoring Reviewer</a>
         </div>
 
-        <a href="#" class="{{ $linkClass('penilaian') }}">
+        <a href="{{ route('operator.penilaian.index') }}" class="{{ $linkClass('penilaian') }}">
             <i class="ri-checkbox-circle-line"></i><span>Penilaian</span>
         </a>
         <a href="#" class="{{ $linkClass('jadwal') }}">

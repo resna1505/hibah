@@ -25,19 +25,19 @@
         <a href="{{ route('reviewer.dashboard') }}" class="{{ $linkClass('dashboard') }}">
             <i class="ri-home-line"></i><span>Dashboard</span>
         </a>
-        <a href="#" class="{{ $linkClass('proposal') }}">
+        <a href="{{ route('reviewer.proposal.index') }}" class="{{ $linkClass('proposal') }}">
             <i class="ri-file-text-line"></i><span>Proposal Hibah</span>
         </a>
-        <a href="#" class="{{ $linkClass('penilaian') }}">
+        <a href="{{ route('reviewer.proposal.index', ['tab' => 'menunggu_review']) }}" class="{{ $linkClass('penilaian') }}">
             <i class="ri-clipboard-line"></i><span>Penilaian Proposal</span>
         </a>
-        <a href="#" class="{{ $linkClass('hasil') }}">
+        <a href="{{ route('reviewer.hasil.index') }}" class="{{ $linkClass('hasil') }}">
             <i class="ri-file-list-3-line"></i><span>Hasil Review</span>
         </a>
-        <a href="#" class="{{ $linkClass('jadwal') }}">
+        <a href="{{ route('reviewer.jadwal') }}" class="{{ $linkClass('jadwal') }}">
             <i class="ri-calendar-line"></i><span>Jadwal Review</span>
         </a>
-        <a href="#" class="{{ $linkClass('profil') }}">
+        <a href="{{ route('dosen.profil.edit') }}" class="{{ $linkClass('profil') }}">
             <i class="ri-user-line"></i><span>Profil Reviewer</span>
         </a>
 

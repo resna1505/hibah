@@ -11,9 +11,14 @@ use App\Http\Controllers\Dosen\RiwayatPenelitianController as DosenRiwayatPeneli
 use App\Http\Controllers\Dosen\RiwayatPkmController as DosenRiwayatPkm;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\Operator\DashboardController as OperatorDashboard;
+use App\Http\Controllers\Operator\PenilaianController as OperatorPenilaian;
 use App\Http\Controllers\Operator\ProposalController as OperatorProposal;
 use App\Http\Controllers\Operator\ReviewerController as OperatorReviewer;
 use App\Http\Controllers\Reviewer\DashboardController as ReviewerDashboard;
+use App\Http\Controllers\Reviewer\HasilReviewController as ReviewerHasil;
+use App\Http\Controllers\Reviewer\JadwalReviewController as ReviewerJadwal;
+use App\Http\Controllers\Reviewer\PenilaianController as ReviewerPenilaian;
+use App\Http\Controllers\Reviewer\ProposalController as ReviewerProposal;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -78,6 +83,13 @@ Route::middleware('auth')->group(function () {
             Route::get('/penugasan/{proposal}',  [OperatorReviewer::class, 'assignForm'])->name('assign.form');
             Route::post('/penugasan/{proposal}', [OperatorReviewer::class, 'assignSubmit'])->name('assign.submit');
             Route::get('/monitoring',            [OperatorReviewer::class, 'monitoringIndex'])->name('monitoring');
+        });
+
+        // Penilaian (finalize keputusan akhir)
+        Route::prefix('penilaian')->name('penilaian.')->group(function () {
+            Route::get('/',                     [OperatorPenilaian::class, 'index'])->name('index');
+            Route::get('/{proposal}',           [OperatorPenilaian::class, 'show'])->name('show');
+            Route::post('/{proposal}/finalize', [OperatorPenilaian::class, 'finalize'])->name('finalize');
         });
     });
 
@@ -153,5 +165,26 @@ Route::middleware('auth')->group(function () {
     */
     Route::middleware('role:reviewer')->prefix('reviewer')->name('reviewer.')->group(function () {
         Route::get('/dashboard', [ReviewerDashboard::class, 'index'])->name('dashboard');
+
+        // Proposal (list + detail)
+        Route::prefix('proposal')->name('proposal.')->group(function () {
+            Route::get('/',            [ReviewerProposal::class, 'index'])->name('index');
+            Route::get('/{proposal}',  [ReviewerProposal::class, 'show'])->name('show');
+        });
+
+        // Penilaian form + submit
+        Route::prefix('penilaian')->name('penilaian.')->group(function () {
+            Route::get('/{penugasan}',   [ReviewerPenilaian::class, 'form'])->name('form');
+            Route::post('/{penugasan}',  [ReviewerPenilaian::class, 'submit'])->name('submit');
+        });
+
+        // Hasil Review
+        Route::prefix('hasil')->name('hasil.')->group(function () {
+            Route::get('/',              [ReviewerHasil::class, 'index'])->name('index');
+            Route::get('/{penugasan}',   [ReviewerHasil::class, 'show'])->name('show');
+        });
+
+        // Jadwal Review
+        Route::get('/jadwal', [ReviewerJadwal::class, 'index'])->name('jadwal');
     });
 });

@@ -1,0 +1,104 @@
+@extends('layouts.reviewer')
+
+@section('title', 'Detail Proposal')
+
+@php $activeNav = 'proposal'; @endphp
+
+@section('content')
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h4 class="mb-0">Detail Proposal</h4>
+            <p class="text-muted small mb-0">{{ $p->skemaHibah->nama }}</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{{ route('reviewer.proposal.index') }}" class="btn btn-sm btn-outline-secondary"><i class="ri-arrow-left-line"></i> Kembali</a>
+            @if ($myPenugasan && in_array($myPenugasan->status, ['ditugaskan', 'sedang_review']))
+                <a href="{{ route('reviewer.penilaian.form', $myPenugasan) }}" class="btn btn-sm btn-primary"><i class="ri-edit-line"></i> Nilai Proposal</a>
+            @elseif ($myPenugasan?->status === 'selesai')
+                <a href="{{ route('reviewer.hasil.show', $myPenugasan) }}" class="btn btn-sm btn-success"><i class="ri-file-text-line"></i> Lihat Hasil</a>
+            @endif
+        </div>
+    </div>
+
+    @if (! $myPenugasan)
+        <div class="alert alert-info"><i class="ri-information-line me-1"></i> Anda tidak ditugaskan untuk proposal ini, hanya bisa melihat detail (read-only).</div>
+    @endif
+
+    <div class="row g-3">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm mb-3">
+                <div class="card-body">
+                    <h5 class="mb-2">{{ $p->judul }}</h5>
+                    <table class="table table-sm mb-0">
+                        <tr><td width="30%" class="text-muted small">Ketua</td><td>{{ $p->ketua->nama_lengkap }}</td></tr>
+                        <tr><td class="text-muted small">Fakultas / Prodi</td><td>{{ $p->ketua->fakultas?->nama }} / {{ $p->ketua->prodi?->nama }}</td></tr>
+                        <tr><td class="text-muted small">Total Anggaran</td><td>Rp {{ number_format($totalRab, 0, ',', '.') }}</td></tr>
+                        <tr><td class="text-muted small">Durasi</td><td>{{ $p->durasi_bulan }} bulan</td></tr>
+                    </table>
+                </div>
+            </div>
+
+            @if ($p->ringkasan)<div class="card border-0 shadow-sm mb-3"><div class="card-header bg-white"><h6 class="mb-0">Ringkasan</h6></div><div class="card-body"><p class="small mb-0">{{ $p->ringkasan }}</p></div></div>@endif
+            @if ($p->pendahuluan)<div class="card border-0 shadow-sm mb-3"><div class="card-header bg-white"><h6 class="mb-0">Pendahuluan</h6></div><div class="card-body"><p class="small mb-0" style="white-space:pre-wrap;">{{ $p->pendahuluan }}</p></div></div>@endif
+            @if ($p->permasalahan_solusi)<div class="card border-0 shadow-sm mb-3"><div class="card-header bg-white"><h6 class="mb-0">Permasalahan & Solusi</h6></div><div class="card-body"><p class="small mb-0" style="white-space:pre-wrap;">{{ $p->permasalahan_solusi }}</p></div></div>@endif
+            @if ($p->metode)
+                <div class="card border-0 shadow-sm mb-3">
+                    <div class="card-header bg-white"><h6 class="mb-0">Metode</h6></div>
+                    <div class="card-body">
+                        <p class="small" style="white-space:pre-wrap;">{{ $p->metode }}</p>
+                        @if ($p->metode_diagram_path)<img src="{{ asset('storage/' . $p->metode_diagram_path) }}" class="img-fluid border rounded mt-2" style="max-height:300px;">@endif
+                    </div>
+                </div>
+            @endif
+            @if ($p->daftar_pustaka)<div class="card border-0 shadow-sm mb-3"><div class="card-header bg-white"><h6 class="mb-0">Daftar Pustaka</h6></div><div class="card-body"><p class="small mb-0" style="white-space:pre-wrap;">{{ $p->daftar_pustaka }}</p></div></div>@endif
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm mb-3">
+                <div class="card-header bg-white"><h6 class="mb-0">Tim Pengusul</h6></div>
+                <div class="card-body small">
+                    <p class="mb-1"><strong>Ketua:</strong><br>{{ $p->ketua->nama_lengkap }}</p>
+                    @foreach ($p->anggota as $a)
+                        <div class="border-top pt-2 mt-2">
+                            @if ($a->peran === 'anggota_dosen')
+                                <strong>Anggota Dosen:</strong><br>{{ $a->dosen?->nama_lengkap }}
+                            @else
+                                <strong>Mahasiswa:</strong><br>{{ $a->nama_mahasiswa }}
+                            @endif
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+
+            @if ($p->mitra->isNotEmpty())
+                <div class="card border-0 shadow-sm mb-3">
+                    <div class="card-header bg-white"><h6 class="mb-0">Mitra</h6></div>
+                    <div class="card-body small">
+                        @foreach ($p->mitra as $m)<div class="mb-2 pb-2 border-bottom"><strong>{{ $m->nama_mitra }}</strong></div>@endforeach
+                    </div>
+                </div>
+            @endif
+        </div>
+
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white d-flex justify-content-between"><h6 class="mb-0">RAB</h6><strong class="text-primary">Total: Rp {{ number_format($totalRab, 0, ',', '.') }}</strong></div>
+                <div class="card-body p-0">
+                    <table class="table mb-0 small">
+                        <thead class="table-light"><tr><th>Kategori</th><th>Item</th><th>Justifikasi</th><th class="text-end">Qty</th><th class="text-end">Harga</th><th class="text-end">Sub Total</th></tr></thead>
+                        <tbody>
+                            @forelse ($p->rab as $r)
+                                <tr><td>{{ $r->kategori?->nama }}</td><td>{{ $r->item }}</td><td class="text-muted">{{ $r->justifikasi }}</td>
+                                    <td class="text-end">{{ rtrim(rtrim(number_format($r->kuantitas, 2, ',', '.'), '0'), ',') }} {{ $r->satuan }}</td>
+                                    <td class="text-end">Rp {{ number_format($r->harga_satuan, 0, ',', '.') }}</td>
+                                    <td class="text-end">Rp {{ number_format($r->sub_total, 0, ',', '.') }}</td></tr>
+                            @empty
+                                <tr><td colspan="6" class="text-center text-muted py-3">RAB belum diisi.</td></tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+@endsection
