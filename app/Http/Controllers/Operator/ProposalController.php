@@ -58,7 +58,8 @@ class ProposalController extends Controller
     public function show(Request $request, Proposal $proposal)
     {
         $proposal->load(['skemaHibah', 'periodeHibah', 'ketua.fakultas', 'ketua.prodi',
-            'anggota.dosen', 'mitra', 'rab.kategori',
+            'anggota.dosen', 'mitra', 'rab.kategori', 'rab.komponen',
+            'bidangStrategis', 'rencanaLuaran.jenisLuaran', 'dokumen',
             'verifikasi.operator',
             'penugasanReviewer.reviewer', 'penugasanReviewer.penilaian.detail.kriteria']);
 

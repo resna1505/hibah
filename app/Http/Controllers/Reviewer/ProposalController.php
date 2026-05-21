@@ -81,7 +81,8 @@ class ProposalController extends Controller
 
         // Reviewer bisa lihat semua proposal (transparansi), tapi action nilai hanya kalau ditugaskan
         $proposal->load(['skemaHibah', 'periodeHibah', 'ketua.fakultas', 'ketua.prodi',
-            'anggota.dosen', 'mitra', 'rab.kategori',
+            'anggota.dosen', 'mitra', 'rab.kategori', 'rab.komponen',
+            'bidangStrategis', 'rencanaLuaran.jenisLuaran', 'dokumen',
             'penugasanReviewer' => fn($q) => $q->where('reviewer_dosen_id', $dosen->id)->with('penilaian.detail.kriteria')]);
 
         $myPenugasan = $proposal->penugasanReviewer->first(); // assignment khusus reviewer ini

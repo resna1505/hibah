@@ -33,13 +33,30 @@
                 <div class="card-body">
                     <h5 class="mb-2">{{ $p->judul }}</h5>
                     <table class="table table-sm mb-0">
+                        @if ($p->no_registrasi)
+                            <tr><td width="30%" class="text-muted small">No. Registrasi</td><td><code>{{ $p->no_registrasi }}</code></td></tr>
+                        @endif
                         <tr><td width="30%" class="text-muted small">Ketua</td><td>{{ $p->ketua->nama_lengkap }}</td></tr>
                         <tr><td class="text-muted small">Fakultas / Prodi</td><td>{{ $p->ketua->fakultas?->nama }} / {{ $p->ketua->prodi?->nama }}</td></tr>
+                        <tr><td class="text-muted small">Skema</td><td>{{ $p->skemaHibah->nama }}</td></tr>
+                        @if ($p->bidangStrategis)
+                            <tr><td class="text-muted small">Bidang Strategis</td><td>{{ $p->bidangStrategis->kode }}. {{ $p->bidangStrategis->nama }}</td></tr>
+                        @endif
                         <tr><td class="text-muted small">Total Anggaran</td><td>Rp {{ number_format($totalRab, 0, ',', '.') }}</td></tr>
                         <tr><td class="text-muted small">Durasi</td><td>{{ $p->durasi_bulan }} bulan</td></tr>
                     </table>
                 </div>
             </div>
+
+            @if ($p->bidangStrategis && ($p->rumusan_masalah_bidang || $p->uraian_bidang))
+                <div class="card border-0 shadow-sm mb-3">
+                    <div class="card-header bg-white"><h6 class="mb-0">Bidang Strategis</h6></div>
+                    <div class="card-body small">
+                        @if ($p->rumusan_masalah_bidang)<p class="mb-1"><span class="text-muted">Rumusan Masalah:</span><br>{{ $p->rumusan_masalah_bidang }}</p>@endif
+                        @if ($p->uraian_bidang)<p class="mb-0"><span class="text-muted">Uraian:</span><br>{{ $p->uraian_bidang }}</p>@endif
+                    </div>
+                </div>
+            @endif
 
             @if ($p->ringkasan)<div class="card border-0 shadow-sm mb-3"><div class="card-header bg-white"><h6 class="mb-0">Ringkasan</h6></div><div class="card-body"><p class="small mb-0">{{ $p->ringkasan }}</p></div></div>@endif
             @if ($p->pendahuluan)<div class="card border-0 shadow-sm mb-3"><div class="card-header bg-white"><h6 class="mb-0">Pendahuluan</h6></div><div class="card-body"><p class="small mb-0" style="white-space:pre-wrap;">{{ $p->pendahuluan }}</p></div></div>@endif
@@ -84,19 +101,61 @@
         </div>
 
         <div class="col-12">
+            @if ($p->rencanaLuaran->isNotEmpty())
+                <div class="card border-0 shadow-sm mb-3">
+                    <div class="card-header bg-white"><h6 class="mb-0">Rencana Luaran</h6></div>
+                    <div class="card-body p-0">
+                        <table class="table mb-0 small">
+                            <thead class="table-light"><tr><th width="80">Tahun ke-</th><th width="100">Kategori</th><th>Jenis Luaran</th><th>Status Target</th><th>Keterangan</th></tr></thead>
+                            <tbody>
+                                @foreach ($p->rencanaLuaran as $rl)
+                                    <tr>
+                                        <td>{{ $rl->tahun_ke }}</td>
+                                        <td>{{ ucfirst($rl->kategori) }}</td>
+                                        <td>{{ $rl->jenisLuaran?->nama ?? $rl->jenis_luaran_text ?? '-' }}</td>
+                                        <td>{{ $rl->status_target ?? '-' }}</td>
+                                        <td class="text-muted">{{ $rl->keterangan ?? '-' }}</td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            @endif
+
+            @if ($p->dokumen->isNotEmpty())
+                <div class="card border-0 shadow-sm mb-3">
+                    <div class="card-header bg-white"><h6 class="mb-0">Dokumen Pendukung</h6></div>
+                    <div class="card-body p-0">
+                        <table class="table mb-0 small">
+                            <thead class="table-light"><tr><th width="220">Jenis</th><th>Nama File</th><th width="120">Ukuran</th></tr></thead>
+                            <tbody>
+                                @foreach ($p->dokumen as $d)
+                                    <tr>
+                                        <td><span class="badge bg-secondary-subtle text-dark">{{ $d->jenis }}</span></td>
+                                        <td><a href="{{ asset('storage/' . $d->path) }}" target="_blank">{{ $d->nama_file }}</a></td>
+                                        <td class="text-muted">{{ number_format($d->ukuran / 1024, 1) }} KB</td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            @endif
+
             <div class="card border-0 shadow-sm">
                 <div class="card-header bg-white d-flex justify-content-between"><h6 class="mb-0">RAB</h6><strong class="text-primary">Total: Rp {{ number_format($totalRab, 0, ',', '.') }}</strong></div>
                 <div class="card-body p-0">
                     <table class="table mb-0 small">
-                        <thead class="table-light"><tr><th>Kategori</th><th>Item</th><th>Justifikasi</th><th class="text-end">Qty</th><th class="text-end">Harga</th><th class="text-end">Sub Total</th></tr></thead>
+                        <thead class="table-light"><tr><th>Kelompok</th><th>Komponen</th><th>Item</th><th>Justifikasi</th><th class="text-end">Qty</th><th class="text-end">Harga</th><th class="text-end">Sub Total</th></tr></thead>
                         <tbody>
                             @forelse ($p->rab as $r)
-                                <tr><td>{{ $r->kategori?->nama }}</td><td>{{ $r->item }}</td><td class="text-muted">{{ $r->justifikasi }}</td>
+                                <tr><td>{{ $r->kategori?->nama }}</td><td class="text-muted"><em>{{ $r->komponen?->nama ?? '-' }}</em></td><td>{{ $r->item }}</td><td class="text-muted">{{ $r->justifikasi }}</td>
                                     <td class="text-end">{{ rtrim(rtrim(number_format($r->kuantitas, 2, ',', '.'), '0'), ',') }} {{ $r->satuan }}</td>
                                     <td class="text-end">Rp {{ number_format($r->harga_satuan, 0, ',', '.') }}</td>
                                     <td class="text-end">Rp {{ number_format($r->sub_total, 0, ',', '.') }}</td></tr>
                             @empty
-                                <tr><td colspan="6" class="text-center text-muted py-3">RAB belum diisi.</td></tr>
+                                <tr><td colspan="7" class="text-center text-muted py-3">RAB belum diisi.</td></tr>
                             @endforelse
                         </tbody>
                     </table>
