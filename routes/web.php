@@ -12,6 +12,8 @@ use App\Http\Controllers\Dosen\RiwayatPkmController as DosenRiwayatPkm;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\Operator\DashboardController as OperatorDashboard;
 use App\Http\Controllers\Operator\JadwalController as OperatorJadwal;
+use App\Http\Controllers\Operator\AkunDosenController as OperatorAkunDosen;
+use App\Http\Controllers\Operator\LogAktivitasController as OperatorLogAktivitas;
 use App\Http\Controllers\Operator\MasterRabController as OperatorMasterRab;
 use App\Http\Controllers\Operator\PengaturanController as OperatorPengaturan;
 use App\Http\Controllers\Operator\PenilaianController as OperatorPenilaian;
@@ -121,6 +123,17 @@ Route::middleware('auth')->group(function () {
             Route::patch('/{jadwal}/activate',[OperatorJadwal::class, 'activate'])->name('activate');
             Route::delete('/{jadwal}',       [OperatorJadwal::class, 'destroy'])->name('destroy');
         });
+
+        // Akun Login Dosen (provisioning oleh operator)
+        Route::prefix('akun-dosen')->name('akun-dosen.')->group(function () {
+            Route::get('/',                       [OperatorAkunDosen::class, 'index'])->name('index');
+            Route::post('/',                      [OperatorAkunDosen::class, 'store'])->name('store');
+            Route::patch('/{akun}/toggle',        [OperatorAkunDosen::class, 'toggle'])->name('toggle');
+            Route::patch('/{akun}/reset-password',[OperatorAkunDosen::class, 'resetPassword'])->name('reset-password');
+        });
+
+        // Log Aktivitas
+        Route::get('/log-aktivitas', [OperatorLogAktivitas::class, 'index'])->name('log.index');
 
         // Master RAB (Kelompok + Komponen)
         Route::prefix('master/rab')->name('master.rab.')->group(function () {
@@ -249,8 +262,9 @@ Route::middleware('auth')->group(function () {
 
         // Proposal (list + detail)
         Route::prefix('proposal')->name('proposal.')->group(function () {
-            Route::get('/',            [ReviewerProposal::class, 'index'])->name('index');
-            Route::get('/{proposal}',  [ReviewerProposal::class, 'show'])->name('show');
+            Route::get('/',                [ReviewerProposal::class, 'index'])->name('index');
+            Route::get('/{proposal}/pdf',  [ReviewerProposal::class, 'pdf'])->name('pdf');
+            Route::get('/{proposal}',      [ReviewerProposal::class, 'show'])->name('show');
         });
 
         // Penilaian form + submit

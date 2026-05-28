@@ -46,6 +46,15 @@ class Login extends Component
 
         Auth::user()->forceFill(['last_login_at' => now()])->save();
 
+        \App\Models\Transaction\LogAktivitas::create([
+            'user_id'    => Auth::id(),
+            'modul'      => 'auth',
+            'aktivitas'  => 'login',
+            'deskripsi'  => 'Login berhasil sebagai ' . Auth::user()->role . '.',
+            'ip_address' => request()->ip(),
+            'created_at' => now(),
+        ]);
+
         session()->regenerate();
 
         return $this->redirectToRoleHome();

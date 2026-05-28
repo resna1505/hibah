@@ -80,9 +80,7 @@
                             </form>
 
                             <div class="text-center mt-5">
-                                <p class="mb-0">Belum punya akun?
-                                    <a href="{{ url('register') }}" class="fw-semibold text-secondary text-decoration-underline">Daftar di sini</a>
-                                </p>
+                                <p class="mb-0 text-muted small">Akun login disediakan oleh LPPM. Hubungi operator bila belum memiliki akses.</p>
                             </div>
                         </div>
                     </div>

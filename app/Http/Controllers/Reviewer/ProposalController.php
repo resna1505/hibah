@@ -23,7 +23,8 @@ class ProposalController extends Controller
         abort_unless($isAssigned, 403, 'Anda bukan reviewer yang ditugaskan untuk proposal ini.');
 
         $proposal->load(['skemaHibah', 'periodeHibah', 'ketua.fakultas', 'ketua.prodi',
-            'anggota.dosen.prodi', 'mitra', 'rab.kategori']);
+            'anggota.dosen.prodi', 'mitra', 'rab.kategori', 'rab.komponen',
+            'bidangStrategis', 'rencanaLuaran.jenisLuaran', 'dokumen']);
 
         $view = $proposal->skemaHibah?->jenis === 'pkm' ? 'dosen.pkm.pdf' : 'dosen.penelitian.pdf';
         $jenis = $proposal->skemaHibah?->jenis === 'pkm' ? 'PKM' : 'Penelitian';

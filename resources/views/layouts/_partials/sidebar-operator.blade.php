@@ -77,6 +77,12 @@
         <div class="collapse {{ $is('master') ? 'show' : '' }}" id="masterMenu">
             <a href="{{ route('operator.master.rab.index') }}" class="{{ $linkClass('master.rab') }} ms-3">Kelompok &amp; Komponen RAB</a>
         </div>
+        <a href="{{ route('operator.akun-dosen.index') }}" class="{{ $linkClass('akun-dosen') }}">
+            <i class="ri-user-add-line"></i><span>Akun Dosen</span>
+        </a>
+        <a href="{{ route('operator.log.index') }}" class="{{ $linkClass('log') }}">
+            <i class="ri-history-line"></i><span>Log Aktivitas</span>
+        </a>
         <a href="{{ route('operator.pengaturan.index') }}" class="{{ $linkClass('pengaturan') }}">
             <i class="ri-settings-3-line"></i><span>Pengaturan</span>
         </a>
