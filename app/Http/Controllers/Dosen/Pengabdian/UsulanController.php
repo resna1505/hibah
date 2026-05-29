@@ -310,10 +310,10 @@ class UsulanController extends Controller
             'durasi_bulan'       => 'required|integer|min:1|max:' . $skema->max_durasi_bulan,
             'pernyataan_setuju'  => 'nullable|boolean',
 
-            'anggota_dosen_id'        => 'array',
+            'anggota_dosen_id'        => 'array|max:2',
             'anggota_dosen_id.*'      => 'exists:dosen_m,id',
             'anggota_bidang_tugas'    => 'array',
-            'mahasiswa_nama'          => 'array',
+            'mahasiswa_nama'          => 'array|max:2',
             'mahasiswa_nim'           => 'array',
             'mahasiswa_prodi'         => 'array',
             'mahasiswa_bidang_tugas'  => 'array',
@@ -341,6 +341,9 @@ class UsulanController extends Controller
             'luaran_jenis_text'     => 'array',
             'luaran_status_target'  => 'array',
             'luaran_keterangan'     => 'array',
+        ], [
+            'anggota_dosen_id.max' => 'Anggota dosen maksimal 2 orang.',
+            'mahasiswa_nama.max'   => 'Anggota mahasiswa maksimal 2 orang.',
         ]);
 
         $proposal = [

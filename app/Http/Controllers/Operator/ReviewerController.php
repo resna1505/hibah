@@ -166,9 +166,11 @@ class ReviewerController extends Controller
             403, 'Status proposal tidak valid.');
 
         $data = $request->validate([
-            'reviewer_1_id' => 'required|exists:dosen_m,id|different:reviewer_2_id',
-            'reviewer_2_id' => 'required|exists:dosen_m,id|different:reviewer_1_id',
+            'reviewer_1_id' => 'required|exists:dosen_m,id',
+            'reviewer_2_id' => 'nullable|exists:dosen_m,id|different:reviewer_1_id',
             'deadline'      => 'required|date|after:today',
+        ], [
+            'reviewer_2_id.different' => 'Reviewer 2 tidak boleh sama dengan Reviewer 1.',
         ]);
 
         // Pastikan reviewer bukan ketua/anggota
@@ -177,7 +179,7 @@ class ReviewerController extends Controller
             $proposal->anggota->pluck('dosen_id')->filter()->all()
         );
         foreach (['reviewer_1_id', 'reviewer_2_id'] as $key) {
-            if (in_array($data[$key], $excludeIds)) {
+            if (! empty($data[$key]) && in_array($data[$key], $excludeIds)) {
                 return back()->withErrors([$key => 'Reviewer tidak boleh ketua/anggota proposal itu sendiri.']);
             }
         }
@@ -194,23 +196,28 @@ class ReviewerController extends Controller
                 'status'            => 'ditugaskan',
                 'ditugaskan_oleh'   => $request->user()->id,
             ]);
-            PenugasanReviewer::create([
-                'proposal_id'       => $proposal->id,
-                'reviewer_dosen_id' => $data['reviewer_2_id'],
-                'peran'             => 'reviewer_2',
-                'deadline'          => $data['deadline'],
-                'status'            => 'ditugaskan',
-                'ditugaskan_oleh'   => $request->user()->id,
-            ]);
+
+            if (! empty($data['reviewer_2_id'])) {
+                PenugasanReviewer::create([
+                    'proposal_id'       => $proposal->id,
+                    'reviewer_dosen_id' => $data['reviewer_2_id'],
+                    'peran'             => 'reviewer_2',
+                    'deadline'          => $data['deadline'],
+                    'status'            => 'ditugaskan',
+                    'ditugaskan_oleh'   => $request->user()->id,
+                ]);
+            }
 
             $proposal->update(['status' => 'direview']);
         });
 
-        // Notifikasi ke kedua reviewer
+        // Notifikasi ke reviewer
         $r1 = Dosen::find($data['reviewer_1_id']);
-        $r2 = Dosen::find($data['reviewer_2_id']);
         $this->notif->onReviewerAssigned($proposal, $r1, 'reviewer_1', $data['deadline']);
-        $this->notif->onReviewerAssigned($proposal, $r2, 'reviewer_2', $data['deadline']);
+        if (! empty($data['reviewer_2_id'])) {
+            $r2 = Dosen::find($data['reviewer_2_id']);
+            $this->notif->onReviewerAssigned($proposal, $r2, 'reviewer_2', $data['deadline']);
+        }
 
         return redirect()->route('operator.reviewer.penugasan')
             ->with('success', 'Reviewer berhasil ditugaskan. Status proposal: direview.');

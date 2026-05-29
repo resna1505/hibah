@@ -42,7 +42,7 @@
 
                         <div class="row g-3">
                             <div class="col-md-6">
-                                <label class="form-label">Reviewer 1 <span class="text-danger">*</span></label>
+                                <label class="form-label">Reviewer <span class="text-danger">*</span></label>
                                 <select name="reviewer_1_id" required class="form-select">
                                     <option value="">-- Pilih Reviewer --</option>
                                     @foreach ($reviewerTersedia as $r)
@@ -54,18 +54,6 @@
                                 </select>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label">Reviewer 2 <span class="text-danger">*</span></label>
-                                <select name="reviewer_2_id" required class="form-select">
-                                    <option value="">-- Pilih Reviewer --</option>
-                                    @foreach ($reviewerTersedia as $r)
-                                        <option value="{{ $r->id }}" @selected($r2?->reviewer_dosen_id == $r->id)>
-                                            {{ $r->nama_lengkap }} &mdash; {{ $r->fakultas?->kode }}
-                                            @if ($r->keahlian->count()) ({{ $r->keahlian->take(2)->pluck('nama')->implode(', ') }})@endif
-                                        </option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            <div class="col-md-12">
                                 <label class="form-label">Deadline Review <span class="text-danger">*</span></label>
                                 <input type="date" name="deadline" required class="form-control"
                                     value="{{ $deadline instanceof \Carbon\Carbon ? $deadline->toDateString() : $deadline }}"

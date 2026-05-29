@@ -61,7 +61,8 @@
                         </div>
                     @endforeach
                 </div>
-                <button type="button" class="btn btn-sm btn-outline-primary" onclick="addAnggotaDosen()"><i class="ri-add-line"></i> Tambah Anggota Dosen</button>
+                <button type="button" id="btnAddDosen" class="btn btn-sm btn-outline-primary" onclick="addAnggotaDosen()"><i class="ri-add-line"></i> Tambah Anggota Dosen</button>
+                <small class="text-muted ms-2">Maks 2 anggota dosen.</small>
 
                 <h6 class="mt-4">Anggota Mahasiswa</h6>
                 <div id="anggotaMahasiswa">
@@ -75,7 +76,8 @@
                         </div>
                     @endforeach
                 </div>
-                <button type="button" class="btn btn-sm btn-outline-primary" onclick="addMahasiswa()"><i class="ri-add-line"></i> Tambah Mahasiswa</button>
+                <button type="button" id="btnAddMahasiswa" class="btn btn-sm btn-outline-primary" onclick="addMahasiswa()"><i class="ri-add-line"></i> Tambah Mahasiswa</button>
+                <small class="text-muted ms-2">Maks 2 anggota mahasiswa.</small>
 
                 <h6 class="mt-4">Mitra Kerjasama <span class="text-danger">*</span></h6>
                 <p class="text-muted small mb-2">Wajib minimal 1 mitra untuk PKM.</p>
@@ -487,8 +489,31 @@
 
 @section('scripts')
 <script>
-function addAnggotaDosen() { document.getElementById('anggotaDosen').appendChild(document.getElementById('anggotaDosenTpl').content.cloneNode(true)); }
-function addMahasiswa() { document.getElementById('anggotaMahasiswa').appendChild(document.getElementById('mahasiswaTpl').content.cloneNode(true)); }
+const MAX_ANGGOTA = 2;
+function refreshAnggotaLimits() {
+    const dosenCount = document.querySelectorAll('#anggotaDosen .anggota-row').length;
+    const mhsCount = document.querySelectorAll('#anggotaMahasiswa .mahasiswa-row').length;
+    const btnD = document.getElementById('btnAddDosen');
+    const btnM = document.getElementById('btnAddMahasiswa');
+    if (btnD) btnD.disabled = dosenCount >= MAX_ANGGOTA;
+    if (btnM) btnM.disabled = mhsCount >= MAX_ANGGOTA;
+}
+function addAnggotaDosen() {
+    if (document.querySelectorAll('#anggotaDosen .anggota-row').length >= MAX_ANGGOTA) return;
+    document.getElementById('anggotaDosen').appendChild(document.getElementById('anggotaDosenTpl').content.cloneNode(true));
+    refreshAnggotaLimits();
+}
+function addMahasiswa() {
+    if (document.querySelectorAll('#anggotaMahasiswa .mahasiswa-row').length >= MAX_ANGGOTA) return;
+    document.getElementById('anggotaMahasiswa').appendChild(document.getElementById('mahasiswaTpl').content.cloneNode(true));
+    refreshAnggotaLimits();
+}
+document.addEventListener('click', function (e) {
+    if (e.target.closest('.anggota-row .btn-outline-danger, .mahasiswa-row .btn-outline-danger')) {
+        setTimeout(refreshAnggotaLimits, 0);
+    }
+});
+document.addEventListener('DOMContentLoaded', refreshAnggotaLimits);
 function addMitra() { document.getElementById('mitraList').appendChild(document.getElementById('mitraTpl').content.cloneNode(true)); }
 function addRab() { document.getElementById('rabBody').appendChild(document.getElementById('rabTpl').content.cloneNode(true)); attachRabListeners(); }
 function addLuaran() { document.getElementById('luaranBody').appendChild(document.getElementById('luaranTpl').content.cloneNode(true)); }
