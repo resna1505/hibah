@@ -6,7 +6,11 @@
     $activeNav = 'penelitian';
     $isEdit = (bool) $proposal;
     $action = $isEdit ? route('dosen.penelitian.update', $proposal) : route('dosen.penelitian.store');
-    $jadwalText = $proposal?->jadwal_json['text'] ?? '';
+    $jadwalJson    = $proposal?->jadwal_json ?? [];
+    $jadwalRows    = $jadwalJson['rows'] ?? [];
+    $jadwalBulan   = $jadwalJson['bulan_mulai'] ?? '';
+    $jadwalLegacy  = $jadwalJson['text'] ?? '';
+    $durasiAwal    = $proposal?->durasi_bulan ?? 12;
     $hasilJson = $proposal?->hasil_diharapkan_json ?? [
         ['jenis' => 'Publikasi ilmiah di Jurnal Scopus/Sinta (1-4)', 'target' => 'Published/LOA'],
         ['jenis' => 'Pemakalah dalam temu ilmiah internasional atau nasional', 'target' => 'Conference'],
@@ -235,13 +239,14 @@
         </div>
 
         {{-- Section 6: Jadwal --}}
-        <div class="card border-0 shadow-sm mb-3">
-            <div class="card-header bg-white"><h6 class="mb-0"><i class="ri-calendar-line text-primary me-2"></i>6. Jadwal Penelitian</h6></div>
-            <div class="card-body">
-                <p class="text-muted small">Tuliskan jadwal kegiatan per bulan (contoh: <code>Bulan 1: Studi literatur. Bulan 2-3: Pengumpulan data. ...</code>)</p>
-                <textarea name="jadwal_text" rows="6" class="form-control">{{ old('jadwal_text', $jadwalText) }}</textarea>
-            </div>
-        </div>
+        @include('dosen._shared.jadwal-table', [
+            'sectionNo'    => '6',
+            'sectionLabel' => 'Jadwal Penelitian',
+            'jadwalRows'   => $jadwalRows,
+            'jadwalBulan'  => $jadwalBulan,
+            'jadwalLegacy' => $jadwalLegacy,
+            'durasiAwal'   => $durasiAwal,
+        ])
 
         {{-- Section 7: Daftar Pustaka --}}
         <div class="card border-0 shadow-sm mb-3">

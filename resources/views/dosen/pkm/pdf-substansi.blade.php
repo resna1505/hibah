@@ -56,9 +56,9 @@
     @endif
 @endif
 
-@if ($p->jadwal_json && ! empty($p->jadwal_json['text']))
+@if ($p->jadwal_json && (! empty($p->jadwal_json['rows']) || ! empty($p->jadwal_json['text'])))
     <h4>D. Jadwal Pelaksanaan</h4>
-    <p style="white-space: pre-wrap;">{{ $p->jadwal_json['text'] }}</p>
+    @include('dosen._shared.jadwal-display', ['p' => $p, 'variant' => 'pdf'])
 @endif
 
 @if ($p->daftar_pustaka)

@@ -26,7 +26,7 @@ class SkemaHibahSeeder extends Seeder
                 'nama' => 'PKM Internal',
                 'deskripsi' => 'Hibah Pengabdian Kepada Masyarakat Internal LPPM Universitas Batam',
                 'max_anggaran' => 15_000_000,
-                'max_durasi_bulan' => 8,
+                'max_durasi_bulan' => 12,
                 'max_anggota_dosen' => 2,
                 'max_anggota_mahasiswa' => 3,
             ],

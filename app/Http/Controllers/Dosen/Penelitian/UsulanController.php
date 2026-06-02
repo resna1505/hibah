@@ -310,6 +310,29 @@ class UsulanController extends Controller
         abort_unless($dosen && $proposal->ketua_dosen_id === $dosen->id, 403);
     }
 
+    private function buildJadwalJson(array $data): ?array
+    {
+        $keterangan = (array) ($data['jadwal_keterangan'] ?? []);
+        $start = (array) ($data['jadwal_start'] ?? []);
+        $end = (array) ($data['jadwal_end'] ?? []);
+
+        $rows = [];
+        foreach ($keterangan as $i => $ket) {
+            $ket = trim((string) $ket);
+            $s = (int) ($start[$i] ?? 0);
+            $e = (int) ($end[$i] ?? 0);
+            if (! $ket && ! $s && ! $e) continue;
+            if ($s && $e && $s > $e) { $tmp = $s; $s = $e; $e = $tmp; }
+            $rows[] = ['keterangan' => $ket, 'start' => $s ?: 1, 'end' => $e ?: 1];
+        }
+
+        if (empty($rows) && empty($data['jadwal_bulan_mulai'])) return null;
+        return [
+            'bulan_mulai' => $data['jadwal_bulan_mulai'] ?? null,
+            'rows'        => $rows,
+        ];
+    }
+
     private function validateProposal(Request $request, SkemaHibah $skema): array
     {
         $data = $request->validate([
@@ -320,7 +343,13 @@ class UsulanController extends Controller
             'metode'             => 'nullable|string',
             'metode_diagram'     => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
             'hasil_diharapkan'   => 'nullable|array',
-            'jadwal_text'        => 'nullable|string',
+            'jadwal_bulan_mulai' => 'nullable|date_format:Y-m',
+            'jadwal_keterangan'  => 'array',
+            'jadwal_keterangan.*'=> 'nullable|string|max:300',
+            'jadwal_start'       => 'array',
+            'jadwal_start.*'     => 'nullable|integer|min:1|max:60',
+            'jadwal_end'         => 'array',
+            'jadwal_end.*'       => 'nullable|integer|min:1|max:60',
             'daftar_pustaka'     => 'nullable|string',
             'durasi_bulan'       => 'required|integer|min:1|max:' . $skema->max_durasi_bulan,
             'pernyataan_setuju'  => 'nullable|boolean',
@@ -370,7 +399,7 @@ class UsulanController extends Controller
             'pendahuluan'       => $data['pendahuluan'] ?? null,
             'metode'            => $data['metode'] ?? null,
             'hasil_diharapkan_json' => $data['hasil_diharapkan'] ?? null,
-            'jadwal_json'       => $data['jadwal_text'] ? ['text' => $data['jadwal_text']] : null,
+            'jadwal_json'       => $this->buildJadwalJson($data),
             'daftar_pustaka'    => $data['daftar_pustaka'] ?? null,
             'durasi_bulan'      => $data['durasi_bulan'],
             'pernyataan_setuju' => (bool) ($data['pernyataan_setuju'] ?? false),

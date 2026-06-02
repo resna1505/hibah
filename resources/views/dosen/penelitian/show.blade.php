@@ -105,10 +105,14 @@
                 </div>
             @endif
 
-            @if ($p->jadwal_json && ! empty($p->jadwal_json['text']))
+            @if ($p->jadwal_json && (! empty($p->jadwal_json['rows']) || ! empty($p->jadwal_json['text'])))
                 <div class="card border-0 shadow-sm mb-3">
                     <div class="card-header bg-white"><h6 class="mb-0">Jadwal Penelitian</h6></div>
-                    <div class="card-body"><p class="small" style="white-space: pre-wrap;">{{ $p->jadwal_json['text'] }}</p></div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            @include('dosen._shared.jadwal-display', ['p' => $p, 'variant' => 'show'])
+                        </div>
+                    </div>
                 </div>
             @endif
 

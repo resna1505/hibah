@@ -200,9 +200,9 @@
 @endif
 
 {{-- Section 7: Jadwal --}}
-@if ($p->jadwal_json && ! empty($p->jadwal_json['text']))
+@if ($p->jadwal_json && (! empty($p->jadwal_json['rows']) || ! empty($p->jadwal_json['text'])))
     <h4>7. Jadwal Penelitian</h4>
-    <p style="white-space: pre-wrap;">{{ $p->jadwal_json['text'] }}</p>
+    @include('dosen._shared.jadwal-display', ['p' => $p, 'variant' => 'pdf'])
 @endif
 
 {{-- Section 8: Daftar Pustaka --}}

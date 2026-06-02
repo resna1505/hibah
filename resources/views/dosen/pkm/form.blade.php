@@ -6,7 +6,11 @@
     $activeNav = 'pengabdian';
     $isEdit = (bool) $proposal;
     $action = $isEdit ? route('dosen.pkm.update', $proposal) : route('dosen.pkm.store');
-    $jadwalText = $proposal?->jadwal_json['text'] ?? '';
+    $jadwalJson    = $proposal?->jadwal_json ?? [];
+    $jadwalRows    = $jadwalJson['rows'] ?? [];
+    $jadwalBulan   = $jadwalJson['bulan_mulai'] ?? '';
+    $jadwalLegacy  = $jadwalJson['text'] ?? '';
+    $durasiAwal    = $proposal?->durasi_bulan ?? 12;
     $hasilJson = $proposal?->hasil_diharapkan_json ?? [
         ['jenis' => 'Publikasi ilmiah di Jurnal Scopus/Sinta (1-4)', 'target' => 'Published/LOA'],
         ['jenis' => 'Peningkatan pengetahuan/keahlian mitra PKM', 'target' => 'Ada'],
@@ -111,7 +115,7 @@
                     </div>
                     <div class="col-md-2">
                         <label class="form-label">Durasi (bln) <span class="text-danger">*</span></label>
-                        <input type="number" name="durasi_bulan" required min="1" max="{{ $skema->max_durasi_bulan }}" class="form-control" value="{{ old('durasi_bulan', $proposal?->durasi_bulan ?? 8) }}">
+                        <input type="number" name="durasi_bulan" required min="1" max="{{ $skema->max_durasi_bulan }}" class="form-control" value="{{ old('durasi_bulan', $proposal?->durasi_bulan ?? 12) }}">
                     </div>
                     <div class="col-12">
                         <label class="form-label">Ringkasan <span class="text-muted small">(maks 300 kata)</span></label>
@@ -239,12 +243,14 @@
         </div>
 
         {{-- Section 7: Jadwal --}}
-        <div class="card border-0 shadow-sm mb-3">
-            <div class="card-header bg-white"><h6 class="mb-0"><i class="ri-calendar-line text-primary me-2"></i>7. Jadwal PKM</h6></div>
-            <div class="card-body">
-                <textarea name="jadwal_text" rows="6" class="form-control" placeholder="Contoh: Bulan 1: Sosialisasi. Bulan 2: Pelatihan. Bulan 3: Penerapan. ...">{{ old('jadwal_text', $jadwalText) }}</textarea>
-            </div>
-        </div>
+        @include('dosen._shared.jadwal-table', [
+            'sectionNo'    => '7',
+            'sectionLabel' => 'Jadwal PKM',
+            'jadwalRows'   => $jadwalRows,
+            'jadwalBulan'  => $jadwalBulan,
+            'jadwalLegacy' => $jadwalLegacy,
+            'durasiAwal'   => $durasiAwal,
+        ])
 
         {{-- Section 8: Daftar Pustaka --}}
         <div class="card border-0 shadow-sm mb-3">
