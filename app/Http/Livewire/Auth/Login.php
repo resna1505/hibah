@@ -7,17 +7,17 @@ use Livewire\Component;
 
 class Login extends Component
 {
-    public string $nik = '';
+    public string $username = '';
     public string $password = '';
     public bool $remember = false;
 
     protected array $rules = [
-        'nik' => 'required|string|max:30',
+        'username' => 'required|string|max:50',
         'password' => 'required|string|min:6',
     ];
 
     protected array $messages = [
-        'nik.required' => 'NIK wajib diisi.',
+        'username.required' => 'Username wajib diisi.',
         'password.required' => 'Password wajib diisi.',
         'password.min' => 'Password minimal 6 karakter.',
     ];
@@ -34,13 +34,13 @@ class Login extends Component
         $this->validate();
 
         $credentials = [
-            'nik' => $this->nik,
+            'username' => $this->username,
             'password' => $this->password,
             'is_active' => true,
         ];
 
         if (! Auth::attempt($credentials, $this->remember)) {
-            $this->addError('nik', 'NIK atau password salah.');
+            $this->addError('username', 'Username atau password salah.');
             return null;
         }
 

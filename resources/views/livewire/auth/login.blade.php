@@ -27,13 +27,13 @@
                                 @csrf
 
                                 <div class="mb-3">
-                                    <label for="nik" class="form-label">NIK <span class="text-danger">*</span></label>
-                                    <input id="nik" type="text"
-                                        class="form-control @error('nik') is-invalid @enderror"
-                                        wire:model.live="nik"
+                                    <label for="username" class="form-label">Username <span class="text-danger">*</span></label>
+                                    <input id="username" type="text"
+                                        class="form-control @error('username') is-invalid @enderror"
+                                        wire:model.live="username"
                                         required autofocus
-                                        placeholder="Masukkan NIK">
-                                    @error('nik')
+                                        placeholder="Masukkan username">
+                                    @error('username')
                                         <span class="invalid-feedback" role="alert">
                                             <strong>{{ $message }}</strong>
                                         </span>

@@ -52,15 +52,19 @@ class UsulanController extends Controller
             return redirect()->route('dosen.pkm.index')->with('error', 'Tahapan pengajuan belum dibuka atau sudah berakhir.');
         }
 
+        // Cek kuota: maksimal 2 keterlibatan PKM per periode per dosen (ketua + anggota).
         $skema = SkemaHibah::where('jenis', 'pkm')->where('is_active', true)->first();
-        $existing = Proposal::where('periode_hibah_id', $periode->id)
-            ->where('ketua_dosen_id', $dosen->id)
+        $jumlahExisting = Proposal::where('periode_hibah_id', $periode->id)
             ->where('skema_hibah_id', $skema->id)
-            ->first();
+            ->where(function ($q) use ($dosen) {
+                $q->where('ketua_dosen_id', $dosen->id)
+                  ->orWhereHas('anggota', fn($qq) => $qq->where('peran', 'anggota_dosen')->where('dosen_id', $dosen->id));
+            })
+            ->count();
 
-        if ($existing) {
-            return redirect()->route('dosen.pkm.edit', $existing)
-                ->with('success', 'Anda sudah memiliki usulan PKM pada periode ini. Lanjut edit.');
+        if ($jumlahExisting >= 2) {
+            return redirect()->route('dosen.pkm.index')
+                ->with('error', 'Kuota PKM Anda sudah penuh (maks 2 keterlibatan per periode sebagai ketua atau anggota). Tunggu periode berikutnya.');
         }
 
         return view('dosen.pkm.form', [

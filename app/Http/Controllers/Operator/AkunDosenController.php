@@ -19,10 +19,10 @@ class AkunDosenController extends Controller
         $akun = User::where('role', 'dosen')
             ->with('dosen:id,user_id,nama_lengkap,prodi_id,fakultas_id,is_reviewer')
             ->when($q, fn($query) => $query->where(function ($w) use ($q) {
-                $w->where('nik', 'like', "%{$q}%")
-                  ->orWhere('username', 'like', "%{$q}%")
+                $w->where('username', 'like', "%{$q}%")
                   ->orWhere('email', 'like', "%{$q}%")
-                  ->orWhereHas('dosen', fn($d) => $d->where('nama_lengkap', 'like', "%{$q}%"));
+                  ->orWhereHas('dosen', fn($d) => $d->where('nama_lengkap', 'like', "%{$q}%")
+                                                    ->orWhere('nidn', 'like', "%{$q}%"));
             }))
             ->latest()
             ->paginate(20)
@@ -34,16 +34,22 @@ class AkunDosenController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'nik'      => 'required|string|max:30|unique:users_m,nik',
+            'nidn'     => 'required|string|max:20|unique:dosen_m,nidn|unique:users_m,nik',
+            'username' => 'required|string|max:50|alpha_dash|unique:users_m,username',
             'nama'     => 'required|string|max:200',
             'email'    => 'nullable|email|max:255|unique:users_m,email',
             'password' => ['required', 'confirmed', Password::min(6)],
+        ], [
+            'username.alpha_dash' => 'Username hanya boleh berisi huruf, angka, strip (-), dan underscore (_).',
+            'nidn.unique'         => 'NIDN sudah terdaftar.',
         ]);
 
         DB::transaction(function () use ($data, $request) {
+            // users_m.nik wajib + unique. Kita pakai NIDN sebagai nilai NIK karena untuk dosen,
+            // NIDN adalah identitas resmi yang dijamin unik.
             $user = User::create([
-                'nik'       => $data['nik'],
-                'username'  => $data['nik'],
+                'nik'       => $data['nidn'],
+                'username'  => $data['username'],
                 'email'     => $data['email'] ?? null,
                 'password'  => $data['password'],
                 'role'      => 'dosen',
@@ -53,19 +59,20 @@ class AkunDosenController extends Controller
             Dosen::create([
                 'user_id'      => $user->id,
                 'nama_lengkap' => $data['nama'],
+                'nidn'         => $data['nidn'],
             ]);
 
             LogAktivitas::create([
                 'user_id'    => $request->user()->id,
                 'modul'      => 'akun_dosen',
                 'aktivitas'  => 'buat_akun',
-                'deskripsi'  => "Membuat akun login dosen NIK {$data['nik']} ({$data['nama']}).",
+                'deskripsi'  => "Membuat akun login dosen NIDN {$data['nidn']} ({$data['nama']}).",
                 'ip_address' => $request->ip(),
                 'created_at' => now(),
             ]);
         });
 
-        return back()->with('success', "Akun dosen untuk NIK {$data['nik']} berhasil dibuat. Sampaikan NIK & password ke dosen yang bersangkutan.");
+        return back()->with('success', "Akun dosen NIDN {$data['nidn']} berhasil dibuat. Sampaikan username '{$data['username']}' & password ke dosen yang bersangkutan.");
     }
 
     public function toggle(Request $request, User $akun)

@@ -55,16 +55,19 @@ class UsulanController extends Controller
                 ->with('error', 'Tahapan pengajuan belum dibuka atau sudah berakhir.');
         }
 
-        // Cek sudah ada usulan Penelitian aktif?
+        // Cek kuota: maksimal 2 keterlibatan Penelitian per periode per dosen (ketua + anggota).
         $skemaPenelitian = SkemaHibah::where('jenis', 'penelitian')->where('is_active', true)->first();
-        $existing = Proposal::where('periode_hibah_id', $periode->id)
-            ->where('ketua_dosen_id', $dosen->id)
+        $jumlahExisting = Proposal::where('periode_hibah_id', $periode->id)
             ->where('skema_hibah_id', $skemaPenelitian->id)
-            ->first();
+            ->where(function ($q) use ($dosen) {
+                $q->where('ketua_dosen_id', $dosen->id)
+                  ->orWhereHas('anggota', fn($qq) => $qq->where('peran', 'anggota_dosen')->where('dosen_id', $dosen->id));
+            })
+            ->count();
 
-        if ($existing) {
-            return redirect()->route('dosen.penelitian.edit', $existing)
-                ->with('success', 'Anda sudah memiliki usulan Penelitian pada periode ini. Lanjut edit.');
+        if ($jumlahExisting >= 2) {
+            return redirect()->route('dosen.penelitian.index')
+                ->with('error', 'Kuota Penelitian Anda sudah penuh (maks 2 keterlibatan per periode sebagai ketua atau anggota). Tunggu periode berikutnya.');
         }
 
         return view('dosen.penelitian.form', [

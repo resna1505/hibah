@@ -13,6 +13,7 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\Operator\DashboardController as OperatorDashboard;
 use App\Http\Controllers\Operator\JadwalController as OperatorJadwal;
 use App\Http\Controllers\Operator\AkunDosenController as OperatorAkunDosen;
+use App\Http\Controllers\Operator\MasterBidangStrategisController as OperatorMasterBidang;
 use App\Http\Controllers\Operator\LogAktivitasController as OperatorLogAktivitas;
 use App\Http\Controllers\Operator\MasterRabController as OperatorMasterRab;
 use App\Http\Controllers\Operator\PengaturanController as OperatorPengaturan;
@@ -134,6 +135,14 @@ Route::middleware('auth')->group(function () {
 
         // Log Aktivitas
         Route::get('/log-aktivitas', [OperatorLogAktivitas::class, 'index'])->name('log.index');
+
+        // Master Bidang Strategis
+        Route::prefix('master/bidang')->name('master.bidang.')->group(function () {
+            Route::get('/',           [OperatorMasterBidang::class, 'index'])->name('index');
+            Route::post('/',          [OperatorMasterBidang::class, 'store'])->name('store');
+            Route::put('/{bidang}',   [OperatorMasterBidang::class, 'update'])->name('update');
+            Route::delete('/{bidang}',[OperatorMasterBidang::class, 'destroy'])->name('destroy');
+        });
 
         // Master RAB (Kelompok + Komponen)
         Route::prefix('master/rab')->name('master.rab.')->group(function () {
