@@ -22,15 +22,9 @@
 </head>
 <body>
 
-@php
-    $kopPath = \App\Models\Master\Pengaturan::get('lppm_kop_path');
-    $kopFile = $kopPath ? storage_path('app/public/' . $kopPath) : null;
-@endphp
 <div class="header">
-    @if ($kopFile && file_exists($kopFile))
-        <img src="{{ $kopFile }}" style="max-width: 100%; max-height: 90px; margin-bottom: 4px;">
-    @endif
-    <h2>SUBSTANSI PROPOSAL PENELITIAN</h2>
+    @include('dosen._shared.pdf-kop')
+    <h2 style="margin-top:8px;">SUBSTANSI PROPOSAL PENELITIAN</h2>
     <h3>{{ $p->judul }}</h3>
     <h3 style="font-size:10pt; margin-top:4px;">{{ $p->skemaHibah->nama }} &middot; Ketua: {{ $p->ketua->nama_lengkap }}</h3>
 </div>

@@ -55,9 +55,12 @@
                                     @if ($it->kunci === 'lppm_ttd_path')
                                         <input type="file" name="lppm_ttd" class="form-control" accept="image/png,image/jpeg">
                                         <small class="text-muted">Tanda tangan (PNG transparan disarankan, maks 1MB). Muncul di Lembar Pengesahan PDF.</small>
-                                    @elseif ($it->kunci === 'lppm_kop_path')
-                                        <input type="file" name="lppm_kop" class="form-control" accept="image/png,image/jpeg">
-                                        <small class="text-muted">Kop surat (maks 1MB). Tampil di header semua PDF proposal.</small>
+                                    @elseif ($it->kunci === 'kop_kiri_path')
+                                        <input type="file" name="kop_kiri" class="form-control" accept="image/png,image/jpeg">
+                                        <small class="text-muted">PNG transparan disarankan, maks 1MB. Tampil di <strong>pojok kiri atas</strong> header semua PDF proposal.</small>
+                                    @elseif ($it->kunci === 'kop_kanan_path')
+                                        <input type="file" name="kop_kanan" class="form-control" accept="image/png,image/jpeg">
+                                        <small class="text-muted">PNG transparan disarankan, maks 1MB. Tampil di <strong>pojok kanan atas</strong> header semua PDF proposal.</small>
                                     @endif
                                 @elseif ($it->kunci === 'proposal_no_format')
                                     <input type="text" name="nilai[{{ $it->kunci }}]" class="form-control font-monospace"

@@ -83,8 +83,15 @@
                 <button type="button" id="btnAddMahasiswa" class="btn btn-sm btn-outline-primary" onclick="addMahasiswa()"><i class="ri-add-line"></i> Tambah Mahasiswa</button>
                 <small class="text-muted ms-2">Maks 2 anggota mahasiswa.</small>
 
-                <h6 class="mt-4">Mitra Kerjasama <span class="text-danger">*</span></h6>
-                <p class="text-muted small mb-2">Wajib minimal 1 mitra untuk PKM.</p>
+                <div class="mt-4 d-flex align-items-center gap-2">
+                    <h6 class="mb-0">Mitra Kerjasama</h6>
+                    <span class="badge bg-danger">WAJIB</span>
+                </div>
+                <div class="alert alert-danger small py-2 mb-2 mt-2">
+                    <i class="ri-error-warning-line"></i>
+                    <strong>Minimal 1 mitra wajib diisi.</strong>
+                    Proposal PKM tidak bisa di-submit tanpa data mitra (institusi/komunitas/UMKM penerima manfaat).
+                </div>
                 <div id="mitraList">
                     @foreach ($mitraList as $m)
                         <div class="card mb-2 mitra-row">

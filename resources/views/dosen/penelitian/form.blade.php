@@ -144,10 +144,18 @@
         {{-- Section 2c: Mitra Penelitian (opsional) --}}
         <div class="card border-0 shadow-sm mb-3">
             <div class="card-header bg-white d-flex justify-content-between align-items-center">
-                <h6 class="mb-0"><i class="ri-shake-hands-line text-primary me-2"></i>2c. Mitra Penelitian <span class="text-muted small">(opsional)</span></h6>
+                <div class="d-flex align-items-center gap-2">
+                    <h6 class="mb-0"><i class="ri-shake-hands-line text-primary me-2"></i>2c. Mitra Penelitian</h6>
+                    <span class="badge bg-secondary-subtle text-secondary border">Opsional</span>
+                </div>
                 <button type="button" class="btn btn-sm btn-outline-primary" onclick="addMitra()"><i class="ri-add-line"></i> Tambah Mitra</button>
             </div>
             <div class="card-body">
+                <p class="text-muted small mb-3">
+                    <i class="ri-information-line"></i>
+                    Boleh dikosongkan kalau penelitian dilakukan individual/tim internal.
+                    Isi bila ada <strong>kolaborator industri, instansi pemerintah, atau lembaga riset</strong> yang terlibat.
+                </p>
                 <div id="mitraList">
                     @foreach ($mitraList as $m)
                         <div class="row g-2 mb-2 mitra-row align-items-start">

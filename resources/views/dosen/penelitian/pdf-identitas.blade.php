@@ -21,17 +21,8 @@
 </head>
 <body>
 
-@php
-    $kopPath = \App\Models\Master\Pengaturan::get('lppm_kop_path');
-    $kopFile = $kopPath ? storage_path('app/public/' . $kopPath) : null;
-@endphp
 <div class="header">
-    @if ($kopFile && file_exists($kopFile))
-        <img src="{{ $kopFile }}" style="max-width: 100%; max-height: 90px; margin-bottom: 4px;">
-    @else
-        <h2>LEMBAGA PENELITIAN DAN PENGABDIAN KEPADA MASYARAKAT</h2>
-        <h3>UNIVERSITAS BATAM</h3>
-    @endif
+    @include('dosen._shared.pdf-kop')
     <h3 style="margin-top:6px;">IDENTITAS DAN URAIAN UMUM PROPOSAL PENELITIAN</h3>
     @if ($p->no_registrasi)
         <p style="margin: 4px 0; font-size: 10pt;">No. Registrasi: <strong>{{ $p->no_registrasi }}</strong></p>

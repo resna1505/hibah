@@ -24,25 +24,25 @@ class PengaturanController extends Controller
             'nilai'             => 'array',
             'nilai.*'           => 'nullable|string|max:1000',
             'lppm_ttd'          => 'nullable|image|mimes:jpg,jpeg,png|max:1024',
-            'lppm_kop'          => 'nullable|image|mimes:jpg,jpeg,png|max:1024',
+            'kop_kiri'          => 'nullable|image|mimes:jpg,jpeg,png|max:1024',
+            'kop_kanan'         => 'nullable|image|mimes:jpg,jpeg,png|max:1024',
         ]);
 
         foreach ($data['nilai'] ?? [] as $kunci => $nilai) {
             Pengaturan::where('kunci', $kunci)->update(['nilai' => $nilai]);
         }
 
-        if ($request->hasFile('lppm_ttd')) {
-            $old = Pengaturan::get('lppm_ttd_path');
-            if ($old) Storage::disk('public')->delete($old);
-            $path = $request->file('lppm_ttd')->store('pengaturan', 'public');
-            Pengaturan::set('lppm_ttd_path', $path);
-        }
-
-        if ($request->hasFile('lppm_kop')) {
-            $old = Pengaturan::get('lppm_kop_path');
-            if ($old) Storage::disk('public')->delete($old);
-            $path = $request->file('lppm_kop')->store('pengaturan', 'public');
-            Pengaturan::set('lppm_kop_path', $path);
+        foreach ([
+            'lppm_ttd'  => 'lppm_ttd_path',
+            'kop_kiri'  => 'kop_kiri_path',
+            'kop_kanan' => 'kop_kanan_path',
+        ] as $field => $kunci) {
+            if ($request->hasFile($field)) {
+                $old = Pengaturan::get($kunci);
+                if ($old) Storage::disk('public')->delete($old);
+                $path = $request->file($field)->store('pengaturan', 'public');
+                Pengaturan::set($kunci, $path);
+            }
         }
 
         \Illuminate\Support\Facades\Cache::forget('pengaturan_all');

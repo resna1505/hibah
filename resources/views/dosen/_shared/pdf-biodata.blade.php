@@ -25,9 +25,6 @@
 <body>
 
 @php
-    $kopPath = \App\Models\Master\Pengaturan::get('lppm_kop_path');
-    $kopFile = $kopPath ? storage_path('app/public/' . $kopPath) : null;
-
     $jenisLabel = $p->skemaHibah?->jenis === 'pkm' ? 'PKM' : 'Penelitian';
 
     $tim = collect([['dosen' => $p->ketua, 'peran' => 'Ketua Pengusul']]);
@@ -37,12 +34,7 @@
 @endphp
 
 <div class="header">
-    @if ($kopFile && file_exists($kopFile))
-        <img src="{{ $kopFile }}" style="max-width: 100%; max-height: 90px; margin-bottom: 4px;">
-    @else
-        <h2>LEMBAGA PENELITIAN DAN PENGABDIAN KEPADA MASYARAKAT</h2>
-        <h3>UNIVERSITAS BATAM</h3>
-    @endif
+    @include('dosen._shared.pdf-kop')
     <h3 style="margin-top:6px;">BIODATA KETUA DAN ANGGOTA TIM PENGUSUL</h3>
     <h3 style="font-size:10pt; margin-top:2px;">Proposal {{ $jenisLabel }}: {{ $p->judul }}</h3>
 </div>

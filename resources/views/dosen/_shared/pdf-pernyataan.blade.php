@@ -20,8 +20,6 @@
 
 @php
     use App\Models\Master\Pengaturan;
-    $kopPath = Pengaturan::get('lppm_kop_path');
-    $kopFile = $kopPath ? storage_path('app/public/' . $kopPath) : null;
     $institusi = Pengaturan::get('institusi_nama', 'Universitas Batam');
     $kota = Pengaturan::get('institusi_kota', 'Batam');
     $lppmNama = Pengaturan::get('lppm_ketua_nama', 'Ketua LPPM');
@@ -31,12 +29,7 @@
 @endphp
 
 <div class="header">
-    @if ($kopFile && file_exists($kopFile))
-        <img src="{{ $kopFile }}" style="max-width: 100%; max-height: 90px; margin-bottom: 4px;">
-    @else
-        <h2>LEMBAGA PENELITIAN DAN PENGABDIAN KEPADA MASYARAKAT</h2>
-        <h3>{{ strtoupper($institusi) }}</h3>
-    @endif
+    @include('dosen._shared.pdf-kop')
 </div>
 
 <h4>SURAT PERNYATAAN KETUA PENGUSUL</h4>
