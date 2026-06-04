@@ -1,9 +1,9 @@
 {{--
     Single source of truth untuk label & badge status proposal.
     Usage:
-        <x-status-badge :status="$p->status" />              {{-- badge biasa --}}
-        <x-status-badge :status="$p->status" tooltip />      {{-- badge + tooltip deskripsi & next step --}}
-        <x-status-badge :status="$p->status" tooltip large /> {{-- ukuran lebih besar --}}
+        <x-status-badge :status="$p->status" />                 badge biasa
+        <x-status-badge :status="$p->status" tooltip />         badge + tooltip deskripsi & next step
+        <x-status-badge :status="$p->status" tooltip large />   ukuran lebih besar
 --}}
 
 @props([
