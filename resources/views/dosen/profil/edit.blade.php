@@ -15,6 +15,32 @@
             </a>
         </div>
 
+        {{-- Status kelayakan sebagai ketua pengusul --}}
+        @if (empty($eligibilityIssues))
+            <div class="alert alert-success d-flex align-items-center gap-2 mb-3">
+                <i class="ri-shield-check-line fs-4"></i>
+                <div>
+                    <strong>Memenuhi syarat sebagai ketua pengusul hibah.</strong>
+                    <div class="small">Anda boleh mengajukan proposal Penelitian / PKM sebagai ketua.</div>
+                </div>
+            </div>
+        @else
+            <div class="alert alert-warning mb-3">
+                <div class="d-flex align-items-start gap-2">
+                    <i class="ri-error-warning-line fs-4"></i>
+                    <div>
+                        <strong>Belum memenuhi syarat sebagai ketua pengusul hibah.</strong>
+                        <div class="small mb-2">Syarat institusi: pendidikan min <code>{{ $syaratPendidikan }}</code> &amp; jabatan fungsional min <code>{{ $syaratJabatan }}</code>.</div>
+                        <ul class="mb-0 small">
+                            @foreach ($eligibilityIssues as $issue)
+                                <li>{{ $issue }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        @endif
+
         <div class="row g-4">
             {{-- BIODATA --}}
             <div class="col-lg-8">

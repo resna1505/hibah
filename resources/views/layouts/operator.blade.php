@@ -64,6 +64,12 @@
 
     @include('layouts.vendor-scripts')
     @livewireScripts
+    <script>
+        // Auto-init Bootstrap tooltip untuk semua [data-bs-toggle="tooltip"]
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(el => new bootstrap.Tooltip(el));
+        });
+    </script>
     @yield('scripts')
 </body>
 </html>

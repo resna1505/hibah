@@ -18,6 +18,10 @@ class ProfilController extends Controller
         $user = $request->user();
         $dosen = $user->dosen;
 
+        $eligibilityIssues = $dosen
+            ? app(\App\Services\ProposalService::class)->checkKetuaEligibility($dosen)
+            : ['Akun belum terhubung dengan profil dosen.'];
+
         return view('dosen.profil.edit', [
             'user' => $user,
             'dosen' => $dosen,
@@ -25,6 +29,9 @@ class ProfilController extends Controller
             'prodiList' => Prodi::where('is_active', true)->orderBy('nama')->get(),
             'keahlianList' => Keahlian::where('is_active', true)->orderBy('nama')->get(),
             'keahlianIds' => $dosen?->keahlian->pluck('id')->all() ?? [],
+            'eligibilityIssues' => $eligibilityIssues,
+            'syaratPendidikan' => \App\Models\Master\Pengaturan::get('syarat_ketua_pendidikan_min', 'S3'),
+            'syaratJabatan'    => \App\Models\Master\Pengaturan::get('syarat_ketua_jabatan_min', 'Lektor'),
         ]);
     }
 

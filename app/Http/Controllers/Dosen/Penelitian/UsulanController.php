@@ -55,6 +55,14 @@ class UsulanController extends Controller
                 ->with('error', 'Tahapan pengajuan belum dibuka atau sudah berakhir.');
         }
 
+        // Cek syarat ketua pengusul
+        $issues = $this->service->checkKetuaEligibility($dosen);
+        if (! empty($issues)) {
+            return redirect()->route('dosen.penelitian.index')
+                ->with('error', 'Belum memenuhi syarat ketua pengusul: ' . implode(' ', $issues)
+                    . ' Silakan lengkapi data di menu Profil.');
+        }
+
         // Cek kuota: maksimal 2 keterlibatan Penelitian per periode per dosen (ketua + anggota).
         $skemaPenelitian = SkemaHibah::where('jenis', 'penelitian')->where('is_active', true)->first();
         $jumlahExisting = Proposal::where('periode_hibah_id', $periode->id)

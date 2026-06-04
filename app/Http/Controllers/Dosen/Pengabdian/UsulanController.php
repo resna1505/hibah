@@ -52,6 +52,14 @@ class UsulanController extends Controller
             return redirect()->route('dosen.pkm.index')->with('error', 'Tahapan pengajuan belum dibuka atau sudah berakhir.');
         }
 
+        // Cek syarat ketua pengusul
+        $issues = $this->service->checkKetuaEligibility($dosen);
+        if (! empty($issues)) {
+            return redirect()->route('dosen.pkm.index')
+                ->with('error', 'Belum memenuhi syarat ketua pengusul: ' . implode(' ', $issues)
+                    . ' Silakan lengkapi data di menu Profil.');
+        }
+
         // Cek kuota: maksimal 2 keterlibatan PKM per periode per dosen (ketua + anggota).
         $skema = SkemaHibah::where('jenis', 'pkm')->where('is_active', true)->first();
         $jumlahExisting = Proposal::where('periode_hibah_id', $periode->id)

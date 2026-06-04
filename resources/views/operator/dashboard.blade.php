@@ -6,21 +6,6 @@
     $activeNav = 'dashboard';
     $user = auth()->user();
 
-    $statusBadge = [
-        'draft'        => ['Draft', 'bg-secondary-subtle text-secondary'],
-        'submitted'    => ['Submitted', 'bg-info-subtle text-info'],
-        'verifikasi'   => ['Menunggu Verifikasi', 'bg-warning-subtle text-warning'],
-        'dikembalikan' => ['Dikembalikan', 'bg-warning-subtle text-warning'],
-        'direview'     => ['Sedang Direview', 'bg-info-subtle text-info'],
-        'revisi_minor' => ['Revisi Minor', 'bg-warning-subtle text-warning'],
-        'revisi_mayor' => ['Revisi Mayor', 'bg-warning-subtle text-warning'],
-        'disetujui'    => ['Disetujui', 'bg-success-subtle text-success'],
-        'ditolak'      => ['Ditolak', 'bg-danger-subtle text-danger'],
-        'berjalan'     => ['Berjalan', 'bg-primary-subtle text-primary'],
-        'selesai'      => ['Selesai', 'bg-success-subtle text-success'],
-        'ditarik'      => ['Ditarik', 'bg-secondary-subtle text-secondary'],
-    ];
-
     $tahapanStatusClass = [
         'belum_mulai' => 'bg-light text-muted',
         'berjalan'    => 'bg-warning text-dark',
@@ -156,12 +141,7 @@
                                             <td class="small">{{ $p->ketua?->nama_lengkap ?? '-' }}</td>
                                             <td class="small">{{ $p->skemaHibah?->nama ?? '-' }}</td>
                                             <td class="small">{{ $p->tgl_submit?->format('d M Y') ?? '-' }}</td>
-                                            <td>
-                                                @php
-                                                    [$label, $cls] = $statusBadge[$p->status] ?? [$p->status, 'bg-light text-muted'];
-                                                @endphp
-                                                <span class="badge {{ $cls }}">{{ $label }}</span>
-                                            </td>
+                                            <td><x-status-badge :status="$p->status" tooltip /></td>
                                         </tr>
                                     @empty
                                         <tr>

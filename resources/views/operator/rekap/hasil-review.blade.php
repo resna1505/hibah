@@ -5,16 +5,6 @@
 @php
     $activeNav = 'rekap.hasil';
 
-    $statusBadge = [
-        'disetujui'    => ['Disetujui', 'bg-success-subtle text-success'],
-        'ditolak'      => ['Ditolak', 'bg-danger-subtle text-danger'],
-        'revisi_minor' => ['Revisi Minor', 'bg-warning-subtle text-warning'],
-        'revisi_mayor' => ['Revisi Mayor', 'bg-warning-subtle text-warning'],
-        'direview'     => ['Sedang Direview', 'bg-info-subtle text-info'],
-        'berjalan'     => ['Berjalan', 'bg-primary-subtle text-primary'],
-        'selesai'      => ['Selesai', 'bg-success-subtle text-success'],
-    ];
-
     $kategoriColor = [
         'Sangat Baik'   => 'bg-primary-subtle text-primary',
         'Baik'          => 'bg-success-subtle text-success',
@@ -78,7 +68,6 @@
                     <tbody>
                         @forelse ($rows as $i => $r)
                             @php
-                                [$slbl, $scls] = $statusBadge[$r['status']] ?? [$r['status'], 'bg-light text-muted'];
                                 $kcls = $kategoriColor[$r['kategori']] ?? 'bg-light text-muted';
                             @endphp
                             <tr>
@@ -91,7 +80,7 @@
                                 <td class="text-center small">{{ $r['nilai_r2'] ?? '-' }}</td>
                                 <td class="text-end fw-bold">{{ $r['rata_rata'] !== null ? number_format($r['rata_rata'], 2) : '-' }}</td>
                                 <td><span class="badge {{ $kcls }}">{{ $r['kategori'] }}</span></td>
-                                <td><span class="badge {{ $scls }}">{{ $slbl }}</span></td>
+                                <td><x-status-badge :status="$r['status']" tooltip /></td>
                             </tr>
                         @empty
                             <tr><td colspan="10" class="text-center text-muted py-4">Belum ada proposal yang dinilai untuk filter ini.</td></tr>

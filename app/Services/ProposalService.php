@@ -67,6 +67,13 @@ class ProposalService
             $errors[] = 'Data mitra wajib diisi untuk skema PKM.';
         }
 
+        // Cek ulang syarat ketua (jaga-jaga kalau profil diubah setelah create)
+        if ($proposal->ketua) {
+            foreach ($this->checkKetuaEligibility($proposal->ketua) as $issue) {
+                $errors[] = 'Syarat ketua: ' . $issue;
+            }
+        }
+
         // Wajib bidang strategis
         if (! $proposal->bidang_strategis_id) {
             $errors[] = 'Bidang Strategis belum dipilih.';
@@ -127,6 +134,40 @@ class ProposalService
 
         $proposal->update(['no_registrasi' => $no]);
         return $no;
+    }
+
+    /**
+     * Cek kelayakan seorang dosen sebagai KETUA pengusul.
+     * Return: array of error messages (kosong = eligible).
+     * Syarat default: pendidikan S3 + jabatan Lektor (configurable via Pengaturan).
+     */
+    public function checkKetuaEligibility(\App\Models\Master\Dosen $dosen): array
+    {
+        $errors = [];
+
+        $pendidikanMin = \App\Models\Master\Pengaturan::get('syarat_ketua_pendidikan_min', 'S3');
+        $jabatanMin    = \App\Models\Master\Pengaturan::get('syarat_ketua_jabatan_min', 'Lektor');
+
+        $rankPendidikan = ['S1' => 1, 'S2' => 2, 'S3' => 3];
+        $rankJabatan    = ['Tenaga Pengajar' => 1, 'Asisten Ahli' => 2, 'Lektor' => 3, 'Lektor Kepala' => 4, 'Profesor' => 5];
+
+        // Cek pendidikan
+        $cur = $dosen->pendidikan_terakhir;
+        if (! $cur) {
+            $errors[] = 'Pendidikan terakhir belum diisi di profil dosen.';
+        } elseif (($rankPendidikan[$cur] ?? 0) < ($rankPendidikan[$pendidikanMin] ?? 999)) {
+            $errors[] = "Pendidikan terakhir minimal {$pendidikanMin} (saat ini: {$cur}).";
+        }
+
+        // Cek jabatan fungsional
+        $cur = $dosen->jabatan_fungsional;
+        if (! $cur) {
+            $errors[] = 'Jabatan fungsional belum diisi di profil dosen.';
+        } elseif (($rankJabatan[$cur] ?? 0) < ($rankJabatan[$jabatanMin] ?? 999)) {
+            $errors[] = "Jabatan fungsional minimal {$jabatanMin} (saat ini: {$cur}).";
+        }
+
+        return $errors;
     }
 
     /**

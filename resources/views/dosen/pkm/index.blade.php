@@ -2,23 +2,7 @@
 
 @section('title', 'Usulan PKM')
 
-@php
-    $activeNav = 'pengabdian';
-
-    $statusBadge = [
-        'draft'        => ['Draft', 'bg-secondary-subtle text-secondary'],
-        'submitted'    => ['Menunggu Verifikasi', 'bg-info-subtle text-info'],
-        'verifikasi'   => ['Verifikasi', 'bg-info-subtle text-info'],
-        'dikembalikan' => ['Dikembalikan', 'bg-warning-subtle text-warning'],
-        'direview'     => ['Sedang Direview', 'bg-info-subtle text-info'],
-        'revisi_minor' => ['Revisi Minor', 'bg-warning-subtle text-warning'],
-        'revisi_mayor' => ['Revisi Mayor', 'bg-warning-subtle text-warning'],
-        'disetujui'    => ['Disetujui', 'bg-success-subtle text-success'],
-        'ditolak'      => ['Ditolak', 'bg-danger-subtle text-danger'],
-        'berjalan'     => ['Berjalan', 'bg-primary-subtle text-primary'],
-        'selesai'      => ['Selesai', 'bg-success-subtle text-success'],
-    ];
-@endphp
+@php $activeNav = 'pengabdian'; @endphp
 
 @section('content')
     <div class="d-flex justify-content-between align-items-center mb-3">
@@ -54,10 +38,7 @@
                                 <td class="small">{{ $p->periodeHibah?->nama }}</td>
                                 <td class="small">Rp {{ number_format($p->total_anggaran, 0, ',', '.') }}</td>
                                 <td class="small">{{ $p->tgl_submit?->format('d M Y') ?? '-' }}</td>
-                                <td>
-                                    @php [$label, $cls] = $statusBadge[$p->status] ?? [$p->status, 'bg-light text-muted']; @endphp
-                                    <span class="badge {{ $cls }}">{{ $label }}</span>
-                                </td>
+                                <td><x-status-badge :status="$p->status" /></td>
                                 <td class="text-end">
                                     <div class="btn-group btn-group-sm">
                                         <a href="{{ route('dosen.pkm.show', $p) }}" class="btn btn-outline-primary"><i class="ri-eye-line"></i></a>

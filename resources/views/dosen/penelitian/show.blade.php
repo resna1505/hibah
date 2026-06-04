@@ -2,24 +2,7 @@
 
 @section('title', 'Detail Usulan Penelitian')
 
-@php
-    $activeNav = 'penelitian';
-
-    $statusBadge = [
-        'draft'        => ['Draft', 'bg-secondary-subtle text-secondary'],
-        'submitted'    => ['Menunggu Verifikasi', 'bg-info-subtle text-info'],
-        'verifikasi'   => ['Verifikasi', 'bg-info-subtle text-info'],
-        'dikembalikan' => ['Dikembalikan', 'bg-warning-subtle text-warning'],
-        'direview'     => ['Sedang Direview', 'bg-info-subtle text-info'],
-        'revisi_minor' => ['Revisi Minor', 'bg-warning-subtle text-warning'],
-        'revisi_mayor' => ['Revisi Mayor', 'bg-warning-subtle text-warning'],
-        'disetujui'    => ['Disetujui', 'bg-success-subtle text-success'],
-        'ditolak'      => ['Ditolak', 'bg-danger-subtle text-danger'],
-        'berjalan'     => ['Berjalan', 'bg-primary-subtle text-primary'],
-        'selesai'      => ['Selesai', 'bg-success-subtle text-success'],
-    ];
-    [$label, $cls] = $statusBadge[$p->status] ?? [$p->status, 'bg-light text-muted'];
-@endphp
+@php $activeNav = 'penelitian'; @endphp
 
 @section('content')
     <div class="d-flex justify-content-between align-items-center mb-3">
@@ -57,7 +40,7 @@
         <div class="card-body">
             <div class="d-flex justify-content-between mb-2">
                 <h5 class="mb-0">{{ $p->judul }}</h5>
-                <span class="badge {{ $cls }} fs-6">{{ $label }}</span>
+                <x-status-badge :status="$p->status" large />
             </div>
             @if ($p->no_registrasi)
                 <p class="small mb-1">No. Registrasi: <code>{{ $p->no_registrasi }}</code></p>

@@ -2,24 +2,7 @@
 
 @section('title', 'Status Proposal')
 
-@php
-    $activeNav = 'proposal.status';
-
-    $statusBadge = [
-        'draft'        => ['Draft', 'bg-secondary-subtle text-secondary'],
-        'submitted'    => ['Menunggu Verifikasi', 'bg-info-subtle text-info'],
-        'verifikasi'   => ['Dalam Proses', 'bg-info-subtle text-info'],
-        'dikembalikan' => ['Dalam Proses', 'bg-warning-subtle text-warning'],
-        'direview'     => ['Dalam Proses', 'bg-info-subtle text-info'],
-        'revisi_minor' => ['Dalam Proses', 'bg-warning-subtle text-warning'],
-        'revisi_mayor' => ['Dalam Proses', 'bg-warning-subtle text-warning'],
-        'disetujui'    => ['Disetujui', 'bg-success-subtle text-success'],
-        'ditolak'      => ['Ditolak', 'bg-danger-subtle text-danger'],
-        'berjalan'     => ['Disetujui', 'bg-success-subtle text-success'],
-        'selesai'      => ['Disetujui', 'bg-success-subtle text-success'],
-        'ditarik'      => ['Ditarik', 'bg-secondary-subtle text-secondary'],
-    ];
-@endphp
+@php $activeNav = 'proposal.status'; @endphp
 
 @section('content')
     <div class="d-flex justify-content-between align-items-center mb-3">
@@ -93,7 +76,6 @@
                     <thead class="table-light"><tr><th>No</th><th>Judul</th><th>Ketua</th><th>Fakultas</th><th>Skema</th><th>Tgl Submit</th><th>Status</th><th class="text-end">Aksi</th></tr></thead>
                     <tbody>
                         @forelse ($list as $i => $p)
-                            @php [$lbl, $cls] = $statusBadge[$p->status] ?? [$p->status, 'bg-light text-muted']; @endphp
                             <tr>
                                 <td>{{ $list->firstItem() + $i }}</td>
                                 <td class="text-truncate" style="max-width:240px;" title="{{ $p->judul }}">{{ $p->judul }}</td>
@@ -101,7 +83,7 @@
                                 <td class="small">{{ $p->ketua?->fakultas?->kode }}</td>
                                 <td class="small">{{ $p->skemaHibah?->nama }}</td>
                                 <td class="small">{{ $p->tgl_submit?->format('d M Y') ?? '-' }}</td>
-                                <td><span class="badge {{ $cls }}">{{ $lbl }}</span></td>
+                                <td><x-status-badge :status="$p->status" tooltip /></td>
                                 <td class="text-end"><a href="{{ route('operator.proposal.show', $p) }}" class="btn btn-sm btn-outline-primary"><i class="ri-eye-line"></i> Detail</a></td>
                             </tr>
                         @empty
@@ -115,25 +97,16 @@
     </div>
 
     <div class="card border-0 shadow-sm mt-3">
-        <div class="card-header bg-white"><h6 class="mb-0">Keterangan Status</h6></div>
+        <div class="card-header bg-white"><h6 class="mb-0">Legenda Status Proposal</h6></div>
         <div class="card-body">
-            <div class="row text-center">
-                <div class="col">
-                    <span class="badge bg-success-subtle text-success mb-2 fs-6">Disetujui</span>
-                    <p class="text-muted small mb-0">Proposal dinyatakan lolos dan disetujui untuk didanai.</p>
-                </div>
-                <div class="col">
-                    <span class="badge bg-warning-subtle text-warning mb-2 fs-6">Dalam Proses</span>
-                    <p class="text-muted small mb-0">Proposal sedang dalam proses review atau verifikasi.</p>
-                </div>
-                <div class="col">
-                    <span class="badge bg-danger-subtle text-danger mb-2 fs-6">Ditolak</span>
-                    <p class="text-muted small mb-0">Proposal dinyatakan tidak lolos atau ditolak.</p>
-                </div>
-                <div class="col">
-                    <span class="badge bg-secondary-subtle text-secondary mb-2 fs-6">Ditarik</span>
-                    <p class="text-muted small mb-0">Proposal ditarik oleh pengusul sebelum proses selesai.</p>
-                </div>
+            <p class="text-muted small mb-3"><i class="ri-information-line"></i> Hover badge di tabel atas untuk lihat penjelasan + langkah berikutnya.</p>
+            <div class="row g-3">
+                @foreach (['draft','submitted','verifikasi','direview','revisi_minor','revisi_mayor','dikembalikan','disetujui','berjalan','selesai','ditolak'] as $st)
+                    <div class="col-md-6 col-lg-4 d-flex align-items-center gap-2">
+                        <x-status-badge :status="$st" tooltip />
+                        <small class="text-muted">Hover untuk detail</small>
+                    </div>
+                @endforeach
             </div>
         </div>
     </div>

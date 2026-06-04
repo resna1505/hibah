@@ -5,20 +5,6 @@
 @php
     $activeNav = 'proposal';
 
-    $statusBadge = [
-        'draft' => ['Draft', 'bg-secondary-subtle text-secondary'],
-        'submitted' => ['Menunggu Verifikasi', 'bg-info-subtle text-info'],
-        'verifikasi' => ['Terverifikasi', 'bg-info-subtle text-info'],
-        'dikembalikan' => ['Dikembalikan', 'bg-warning-subtle text-warning'],
-        'direview' => ['Sedang Direview', 'bg-info-subtle text-info'],
-        'revisi_minor' => ['Revisi Minor', 'bg-warning-subtle text-warning'],
-        'revisi_mayor' => ['Revisi Mayor', 'bg-warning-subtle text-warning'],
-        'disetujui' => ['Disetujui', 'bg-success-subtle text-success'],
-        'ditolak' => ['Ditolak', 'bg-danger-subtle text-danger'],
-        'berjalan' => ['Berjalan', 'bg-primary-subtle text-primary'],
-        'selesai' => ['Selesai', 'bg-success-subtle text-success'],
-    ];
-
     $tabs = [
         'ditugaskan'      => ['Ditugaskan ke Saya', 'ri-user-star-line'],
         'menunggu_review' => ['Menunggu Review', 'ri-time-line'],
@@ -70,17 +56,14 @@
                     </thead>
                     <tbody>
                         @forelse ($list as $i => $p)
-                            @php
-                                $myPen = $p->penugasanReviewer->first();
-                                [$lbl, $cls] = $statusBadge[$p->status] ?? [$p->status, 'bg-light text-muted'];
-                            @endphp
+                            @php $myPen = $p->penugasanReviewer->first(); @endphp
                             <tr>
                                 <td>{{ $list->firstItem() + $i }}</td>
                                 <td class="text-truncate" style="max-width:240px;" title="{{ $p->judul }}">{{ $p->judul }}</td>
                                 <td class="small">{{ $p->ketua?->nama_lengkap }}</td>
                                 <td class="small">{{ $p->ketua?->fakultas?->kode }}</td>
                                 <td class="small">{{ $p->skemaHibah?->nama }}</td>
-                                <td><span class="badge {{ $cls }}">{{ $lbl }}</span></td>
+                                <td><x-status-badge :status="$p->status" tooltip /></td>
                                 <td class="small">
                                     @if ($myPen)
                                         {{ ucfirst(str_replace('reviewer_', 'Reviewer ', $myPen->peran)) }}

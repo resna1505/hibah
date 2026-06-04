@@ -20,6 +20,9 @@ class PengaturanSeeder extends Seeder
             ['kunci' => 'institusi_kota',      'label' => 'Kota',                'tipe' => 'text', 'grup' => 'institusi', 'nilai' => 'Batam'],
             ['kunci' => 'institusi_kode',      'label' => 'Kode Institusi (utk no. registrasi)', 'tipe' => 'text', 'grup' => 'institusi', 'nilai' => 'LPPM-UNIBA'],
             ['kunci' => 'proposal_no_format',  'label' => 'Format Nomor Registrasi Proposal',     'tipe' => 'text', 'grup' => 'institusi', 'nilai' => '{kode}/{jenis}/{tahun}/{seq:3}'],
+
+            ['kunci' => 'syarat_ketua_pendidikan_min', 'label' => 'Syarat Ketua: Pendidikan Min', 'tipe' => 'text', 'grup' => 'syarat', 'nilai' => 'S3'],
+            ['kunci' => 'syarat_ketua_jabatan_min',    'label' => 'Syarat Ketua: Jabatan Min',    'tipe' => 'text', 'grup' => 'syarat', 'nilai' => 'Lektor'],
         ];
 
         foreach ($data as $row) {

@@ -5,17 +5,6 @@
 @php
     $activeNav = 'penilaian';
 
-    $statusBadge = [
-        'direview'     => ['Sedang Direview', 'bg-info-subtle text-info'],
-        'revisi_minor' => ['Revisi Minor', 'bg-warning-subtle text-warning'],
-        'revisi_mayor' => ['Revisi Mayor', 'bg-warning-subtle text-warning'],
-        'disetujui'    => ['Disetujui', 'bg-success-subtle text-success'],
-        'ditolak'      => ['Ditolak', 'bg-danger-subtle text-danger'],
-        'berjalan'     => ['Berjalan', 'bg-primary-subtle text-primary'],
-        'selesai'      => ['Selesai', 'bg-success-subtle text-success'],
-    ];
-    [$lbl, $cls] = $statusBadge[$p->status] ?? [$p->status, 'bg-light text-muted'];
-
     $rekomendasiBadge = [
         'disetujui'    => ['Disetujui', 'bg-success-subtle text-success'],
         'revisi_minor' => ['Revisi Minor', 'bg-warning-subtle text-warning'],
@@ -59,7 +48,7 @@
                         </div>
                         <div class="col">
                             <p class="text-muted small mb-1">Status</p>
-                            <span class="badge {{ $cls }}">{{ $lbl }}</span>
+                            <x-status-badge :status="$p->status" tooltip />
                         </div>
                     </div>
 
@@ -192,7 +181,7 @@
                 </div>
             @elseif (! $bisaFinalize && $p->status !== 'submitted')
                 <div class="alert alert-info mt-3">
-                    <i class="ri-information-line me-1"></i> Proposal sudah difinalisasi dengan status <strong>{{ $lbl }}</strong>.
+                    <i class="ri-information-line me-1"></i> Proposal sudah difinalisasi dengan status <x-status-badge :status="$p->status" />.
                 </div>
             @elseif ($agregasi['jumlah_selesai'] === 0)
                 <div class="alert alert-warning mt-3">

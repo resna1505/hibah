@@ -2,19 +2,7 @@
 
 @section('title', 'Penilaian Proposal')
 
-@php
-    $activeNav = 'penilaian';
-
-    $statusBadge = [
-        'direview'     => ['Sedang Direview', 'bg-info-subtle text-info'],
-        'revisi_minor' => ['Revisi Minor', 'bg-warning-subtle text-warning'],
-        'revisi_mayor' => ['Revisi Mayor', 'bg-warning-subtle text-warning'],
-        'disetujui'    => ['Disetujui', 'bg-success-subtle text-success'],
-        'ditolak'      => ['Ditolak', 'bg-danger-subtle text-danger'],
-        'berjalan'     => ['Berjalan', 'bg-primary-subtle text-primary'],
-        'selesai'      => ['Selesai', 'bg-success-subtle text-success'],
-    ];
-@endphp
+@php $activeNav = 'penilaian'; @endphp
 
 @section('content')
     <div class="d-flex justify-content-between align-items-center mb-3">
@@ -80,7 +68,6 @@
                                 $rataRata = $completed->count() > 0
                                     ? $completed->map(fn($pr) => $pr->penilaian->nilai_total)->avg()
                                     : null;
-                                [$lbl, $cls] = $statusBadge[$p->status] ?? [$p->status, 'bg-light text-muted'];
                             @endphp
                             <tr>
                                 <td>{{ $list->firstItem() + $i }}</td>
@@ -97,7 +84,7 @@
                                         <span class="text-muted">-</span>
                                     @endif
                                 </td>
-                                <td><span class="badge {{ $cls }}">{{ $lbl }}</span></td>
+                                <td><x-status-badge :status="$p->status" tooltip /></td>
                                 <td class="text-end">
                                     <a href="{{ route('operator.penilaian.show', $p) }}" class="btn btn-sm btn-primary">
                                         <i class="ri-eye-line"></i> {{ $p->status === 'direview' ? 'Finalize' : 'Detail' }}
