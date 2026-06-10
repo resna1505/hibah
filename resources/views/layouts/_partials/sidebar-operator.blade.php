@@ -36,6 +36,7 @@
             <a href="{{ route('operator.proposal.index') }}" class="{{ $linkClass('proposal.data') }} ms-3">Data Proposal</a>
             <a href="{{ route('operator.proposal.index', ['status' => 'submitted']) }}" class="{{ $linkClass('proposal.verifikasi') }} ms-3">Verifikasi Proposal</a>
             <a href="{{ route('operator.proposal.status') }}" class="{{ $linkClass('proposal.status') }} ms-3">Status Proposal</a>
+            <a href="{{ route('operator.proposal.history') }}" class="{{ $linkClass('proposal.history') }} ms-3">History Proposal</a>
         </div>
 
         <a href="#reviewerMenu" data-bs-toggle="collapse" role="button"

@@ -87,6 +87,7 @@ Route::middleware('auth')->group(function () {
         Route::prefix('proposal')->name('proposal.')->group(function () {
             Route::get('/',                       [OperatorProposal::class, 'index'])->name('index');
             Route::get('/status',                 [OperatorProposal::class, 'statusIndex'])->name('status');
+            Route::get('/history',                [OperatorProposal::class, 'history'])->name('history');
             Route::get('/{proposal}',             [OperatorProposal::class, 'show'])->name('show');
             Route::get('/{proposal}/verifikasi',  [OperatorProposal::class, 'verifikasiForm'])->name('verifikasi');
             Route::post('/{proposal}/verifikasi', [OperatorProposal::class, 'submitVerifikasi'])->name('verifikasi.submit');

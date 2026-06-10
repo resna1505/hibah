@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Operator;
 
 use App\Http\Controllers\Controller;
 use App\Models\Master\Fakultas;
+use App\Models\Master\Prodi;
 use App\Models\Master\SkemaHibah;
 use App\Models\Transaction\PeriodeHibah;
 use App\Models\Transaction\Proposal;
@@ -117,6 +118,57 @@ class ProposalController extends Controller
             'skemaList'    => SkemaHibah::orderBy('nama')->get(),
             'fakultasList' => Fakultas::orderBy('nama')->get(),
             'filters'      => $request->only(['status', 'skema_id', 'fakultas_id']),
+        ]);
+    }
+
+    /**
+     * History Proposal — riwayat proposal lintas/per periode dengan filter
+     * fakultas & program studi berdasarkan pengusul (ketua) ATAU anggota.
+     */
+    public function history(Request $request)
+    {
+        $tahunList = PeriodeHibah::orderByDesc('tahun')->pluck('tahun')->all();
+
+        // Default ke periode aktif/terbaru; 'all' = semua periode.
+        $tahun = $request->has('tahun')
+            ? $request->tahun
+            : (PeriodeHibah::aktif()->latest('tahun')->value('tahun') ?? ($tahunList[0] ?? null));
+
+        $periode = ($tahun && $tahun !== 'all') ? PeriodeHibah::where('tahun', $tahun)->first() : null;
+
+        $fakultasId = $request->fakultas_id;
+        $prodiId    = $request->prodi_id;
+
+        // Filter fakultas/prodi cocok bila KETUA atau salah satu ANGGOTA dosen berada di unit tsb.
+        $matchUnit = function ($q, string $column, $value) {
+            $q->where(function ($w) use ($column, $value) {
+                $w->whereHas('ketua', fn($k) => $k->where($column, $value))
+                  ->orWhereHas('anggota.dosen', fn($a) => $a->where($column, $value));
+            });
+        };
+
+        $list = Proposal::with(['ketua.fakultas', 'ketua.prodi', 'skemaHibah', 'periodeHibah'])
+            ->when($periode, fn($q) => $q->where('periode_hibah_id', $periode->id))
+            ->when($request->status, fn($q, $s) => $q->where('status', $s))
+            ->when($request->skema_id, fn($q, $id) => $q->where('skema_hibah_id', $id))
+            ->when($fakultasId, fn($q, $id) => $matchUnit($q, 'fakultas_id', $id))
+            ->when($prodiId, fn($q, $id) => $matchUnit($q, 'prodi_id', $id))
+            ->when($request->search, fn($q, $s) => $q->where(function ($q2) use ($s) {
+                $q2->where('judul', 'like', "%{$s}%")
+                    ->orWhereHas('ketua', fn($q3) => $q3->where('nama_lengkap', 'like', "%{$s}%"));
+            }))
+            ->latest('tgl_submit')
+            ->paginate(20)->withQueryString();
+
+        return view('operator.proposal.history', [
+            'list'         => $list,
+            'tahun'        => $tahun,
+            'periode'      => $periode,
+            'tahunList'    => $tahunList,
+            'skemaList'    => SkemaHibah::orderBy('nama')->get(),
+            'fakultasList' => Fakultas::orderBy('nama')->get(),
+            'prodiList'    => Prodi::orderBy('nama')->get(['id', 'fakultas_id', 'nama']),
+            'filters'      => $request->only(['status', 'skema_id', 'fakultas_id', 'prodi_id', 'search']),
         ]);
     }
 
