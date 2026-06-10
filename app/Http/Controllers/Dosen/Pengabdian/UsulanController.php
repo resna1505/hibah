@@ -79,7 +79,7 @@ class UsulanController extends Controller
             'proposal'      => null,
             'skema'         => $skema,
             'periode'       => $periode,
-            'dosenList'     => Dosen::where('id', '!=', $dosen->id)->orderBy('nama_lengkap')->get(['id', 'nama_lengkap']),
+            'dosenList'     => Dosen::where('id', '!=', $dosen->id)->orderBy('nama_lengkap')->get(['id', 'nama_lengkap', 'nidn']),
             'kategoriRab'   => KategoriRab::with('komponen')->orderBy('urutan')->get(),
             'bidangList'    => BidangStrategis::where('is_active', true)->orderBy('kode')->get(),
             'jenisLuaranList' => JenisLuaran::pkm()->where('is_active', true)->orderBy('urutan')->get(),
@@ -135,7 +135,7 @@ class UsulanController extends Controller
             'proposal'      => $pkm,
             'skema'         => $pkm->skemaHibah,
             'periode'       => $pkm->periodeHibah,
-            'dosenList'     => Dosen::where('id', '!=', $request->user()->dosen->id)->orderBy('nama_lengkap')->get(['id', 'nama_lengkap']),
+            'dosenList'     => Dosen::where('id', '!=', $request->user()->dosen->id)->orderBy('nama_lengkap')->get(['id', 'nama_lengkap', 'nidn']),
             'kategoriRab'   => KategoriRab::with('komponen')->orderBy('urutan')->get(),
             'bidangList'    => BidangStrategis::where('is_active', true)->orderBy('kode')->get(),
             'jenisLuaranList' => JenisLuaran::pkm()->where('is_active', true)->orderBy('urutan')->get(),
@@ -363,6 +363,9 @@ class UsulanController extends Controller
             'mitra_pimpinan'         => 'array',
             'mitra_alamat'           => 'array',
             'mitra_permasalahan'     => 'array',
+            'mitra_dokumen'          => 'array',
+            'mitra_dokumen.*'        => 'nullable|file|mimes:pdf|max:5120',
+            'mitra_dokumen_existing' => 'array',
 
             'bidang_strategis_id'      => 'nullable|exists:bidang_strategis_m,id',
             'rumusan_masalah_bidang'   => 'nullable|string',
@@ -444,12 +447,20 @@ class UsulanController extends Controller
 
         foreach ((array) $request->input('mitra_nama', []) as $i => $nama) {
             if (! trim($nama ?? '')) continue;
+
+            // Pertahankan dokumen lama; timpa jika ada upload baru.
+            $dokumenPath = $request->input("mitra_dokumen_existing.$i") ?: null;
+            if ($file = $request->file("mitra_dokumen.$i")) {
+                $dokumenPath = $file->store('proposal/' . $proposal->id . '/mitra', 'public');
+            }
+
             ProposalMitra::create([
                 'proposal_id'        => $proposal->id,
                 'nama_mitra'         => $nama,
                 'pimpinan_mitra'     => $request->input("mitra_pimpinan.$i"),
                 'alamat_mitra'       => $request->input("mitra_alamat.$i"),
                 'permasalahan_mitra' => $request->input("mitra_permasalahan.$i"),
+                'dokumen_path'       => $dokumenPath,
             ]);
         }
     }

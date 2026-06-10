@@ -133,6 +133,7 @@
                             @if ($m->pimpinan_mitra)<span class="text-muted">Pimpinan: {{ $m->pimpinan_mitra }}</span><br>@endif
                             @if ($m->alamat_mitra)<span class="text-muted small">{{ $m->alamat_mitra }}</span>@endif
                             @if ($m->permasalahan_mitra)<p class="mt-1 mb-0 small">{{ $m->permasalahan_mitra }}</p>@endif
+                            @if ($m->dokumen_path)<a href="{{ asset('storage/' . $m->dokumen_path) }}" target="_blank" class="small"><i class="ri-file-pdf-line"></i> Dokumen Mitra</a>@endif
                         </div>
                     @empty
                         <p class="text-muted small mb-0">Belum ada mitra.</p>

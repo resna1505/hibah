@@ -82,7 +82,7 @@ class UsulanController extends Controller
             'proposal'      => null,
             'skema'         => $skemaPenelitian,
             'periode'       => $periode,
-            'dosenList'     => Dosen::where('id', '!=', $dosen->id)->orderBy('nama_lengkap')->get(['id', 'nama_lengkap']),
+            'dosenList'     => Dosen::where('id', '!=', $dosen->id)->orderBy('nama_lengkap')->get(['id', 'nama_lengkap', 'nidn']),
             'kategoriRab'   => KategoriRab::with('komponen')->orderBy('urutan')->get(),
             'bidangList'    => BidangStrategis::where('is_active', true)->orderBy('kode')->get(),
             'jenisLuaranList' => JenisLuaran::penelitian()->where('is_active', true)->orderBy('urutan')->get(),
@@ -138,7 +138,7 @@ class UsulanController extends Controller
             'proposal'      => $penelitian,
             'skema'         => $penelitian->skemaHibah,
             'periode'       => $penelitian->periodeHibah,
-            'dosenList'     => Dosen::where('id', '!=', $request->user()->dosen->id)->orderBy('nama_lengkap')->get(['id', 'nama_lengkap']),
+            'dosenList'     => Dosen::where('id', '!=', $request->user()->dosen->id)->orderBy('nama_lengkap')->get(['id', 'nama_lengkap', 'nidn']),
             'kategoriRab'   => KategoriRab::with('komponen')->orderBy('urutan')->get(),
             'bidangList'    => BidangStrategis::where('is_active', true)->orderBy('kode')->get(),
             'jenisLuaranList' => JenisLuaran::penelitian()->where('is_active', true)->orderBy('urutan')->get(),
@@ -368,10 +368,10 @@ class UsulanController extends Controller
             'uraian_bidang'            => 'nullable|string',
 
             // Anggota
-            'anggota_dosen_id'        => 'array',
+            'anggota_dosen_id'        => 'array|max:2',
             'anggota_dosen_id.*'      => 'exists:dosen_m,id',
             'anggota_bidang_tugas'    => 'array',
-            'mahasiswa_nama'          => 'array',
+            'mahasiswa_nama'          => 'array|max:2',
             'mahasiswa_nim'           => 'array',
             'mahasiswa_prodi'         => 'array',
             'mahasiswa_bidang_tugas'  => 'array',
@@ -381,6 +381,9 @@ class UsulanController extends Controller
             'mitra_pimpinan'          => 'array',
             'mitra_alamat'            => 'array',
             'mitra_permasalahan'      => 'array',
+            'mitra_dokumen'           => 'array',
+            'mitra_dokumen.*'         => 'nullable|file|mimes:pdf|max:5120',
+            'mitra_dokumen_existing'  => 'array',
 
             // RAB
             'rab_kategori_id'   => 'array',
@@ -398,6 +401,9 @@ class UsulanController extends Controller
             'luaran_jenis_text'     => 'array',
             'luaran_status_target'  => 'array',
             'luaran_keterangan'     => 'array',
+        ], [
+            'anggota_dosen_id.max' => 'Anggota dosen maksimal 2 orang.',
+            'mahasiswa_nama.max'   => 'Anggota mahasiswa maksimal 2 orang.',
         ]);
 
         $proposal = [
@@ -485,12 +491,20 @@ class UsulanController extends Controller
 
         foreach ((array) $request->input('mitra_nama', []) as $i => $nama) {
             if (! trim($nama ?? '')) continue;
+
+            // Pertahankan dokumen lama; timpa jika ada upload baru.
+            $dokumenPath = $request->input("mitra_dokumen_existing.$i") ?: null;
+            if ($file = $request->file("mitra_dokumen.$i")) {
+                $dokumenPath = $file->store('proposal/' . $proposal->id . '/mitra', 'public');
+            }
+
             ProposalMitra::create([
                 'proposal_id'        => $proposal->id,
                 'nama_mitra'         => $nama,
                 'pimpinan_mitra'     => $request->input("mitra_pimpinan.$i"),
                 'alamat_mitra'       => $request->input("mitra_alamat.$i"),
                 'permasalahan_mitra' => $request->input("mitra_permasalahan.$i"),
+                'dokumen_path'       => $dokumenPath,
             ]);
         }
     }

@@ -56,7 +56,7 @@
                                 <select name="anggota_dosen_id[]" class="form-select">
                                     <option value="">-- Pilih Dosen --</option>
                                     @foreach ($dosenList as $d)
-                                        <option value="{{ $d->id }}" @selected($a->dosen_id == $d->id)>{{ $d->nama_lengkap }}</option>
+                                        <option value="{{ $d->id }}" @selected($a->dosen_id == $d->id)>{{ $d->nama_lengkap }}@if ($d->nidn) — NIDN {{ $d->nidn }}@endif</option>
                                     @endforeach
                                 </select>
                             </div>
@@ -102,6 +102,14 @@
                                     <div class="col-md-2"><button type="button" class="btn btn-outline-danger w-100" onclick="this.closest('.mitra-row').remove()"><i class="ri-delete-bin-line"></i> Hapus</button></div>
                                     <div class="col-md-12"><input type="text" name="mitra_alamat[]" class="form-control" placeholder="Alamat Mitra" value="{{ $m->alamat_mitra }}"></div>
                                     <div class="col-md-12"><textarea name="mitra_permasalahan[]" rows="2" class="form-control" placeholder="Permasalahan yang dihadapi mitra">{{ $m->permasalahan_mitra }}</textarea></div>
+                                    <div class="col-md-12">
+                                        <label class="form-label small text-muted mb-1">Dokumen Mitra — mis. Surat Kesediaan Kerjasama (PDF, maks 5MB)</label>
+                                        @if ($m->dokumen_path)
+                                            <span class="small ms-2"><a href="{{ asset('storage/' . $m->dokumen_path) }}" target="_blank"><i class="ri-file-pdf-line"></i> Lihat dokumen saat ini</a></span>
+                                        @endif
+                                        <input type="hidden" name="mitra_dokumen_existing[]" value="{{ $m->dokumen_path }}">
+                                        <input type="file" name="mitra_dokumen[]" class="form-control form-control-sm" accept="application/pdf">
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -413,7 +421,7 @@
                 <select name="anggota_dosen_id[]" class="form-select">
                     <option value="">-- Pilih Dosen --</option>
                     @foreach ($dosenList as $d)
-                        <option value="{{ $d->id }}">{{ $d->nama_lengkap }}</option>
+                        <option value="{{ $d->id }}">{{ $d->nama_lengkap }}@if ($d->nidn) — NIDN {{ $d->nidn }}@endif</option>
                     @endforeach
                 </select>
             </div>
@@ -441,6 +449,11 @@
                     <div class="col-md-2"><button type="button" class="btn btn-outline-danger w-100" onclick="this.closest('.mitra-row').remove()"><i class="ri-delete-bin-line"></i> Hapus</button></div>
                     <div class="col-md-12"><input type="text" name="mitra_alamat[]" class="form-control" placeholder="Alamat Mitra"></div>
                     <div class="col-md-12"><textarea name="mitra_permasalahan[]" rows="2" class="form-control" placeholder="Permasalahan yang dihadapi mitra"></textarea></div>
+                    <div class="col-md-12">
+                        <label class="form-label small text-muted mb-1">Dokumen Mitra — mis. Surat Kesediaan Kerjasama (PDF, maks 5MB)</label>
+                        <input type="hidden" name="mitra_dokumen_existing[]" value="">
+                        <input type="file" name="mitra_dokumen[]" class="form-control form-control-sm" accept="application/pdf">
+                    </div>
                 </div>
             </div>
         </div>
@@ -527,6 +540,21 @@ document.addEventListener('click', function (e) {
     }
 });
 document.addEventListener('DOMContentLoaded', refreshAnggotaLimits);
+
+// Cegah double-submit (mencegah draft tersimpan ganda saat tombol diklik 2x)
+document.addEventListener('DOMContentLoaded', function () {
+    const form = document.getElementById('formProposal');
+    if (!form) return;
+    form.addEventListener('submit', function () {
+        if (form.dataset.submitting === '1') return;
+        form.dataset.submitting = '1';
+        const btn = form.querySelector('button[type="submit"]');
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Menyimpan...';
+        }
+    });
+});
 function addMitra() { document.getElementById('mitraList').appendChild(document.getElementById('mitraTpl').content.cloneNode(true)); }
 function addRab() { document.getElementById('rabBody').appendChild(document.getElementById('rabTpl').content.cloneNode(true)); attachRabListeners(); }
 function addLuaran() { document.getElementById('luaranBody').appendChild(document.getElementById('luaranTpl').content.cloneNode(true)); }

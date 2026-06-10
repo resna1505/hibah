@@ -148,7 +148,6 @@ class ReviewerController extends Controller
 
         $reviewerTersedia = Dosen::with('fakultas', 'prodi', 'keahlian')
             ->where('is_reviewer', true)
-            ->where('status_aktif_mengajar', true)
             ->whereNotIn('id', $excludeIds)
             ->orderBy('nama_lengkap')
             ->get();

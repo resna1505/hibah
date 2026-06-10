@@ -56,7 +56,7 @@
                                 <select name="anggota_dosen_id[]" class="form-select">
                                     <option value="">-- Pilih Dosen --</option>
                                     @foreach ($dosenList as $d)
-                                        <option value="{{ $d->id }}" @selected($a->dosen_id == $d->id)>{{ $d->nama_lengkap }}</option>
+                                        <option value="{{ $d->id }}" @selected($a->dosen_id == $d->id)>{{ $d->nama_lengkap }}@if ($d->nidn) — NIDN {{ $d->nidn }}@endif</option>
                                     @endforeach
                                 </select>
                             </div>
@@ -67,7 +67,8 @@
                         </div>
                     @empty @endforelse
                 </div>
-                <button type="button" class="btn btn-sm btn-outline-primary" onclick="addAnggotaDosen()"><i class="ri-add-line"></i> Tambah Anggota Dosen</button>
+                <button type="button" id="btnAddDosen" class="btn btn-sm btn-outline-primary" onclick="addAnggotaDosen()"><i class="ri-add-line"></i> Tambah Anggota Dosen</button>
+                <small class="text-muted ms-2">Maks 2 anggota dosen.</small>
 
                 <h6 class="mt-4">Anggota Mahasiswa</h6>
                 <div id="anggotaMahasiswa">
@@ -81,7 +82,8 @@
                         </div>
                     @endforeach
                 </div>
-                <button type="button" class="btn btn-sm btn-outline-primary" onclick="addMahasiswa()"><i class="ri-add-line"></i> Tambah Mahasiswa</button>
+                <button type="button" id="btnAddMahasiswa" class="btn btn-sm btn-outline-primary" onclick="addMahasiswa()"><i class="ri-add-line"></i> Tambah Mahasiswa</button>
+                <small class="text-muted ms-2">Maks 2 anggota mahasiswa.</small>
             </div>
         </div>
 
@@ -163,6 +165,14 @@
                             <div class="col-md-3"><input type="text" name="mitra_pimpinan[]" class="form-control" placeholder="Pimpinan" value="{{ $m->pimpinan_mitra }}"></div>
                             <div class="col-md-3"><textarea name="mitra_alamat[]" class="form-control" rows="1" placeholder="Alamat">{{ $m->alamat_mitra }}</textarea></div>
                             <div class="col-md-2"><textarea name="mitra_permasalahan[]" class="form-control" rows="1" placeholder="Permasalahan / kontribusi">{{ $m->permasalahan_mitra }}</textarea></div>
+                            <div class="col-12">
+                                <label class="form-label small text-muted mb-1">Dokumen Mitra (PDF, maks 5MB)</label>
+                                @if ($m->dokumen_path)
+                                    <span class="small ms-2"><a href="{{ asset('storage/' . $m->dokumen_path) }}" target="_blank"><i class="ri-file-pdf-line"></i> Lihat dokumen saat ini</a></span>
+                                @endif
+                                <input type="hidden" name="mitra_dokumen_existing[]" value="{{ $m->dokumen_path }}">
+                                <input type="file" name="mitra_dokumen[]" class="form-control form-control-sm" accept="application/pdf">
+                            </div>
                             <div class="col-md-1"><button type="button" class="btn btn-outline-danger w-100" onclick="this.closest('.mitra-row').remove()"><i class="ri-delete-bin-line"></i></button></div>
                         </div>
                     @endforeach
@@ -423,7 +433,7 @@
                 <select name="anggota_dosen_id[]" class="form-select">
                     <option value="">-- Pilih Dosen --</option>
                     @foreach ($dosenList as $d)
-                        <option value="{{ $d->id }}">{{ $d->nama_lengkap }}</option>
+                        <option value="{{ $d->id }}">{{ $d->nama_lengkap }}@if ($d->nidn) — NIDN {{ $d->nidn }}@endif</option>
                     @endforeach
                 </select>
             </div>
@@ -448,6 +458,11 @@
             <div class="col-md-3"><input type="text" name="mitra_pimpinan[]" class="form-control" placeholder="Pimpinan"></div>
             <div class="col-md-3"><textarea name="mitra_alamat[]" class="form-control" rows="1" placeholder="Alamat"></textarea></div>
             <div class="col-md-2"><textarea name="mitra_permasalahan[]" class="form-control" rows="1" placeholder="Permasalahan / kontribusi"></textarea></div>
+            <div class="col-12">
+                <label class="form-label small text-muted mb-1">Dokumen Mitra (PDF, maks 5MB)</label>
+                <input type="hidden" name="mitra_dokumen_existing[]" value="">
+                <input type="file" name="mitra_dokumen[]" class="form-control form-control-sm" accept="application/pdf">
+            </div>
             <div class="col-md-1"><button type="button" class="btn btn-outline-danger w-100" onclick="this.closest('.mitra-row').remove()"><i class="ri-delete-bin-line"></i></button></div>
         </div>
     </template>
@@ -508,14 +523,46 @@
 
 @section('scripts')
 <script>
+const MAX_ANGGOTA = 2;
+function refreshAnggotaLimits() {
+    const dosenCount = document.querySelectorAll('#anggotaDosen .anggota-row').length;
+    const mhsCount = document.querySelectorAll('#anggotaMahasiswa .mahasiswa-row').length;
+    const btnD = document.getElementById('btnAddDosen');
+    const btnM = document.getElementById('btnAddMahasiswa');
+    if (btnD) btnD.disabled = dosenCount >= MAX_ANGGOTA;
+    if (btnM) btnM.disabled = mhsCount >= MAX_ANGGOTA;
+}
 function addAnggotaDosen() {
-    const tpl = document.getElementById('anggotaDosenTpl').content.cloneNode(true);
-    document.getElementById('anggotaDosen').appendChild(tpl);
+    if (document.querySelectorAll('#anggotaDosen .anggota-row').length >= MAX_ANGGOTA) return;
+    document.getElementById('anggotaDosen').appendChild(document.getElementById('anggotaDosenTpl').content.cloneNode(true));
+    refreshAnggotaLimits();
 }
 function addMahasiswa() {
-    const tpl = document.getElementById('mahasiswaTpl').content.cloneNode(true);
-    document.getElementById('anggotaMahasiswa').appendChild(tpl);
+    if (document.querySelectorAll('#anggotaMahasiswa .mahasiswa-row').length >= MAX_ANGGOTA) return;
+    document.getElementById('anggotaMahasiswa').appendChild(document.getElementById('mahasiswaTpl').content.cloneNode(true));
+    refreshAnggotaLimits();
 }
+document.addEventListener('click', function (e) {
+    if (e.target.closest('.anggota-row .btn-outline-danger, .mahasiswa-row .btn-outline-danger')) {
+        setTimeout(refreshAnggotaLimits, 0);
+    }
+});
+document.addEventListener('DOMContentLoaded', refreshAnggotaLimits);
+
+// Cegah double-submit (mencegah draft tersimpan ganda saat tombol diklik 2x)
+document.addEventListener('DOMContentLoaded', function () {
+    const form = document.getElementById('formProposal');
+    if (!form) return;
+    form.addEventListener('submit', function () {
+        if (form.dataset.submitting === '1') return;
+        form.dataset.submitting = '1';
+        const btn = form.querySelector('button[type="submit"]');
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Menyimpan...';
+        }
+    });
+});
 function addRab() {
     const tpl = document.getElementById('rabTpl').content.cloneNode(true);
     document.getElementById('rabBody').appendChild(tpl);

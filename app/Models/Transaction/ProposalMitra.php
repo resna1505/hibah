@@ -15,6 +15,7 @@ class ProposalMitra extends Model
         'pimpinan_mitra',
         'alamat_mitra',
         'permasalahan_mitra',
+        'dokumen_path',
     ];
 
     public function proposal(): BelongsTo
