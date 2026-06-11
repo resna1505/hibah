@@ -268,7 +268,7 @@
 
         {{-- Section 7: Daftar Pustaka --}}
         <div class="card border-0 shadow-sm mb-3">
-            <div class="card-header bg-white"><h6 class="mb-0"><i class="ri-book-line text-primary me-2"></i>7. Daftar Pustaka <span class="text-muted small">(maks 500 kata, format Mendeley)</span></h6></div>
+            <div class="card-header bg-white"><h6 class="mb-0"><i class="ri-book-line text-primary me-2"></i>7. Daftar Pustaka <span class="text-muted small">(maks 500 kata, format APA Style)</span></h6></div>
             <div class="card-body">
                 <textarea name="daftar_pustaka" rows="8" class="form-control word-counter" data-max="500">{{ old('daftar_pustaka', $proposal?->daftar_pustaka) }}</textarea>
             </div>
