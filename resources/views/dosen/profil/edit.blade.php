@@ -30,7 +30,7 @@
                     <i class="ri-error-warning-line fs-4"></i>
                     <div>
                         <strong>Belum memenuhi syarat sebagai ketua pengusul hibah.</strong>
-                        <div class="small mb-2">Syarat institusi: pendidikan min <code>{{ $syaratPendidikan }}</code> &amp; jabatan fungsional min <code>{{ $syaratJabatan }}</code>.</div>
+                        <div class="small mb-2">Penetapan ketua pengusul dilakukan oleh operator LPPM. Anda tetap dapat menjadi <em>anggota</em> proposal.</div>
                         <ul class="mb-0 small">
                             @foreach ($eligibilityIssues as $issue)
                                 <li>{{ $issue }}</li>

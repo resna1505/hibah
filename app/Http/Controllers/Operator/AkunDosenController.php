@@ -17,7 +17,7 @@ class AkunDosenController extends Controller
         $q = trim($request->get('q', ''));
 
         $akun = User::where('role', 'dosen')
-            ->with('dosen:id,user_id,nama_lengkap,prodi_id,fakultas_id,is_reviewer')
+            ->with('dosen:id,user_id,nama_lengkap,prodi_id,fakultas_id,is_reviewer,is_ketua_eligible')
             ->when($q, fn($query) => $query->where(function ($w) use ($q) {
                 $w->where('username', 'like', "%{$q}%")
                   ->orWhere('email', 'like', "%{$q}%")
@@ -113,5 +113,33 @@ class AkunDosenController extends Controller
         ]);
 
         return back()->with('success', "Password akun NIK {$akun->nik} berhasil direset.");
+    }
+
+    /**
+     * Tetapkan / cabut hak dosen menjadi ketua pengusul.
+     */
+    public function toggleKetua(Request $request, User $akun)
+    {
+        abort_unless($akun->role === 'dosen', 403);
+
+        $dosen = $akun->dosen;
+        abort_unless($dosen, 404, 'Akun belum terhubung dengan profil dosen.');
+
+        $dosen->update(['is_ketua_eligible' => ! $dosen->is_ketua_eligible]);
+
+        LogAktivitas::create([
+            'user_id'    => $request->user()->id,
+            'modul'      => 'akun_dosen',
+            'aktivitas'  => $dosen->is_ketua_eligible ? 'tetapkan_ketua' : 'cabut_ketua',
+            'deskripsi'  => ($dosen->is_ketua_eligible ? 'Menetapkan' : 'Mencabut') . " hak ketua pengusul untuk {$dosen->nama_lengkap}.",
+            'ip_address' => $request->ip(),
+            'created_at' => now(),
+        ]);
+
+        $msg = $dosen->is_ketua_eligible
+            ? "{$dosen->nama_lengkap} sekarang boleh menjadi ketua pengusul."
+            : "{$dosen->nama_lengkap} tidak lagi boleh menjadi ketua pengusul.";
+
+        return back()->with('success', $msg);
     }
 }

@@ -36,11 +36,13 @@ class Dosen extends Model
         'sinta_score',
         'status_aktif_mengajar',
         'is_reviewer',
+        'is_ketua_eligible',
     ];
 
     protected $casts = [
         'status_aktif_mengajar' => 'boolean',
         'is_reviewer' => 'boolean',
+        'is_ketua_eligible' => 'boolean',
         'sinta_score' => 'integer',
     ];
 

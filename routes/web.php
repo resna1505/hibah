@@ -131,6 +131,7 @@ Route::middleware('auth')->group(function () {
             Route::get('/',                       [OperatorAkunDosen::class, 'index'])->name('index');
             Route::post('/',                      [OperatorAkunDosen::class, 'store'])->name('store');
             Route::patch('/{akun}/toggle',        [OperatorAkunDosen::class, 'toggle'])->name('toggle');
+            Route::patch('/{akun}/toggle-ketua',  [OperatorAkunDosen::class, 'toggleKetua'])->name('toggle-ketua');
             Route::patch('/{akun}/reset-password',[OperatorAkunDosen::class, 'resetPassword'])->name('reset-password');
         });
 

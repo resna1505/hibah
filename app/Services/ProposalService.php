@@ -145,26 +145,10 @@ class ProposalService
     {
         $errors = [];
 
-        $pendidikanMin = \App\Models\Master\Pengaturan::get('syarat_ketua_pendidikan_min', 'S3');
-        $jabatanMin    = \App\Models\Master\Pengaturan::get('syarat_ketua_jabatan_min', 'Lektor');
-
-        $rankPendidikan = ['S1' => 1, 'S2' => 2, 'S3' => 3];
-        $rankJabatan    = ['Tenaga Pengajar' => 1, 'Asisten Ahli' => 2, 'Lektor' => 3, 'Lektor Kepala' => 4, 'Profesor' => 5];
-
-        // Cek pendidikan
-        $cur = $dosen->pendidikan_terakhir;
-        if (! $cur) {
-            $errors[] = 'Pendidikan terakhir belum diisi di profil dosen.';
-        } elseif (($rankPendidikan[$cur] ?? 0) < ($rankPendidikan[$pendidikanMin] ?? 999)) {
-            $errors[] = "Pendidikan terakhir minimal {$pendidikanMin} (saat ini: {$cur}).";
-        }
-
-        // Cek jabatan fungsional
-        $cur = $dosen->jabatan_fungsional;
-        if (! $cur) {
-            $errors[] = 'Jabatan fungsional belum diisi di profil dosen.';
-        } elseif (($rankJabatan[$cur] ?? 0) < ($rankJabatan[$jabatanMin] ?? 999)) {
-            $errors[] = "Jabatan fungsional minimal {$jabatanMin} (saat ini: {$cur}).";
+        // Kelayakan ketua ditentukan operator LPPM per dosen (penanda is_ketua_eligible),
+        // bukan lagi ambang pendidikan/jabatan otomatis.
+        if (! $dosen->is_ketua_eligible) {
+            $errors[] = 'Anda belum ditetapkan sebagai dosen yang berhak menjadi ketua pengusul. Silakan hubungi operator LPPM.';
         }
 
         return $errors;

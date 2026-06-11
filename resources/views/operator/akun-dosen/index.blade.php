@@ -15,6 +15,11 @@
         </button>
     </div>
 
+    <div class="alert alert-light border small d-flex align-items-center gap-2 mb-3">
+        <i class="ri-vip-crown-line text-primary"></i>
+        <span>Tombol <i class="ri-vip-crown-line text-primary"></i> menandai dosen sebagai <strong>boleh menjadi Ketua Pengusul</strong>. Hanya dosen berlabel <span class="badge bg-primary-subtle text-primary">Ketua</span> yang bisa mengajukan proposal sebagai ketua.</span>
+    </div>
+
     @if (session('success'))<div class="alert alert-success">{{ session('success') }}</div>@endif
     @if (session('error'))<div class="alert alert-danger">{{ session('error') }}</div>@endif
     @if ($errors->any())
@@ -52,6 +57,7 @@
                             <td>
                                 {{ $u->dosen?->nama_lengkap ?? '-' }}
                                 @if ($u->dosen?->is_reviewer)<span class="badge bg-info-subtle text-info ms-1">Reviewer</span>@endif
+                                @if ($u->dosen?->is_ketua_eligible)<span class="badge bg-primary-subtle text-primary ms-1">Ketua</span>@endif
                             </td>
                             <td class="small text-muted">{{ $u->email ?? '-' }}</td>
                             <td>
@@ -78,6 +84,16 @@
                                         <i class="ri-{{ $u->is_active ? 'pause' : 'play' }}-circle-line"></i>
                                     </button>
                                 </form>
+                                @if ($u->dosen)
+                                    <form method="POST" action="{{ route('operator.akun-dosen.toggle-ketua', $u) }}" class="d-inline"
+                                        onsubmit="return confirm('{{ $u->dosen->is_ketua_eligible ? 'Cabut hak ketua pengusul untuk' : 'Jadikan boleh menjadi ketua pengusul:' }} {{ $u->dosen->nama_lengkap }}?');">
+                                        @csrf @method('PATCH')
+                                        <button class="btn btn-sm {{ $u->dosen->is_ketua_eligible ? 'btn-primary' : 'btn-outline-primary' }}"
+                                            title="{{ $u->dosen->is_ketua_eligible ? 'Cabut hak ketua pengusul' : 'Jadikan boleh jadi ketua pengusul' }}">
+                                            <i class="ri-vip-crown-line"></i>
+                                        </button>
+                                    </form>
+                                @endif
                             </td>
                         </tr>
 
