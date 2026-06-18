@@ -97,6 +97,23 @@ class NotifikasiService
     }
 
     /**
+     * Dosen submit ulang proposal revisi → reviewer yang sama diminta menilai ulang.
+     */
+    public function onReviewerReassessment(Proposal $proposal, Dosen $reviewer): void
+    {
+        $userId = $reviewer->user_id;
+        if (! $userId) return;
+
+        $this->notify(
+            userId: $userId,
+            judul: "Penilaian ulang diperlukan",
+            pesan: "Proposal '{$proposal->judul}' telah direvisi pengusul. Mohon lakukan penilaian ulang.",
+            link:  route('reviewer.proposal.index'),
+            icon:  'ri-refresh-line',
+        );
+    }
+
+    /**
      * Reviewer submit penilaian → notify operator.
      */
     public function onPenilaianSubmitted(Proposal $proposal, Dosen $reviewer, float $nilai): void

@@ -31,6 +31,35 @@ class AkunDosenController extends Controller
         return view('operator.akun-dosen.index', compact('akun', 'q'));
     }
 
+    /**
+     * Tampilkan biodata lengkap dosen (read-only) untuk operator.
+     */
+    public function biodata(Request $request, User $akun)
+    {
+        abort_unless($akun->role === 'dosen', 403);
+
+        $dosen = $akun->dosen;
+        $dosen?->load(['fakultas', 'prodi', 'keahlian']);
+
+        $riwayatPenelitian = $dosen
+            ? $dosen->riwayatPenelitian()->orderByDesc('tahun')->get()
+            : collect();
+        $riwayatPkm = $dosen
+            ? $dosen->riwayatPkm()->orderByDesc('tahun')->get()
+            : collect();
+        $riwayatHki = $dosen
+            ? $dosen->riwayatHki()->orderByDesc('tahun_pengajuan')->get()
+            : collect();
+
+        return view('operator.akun-dosen.biodata', [
+            'akun'              => $akun,
+            'dosen'             => $dosen,
+            'riwayatPenelitian' => $riwayatPenelitian,
+            'riwayatPkm'        => $riwayatPkm,
+            'riwayatHki'        => $riwayatHki,
+        ]);
+    }
+
     public function store(Request $request)
     {
         $data = $request->validate([

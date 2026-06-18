@@ -178,6 +178,20 @@ class UsulanController extends Controller
             return back()->with('error', 'Belum bisa submit: ' . implode(' ', $errors));
         }
 
+        // Submit ulang setelah revisi minor/mayor → langsung kembali ke reviewer yang
+        // sama untuk penilaian ulang, tanpa verifikasi & penugasan ulang oleh operator.
+        if (in_array($pkm->status, ['revisi_minor', 'revisi_mayor']) && $pkm->penugasanReviewer()->exists()) {
+            $reviewers = $this->service->reopenUntukPenilaianUlang($pkm);
+
+            $pkm->refresh()->load('skemaHibah', 'ketua');
+            foreach ($reviewers as $reviewer) {
+                $this->notif->onReviewerReassessment($pkm, $reviewer);
+            }
+
+            return redirect()->route('dosen.pkm.show', $pkm)
+                ->with('success', 'Proposal revisi terkirim. Reviewer yang sama akan melakukan penilaian ulang.');
+        }
+
         $pkm->update([
             'status' => 'submitted',
             'tgl_submit' => now(),
@@ -265,7 +279,8 @@ class UsulanController extends Controller
 
     public function pdfSubstansi(Request $request, Proposal $pkm)
     {
-        return $this->renderPdf($request, $pkm, 'pdf-substansi', 'Substansi_PKM');
+        // Landscape: tabel jadwal (kegiatan + timeline per bulan) & RAB lebar, agar tidak terpotong.
+        return $this->renderPdf($request, $pkm, 'pdf-substansi', 'Substansi_PKM', orientation: 'landscape');
     }
 
     public function pdfBiodata(Request $request, Proposal $pkm)
@@ -278,7 +293,7 @@ class UsulanController extends Controller
         return $this->renderPdf($request, $pkm, '_shared.pdf-pernyataan', 'Pernyataan_PKM', shared: true);
     }
 
-    private function renderPdf(Request $request, Proposal $pkm, string $view, string $prefix, bool $shared = false)
+    private function renderPdf(Request $request, Proposal $pkm, string $view, string $prefix, bool $shared = false, string $orientation = 'portrait')
     {
         $this->authorizeOwner($request, $pkm);
         $pkm->load(['skemaHibah', 'periodeHibah',
@@ -292,7 +307,7 @@ class UsulanController extends Controller
         $pdf = Pdf::loadView($viewName, [
             'p' => $pkm,
             'totalRab' => $this->service->totalRab($pkm),
-        ])->setPaper('a4');
+        ])->setPaper('a4', $orientation);
 
         $filename = $prefix . '_' . preg_replace('/[^A-Za-z0-9_-]/', '_', $pkm->judul) . '.pdf';
         return $pdf->download($filename);

@@ -43,6 +43,7 @@
                 <thead class="table-light">
                     <tr>
                         <th width="160">NIDN</th>
+                        <th width="140">Username</th>
                         <th>Nama</th>
                         <th width="180">Email</th>
                         <th width="100">Profil</th>
@@ -54,6 +55,7 @@
                     @forelse ($akun as $u)
                         <tr>
                             <td><code>{{ $u->dosen?->nidn ?? $u->nik }}</code></td>
+                            <td><code>{{ $u->username }}</code></td>
                             <td>
                                 {{ $u->dosen?->nama_lengkap ?? '-' }}
                                 @if ($u->dosen?->is_reviewer)<span class="badge bg-info-subtle text-info ms-1">Reviewer</span>@endif
@@ -75,6 +77,9 @@
                                 @endif
                             </td>
                             <td>
+                                <a href="{{ route('operator.akun-dosen.biodata', $u) }}" class="btn btn-sm btn-outline-info" title="Lihat biodata dosen">
+                                    <i class="ri-id-card-line"></i>
+                                </a>
                                 <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#mReset{{ $u->id }}" title="Reset password">
                                     <i class="ri-lock-password-line"></i>
                                 </button>
@@ -112,7 +117,7 @@
                             </div>
                         </div>
                     @empty
-                        <tr><td colspan="6" class="text-center text-muted py-4">Belum ada akun dosen.</td></tr>
+                        <tr><td colspan="7" class="text-center text-muted py-4">Belum ada akun dosen.</td></tr>
                     @endforelse
                 </tbody>
             </table>

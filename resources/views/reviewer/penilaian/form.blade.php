@@ -33,6 +33,20 @@
                     {{ $proposal->skemaHibah->nama }} &middot; Rp {{ number_format($totalRab, 0, ',', '.') }}
                 </div>
             </div>
+            @if ($proposal->mitra->isNotEmpty())
+                <hr class="my-2">
+                <small class="text-muted">Mitra</small>
+                <div class="d-flex flex-wrap gap-2 mt-1">
+                    @foreach ($proposal->mitra as $m)
+                        <span class="badge bg-light text-dark border">
+                            {{ $m->nama_mitra }}
+                            @if ($m->dokumen_path)
+                                <a href="{{ asset('storage/' . $m->dokumen_path) }}" download class="ms-1 text-danger" title="Download PDF Mitra"><i class="ri-download-2-line"></i></a>
+                            @endif
+                        </span>
+                    @endforeach
+                </div>
+            @endif
         </div>
     </div>
 

@@ -94,7 +94,17 @@
                 <div class="card border-0 shadow-sm mb-3">
                     <div class="card-header bg-white"><h6 class="mb-0">Mitra</h6></div>
                     <div class="card-body small">
-                        @foreach ($p->mitra as $m)<div class="mb-2 pb-2 border-bottom"><strong>{{ $m->nama_mitra }}</strong></div>@endforeach
+                        @foreach ($p->mitra as $m)
+                            <div class="mb-2 pb-2 border-bottom">
+                                <strong>{{ $m->nama_mitra }}</strong>
+                                @if ($m->pimpinan_mitra) <br><span class="text-muted">Pimpinan: {{ $m->pimpinan_mitra }}</span>@endif
+                                @if ($m->alamat_mitra) <br><span class="text-muted">{{ $m->alamat_mitra }}</span>@endif
+                                @if ($m->permasalahan_mitra) <br><em class="text-muted">{{ $m->permasalahan_mitra }}</em>@endif
+                                @if ($m->dokumen_path)
+                                    <br><a href="{{ asset('storage/' . $m->dokumen_path) }}" download class="btn btn-sm btn-outline-danger mt-1"><i class="ri-download-2-line"></i> Download PDF Mitra</a>
+                                @endif
+                            </div>
+                        @endforeach
                     </div>
                 </div>
             @endif

@@ -114,6 +114,9 @@
                             <div class="mb-2 pb-2 border-bottom">
                                 <strong>{{ $m->nama_mitra }}</strong> &mdash; {{ $m->pimpinan_mitra }}<br>
                                 <span class="text-muted">{{ $m->alamat_mitra }}</span>
+                                @if ($m->dokumen_path)
+                                    <br><a href="{{ asset('storage/' . $m->dokumen_path) }}" download class="btn btn-sm btn-outline-danger mt-1"><i class="ri-download-2-line"></i> Download PDF Mitra</a>
+                                @endif
                             </div>
                         @endforeach
                     </div>

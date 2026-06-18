@@ -4,6 +4,8 @@ namespace App\Services;
 
 use App\Models\Transaction\PeriodeHibah;
 use App\Models\Transaction\Proposal;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 
 class ProposalService
 {
@@ -166,5 +168,32 @@ class ProposalService
             ->whereHas('tahapanHibah', fn($q) => $q->where('kode', 'pengajuan'))
             ->where('status', 'berjalan')
             ->exists();
+    }
+
+    /**
+     * Submit ulang setelah revisi minor/mayor: kembalikan proposal langsung ke
+     * reviewer yang sama untuk penilaian ulang (tanpa verifikasi & penugasan ulang).
+     *
+     * Penilaian lama TIDAK dihapus (dipakai untuk prefill form reviewer); cukup
+     * status penugasan dibuka kembali ke 'ditugaskan'. Selama penugasan belum
+     * 'selesai', PenilaianService::agregasi() tidak menghitung penilaian lama,
+     * sehingga operator belum bisa finalisasi sampai reviewer menilai ulang.
+     *
+     * @return Collection<\App\Models\Master\Dosen> Reviewer yang perlu dinotifikasi.
+     */
+    public function reopenUntukPenilaianUlang(Proposal $proposal): Collection
+    {
+        return DB::transaction(function () use ($proposal) {
+            $proposal->update([
+                'status'         => 'direview',
+                'tgl_submit'     => now(),
+                'total_anggaran' => $this->totalRab($proposal),
+            ]);
+
+            $proposal->penugasanReviewer()->update(['status' => 'ditugaskan']);
+
+            return $proposal->penugasanReviewer()->with('reviewer')->get()
+                ->pluck('reviewer')->filter()->values();
+        });
     }
 }

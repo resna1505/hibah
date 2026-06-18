@@ -153,7 +153,7 @@
                                 @if ($m->pimpinan_mitra) <br><span class="text-muted">Pimpinan: {{ $m->pimpinan_mitra }}</span>@endif
                                 @if ($m->alamat_mitra) <br><span class="text-muted">{{ $m->alamat_mitra }}</span>@endif
                                 @if ($m->permasalahan_mitra) <br><em class="text-muted">{{ $m->permasalahan_mitra }}</em>@endif
-                                @if ($m->dokumen_path) <br><a href="{{ asset('storage/' . $m->dokumen_path) }}" target="_blank"><i class="ri-file-pdf-line"></i> Dokumen Mitra</a>@endif
+                                @if ($m->dokumen_path) <br><a href="{{ asset('storage/' . $m->dokumen_path) }}" download class="btn btn-sm btn-outline-danger mt-1"><i class="ri-download-2-line"></i> Download PDF Mitra</a>@endif
                             </div>
                         @endforeach
                     </div>

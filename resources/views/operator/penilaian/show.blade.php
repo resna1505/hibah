@@ -88,18 +88,20 @@
                                     <strong>{{ ucfirst(str_replace('reviewer_', 'Reviewer ', $pr->peran)) }}:</strong>
                                     {{ $pr->reviewer?->nama_lengkap }}
                                 </div>
-                                @if ($pr->penilaian)
+                                @if ($pr->status === 'selesai' && $pr->penilaian)
                                     @php [$rlbl, $rcls] = $rekomendasiBadge[$pr->penilaian->rekomendasi] ?? [$pr->penilaian->rekomendasi, 'bg-light text-muted']; @endphp
                                     <div class="text-end">
                                         <div class="fs-5 fw-bold text-success">{{ number_format($pr->penilaian->nilai_total, 2) }}</div>
                                         <span class="badge {{ $rcls }}">{{ $rlbl }}</span>
                                     </div>
+                                @elseif ($pr->penilaian)
+                                    <span class="badge bg-warning-subtle text-warning">Menunggu Penilaian Ulang</span>
                                 @else
                                     <span class="badge bg-warning-subtle text-warning">Belum Dinilai</span>
                                 @endif
                             </div>
 
-                            @if ($pr->penilaian)
+                            @if ($pr->status === 'selesai' && $pr->penilaian)
                                 <table class="table table-sm mb-2 small">
                                     <thead class="table-light">
                                         <tr><th>Komponen</th><th class="text-center">Skor</th><th class="text-center">Bobot %</th><th class="text-end">Nilai</th></tr>
@@ -121,7 +123,10 @@
                                     {{ $pr->penilaian->catatan_umum }}
                                 </div>
                             @else
-                                <p class="text-muted small mb-0">Reviewer belum menyelesaikan penilaian. Deadline: {{ $pr->deadline->format('d M Y') }}</p>
+                                <p class="text-muted small mb-0">
+                                    {{ $pr->penilaian ? 'Proposal telah direvisi — menunggu reviewer melakukan penilaian ulang.' : 'Reviewer belum menyelesaikan penilaian.' }}
+                                    Deadline: {{ $pr->deadline->format('d M Y') }}
+                                </p>
                             @endif
                         </div>
                     @empty

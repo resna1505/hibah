@@ -121,9 +121,14 @@ class PenilaianService
     {
         $proposal->load('penugasanReviewer.penilaian');
 
+        // Hanya hitung penilaian dari penugasan yang berstatus 'selesai'. Saat proposal
+        // direvisi & dibuka untuk penilaian ulang, penugasan kembali ke 'ditugaskan'
+        // sehingga penilaian lama (masih tersimpan untuk prefill) tidak ikut dihitung
+        // sampai reviewer submit ulang.
         $penilaianList = $proposal->penugasanReviewer
+            ->filter(fn($pr) => $pr->status === 'selesai' && $pr->penilaian !== null)
             ->map(fn($pr) => $pr->penilaian)
-            ->filter();
+            ->values();
 
         if ($penilaianList->isEmpty()) {
             return [

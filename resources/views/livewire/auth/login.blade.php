@@ -41,11 +41,11 @@
                                 </div>
 
                                 <div class="mb-3">
-                                    <div class="float-end">
+                                    {{-- <div class="float-end">
                                         @if (Route::has('password.reset'))
                                             <a class="text-muted" href="{{ route('password.reset') }}">Lupa Password?</a>
                                         @endif
-                                    </div>
+                                    </div> --}}
                                     <label class="form-label" for="password-input">Password <span class="text-danger">*</span></label>
                                     <div class="position-relative auth-pass-inputgroup mb-3">
                                         <input id="password-input" type="password"

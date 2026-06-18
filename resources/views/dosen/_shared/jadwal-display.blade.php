@@ -30,16 +30,16 @@
 @endphp
 
 @if (! empty($rows))
-    <table class="{{ $isPdf ? 'bordered small' : 'table table-bordered table-sm small mb-0' }}" style="{{ $isPdf ? 'width:100%;' : '' }}">
+    <table class="{{ $isPdf ? 'bordered small' : 'table table-bordered table-sm small mb-0' }}" style="{{ $isPdf ? 'width:100%; table-layout:fixed;' : '' }}">
         <thead {!! $isPdf ? '' : 'class="table-light text-center"' !!}>
             <tr>
-                <th rowspan="2" style="width:40px;">No</th>
-                <th rowspan="2" style="min-width:220px;">Kegiatan</th>
+                <th rowspan="2" style="width:{{ $isPdf ? '5%' : '40px' }};">No</th>
+                <th rowspan="2" style="{{ $isPdf ? 'width:30%; word-wrap:break-word;' : 'min-width:220px;' }}">Kegiatan</th>
                 <th colspan="{{ $durasi }}" class="text-center">Bulan</th>
             </tr>
             <tr>
                 @foreach ($bulanLabels as $lbl)
-                    <th class="text-center" style="font-size:9pt;">{{ $lbl }}</th>
+                    <th class="text-center" style="font-size:{{ $isPdf ? '8pt' : '9pt' }}; word-wrap:break-word;">{{ $lbl }}</th>
                 @endforeach
             </tr>
         </thead>
@@ -51,7 +51,7 @@
                 @endphp
                 <tr>
                     <td class="text-center">{{ $i + 1 }}</td>
-                    <td>{{ $r['keterangan'] ?? '-' }}</td>
+                    <td style="{{ $isPdf ? 'word-wrap:break-word; overflow-wrap:break-word;' : '' }}">{{ $r['keterangan'] ?? '-' }}</td>
                     @for ($i2 = 1; $i2 <= $durasi; $i2++)
                         <td style="text-align:center; {{ $i2 >= $s && $i2 <= $e ? 'background:' . $cellColor . ';' : '' }}">&nbsp;</td>
                     @endfor

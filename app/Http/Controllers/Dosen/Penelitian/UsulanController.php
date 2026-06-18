@@ -183,6 +183,20 @@ class UsulanController extends Controller
             return back()->with('error', 'Belum bisa submit: ' . implode(' ', $errors));
         }
 
+        // Submit ulang setelah revisi minor/mayor → langsung kembali ke reviewer yang
+        // sama untuk penilaian ulang, tanpa verifikasi & penugasan ulang oleh operator.
+        if (in_array($penelitian->status, ['revisi_minor', 'revisi_mayor']) && $penelitian->penugasanReviewer()->exists()) {
+            $reviewers = $this->service->reopenUntukPenilaianUlang($penelitian);
+
+            $penelitian->refresh()->load('skemaHibah', 'ketua');
+            foreach ($reviewers as $reviewer) {
+                $this->notif->onReviewerReassessment($penelitian, $reviewer);
+            }
+
+            return redirect()->route('dosen.penelitian.show', $penelitian)
+                ->with('success', 'Proposal revisi terkirim. Reviewer yang sama akan melakukan penilaian ulang.');
+        }
+
         $penelitian->update([
             'status' => 'submitted',
             'tgl_submit' => now(),
@@ -273,7 +287,8 @@ class UsulanController extends Controller
 
     public function pdfSubstansi(Request $request, Proposal $penelitian)
     {
-        return $this->renderPdf($request, $penelitian, 'pdf-substansi', 'Substansi_Penelitian');
+        // Landscape: tabel jadwal (kegiatan + timeline per bulan) & RAB lebar, agar tidak terpotong.
+        return $this->renderPdf($request, $penelitian, 'pdf-substansi', 'Substansi_Penelitian', orientation: 'landscape');
     }
 
     public function pdfBiodata(Request $request, Proposal $penelitian)
@@ -286,7 +301,7 @@ class UsulanController extends Controller
         return $this->renderPdf($request, $penelitian, '_shared.pdf-pernyataan', 'Pernyataan_Penelitian', shared: true);
     }
 
-    private function renderPdf(Request $request, Proposal $penelitian, string $view, string $prefix, bool $shared = false)
+    private function renderPdf(Request $request, Proposal $penelitian, string $view, string $prefix, bool $shared = false, string $orientation = 'portrait')
     {
         $this->authorizeOwner($request, $penelitian);
 
@@ -301,7 +316,7 @@ class UsulanController extends Controller
         $pdf = Pdf::loadView($viewName, [
             'p' => $penelitian,
             'totalRab' => $this->service->totalRab($penelitian),
-        ])->setPaper('a4');
+        ])->setPaper('a4', $orientation);
 
         $filename = $prefix . '_' . preg_replace('/[^A-Za-z0-9_-]/', '_', $penelitian->judul) . '.pdf';
 

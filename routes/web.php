@@ -129,6 +129,7 @@ Route::middleware('auth')->group(function () {
         // Akun Login Dosen (provisioning oleh operator)
         Route::prefix('akun-dosen')->name('akun-dosen.')->group(function () {
             Route::get('/',                       [OperatorAkunDosen::class, 'index'])->name('index');
+            Route::get('/{akun}/biodata',         [OperatorAkunDosen::class, 'biodata'])->name('biodata');
             Route::post('/',                      [OperatorAkunDosen::class, 'store'])->name('store');
             Route::patch('/{akun}/toggle',        [OperatorAkunDosen::class, 'toggle'])->name('toggle');
             Route::patch('/{akun}/toggle-ketua',  [OperatorAkunDosen::class, 'toggleKetua'])->name('toggle-ketua');
