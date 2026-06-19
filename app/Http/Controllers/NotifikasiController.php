@@ -33,9 +33,26 @@ class NotifikasiController extends Controller
         $notifikasi->markRead();
 
         if ($notifikasi->link) {
-            return redirect()->to($notifikasi->link);
+            return redirect()->to($this->normalizeLink($notifikasi->link));
         }
         return back();
+    }
+
+    /**
+     * Jadikan link relatif terhadap host saat ini. Notifikasi lama bisa tersimpan
+     * sebagai URL absolut yang salah host (mis. http://localhost/...) — ambil
+     * path+query-nya saja agar redirect mengikuti domain yang sedang diakses.
+     */
+    private function normalizeLink(string $link): string
+    {
+        if (! preg_match('#^https?://#i', $link)) {
+            return $link;
+        }
+
+        $parts = parse_url($link);
+        return ($parts['path'] ?? '/')
+            . (isset($parts['query']) ? '?' . $parts['query'] : '')
+            . (isset($parts['fragment']) ? '#' . $parts['fragment'] : '');
     }
 
     public function markAllRead(Request $request)
