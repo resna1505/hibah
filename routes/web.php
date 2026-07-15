@@ -14,6 +14,7 @@ use App\Http\Controllers\Operator\DashboardController as OperatorDashboard;
 use App\Http\Controllers\Operator\JadwalController as OperatorJadwal;
 use App\Http\Controllers\Operator\AkunDosenController as OperatorAkunDosen;
 use App\Http\Controllers\Operator\MasterBidangStrategisController as OperatorMasterBidang;
+use App\Http\Controllers\Operator\MasterProdiController as OperatorMasterProdi;
 use App\Http\Controllers\Operator\LogAktivitasController as OperatorLogAktivitas;
 use App\Http\Controllers\Operator\MasterRabController as OperatorMasterRab;
 use App\Http\Controllers\Operator\PengaturanController as OperatorPengaturan;
@@ -138,6 +139,14 @@ Route::middleware('auth')->group(function () {
 
         // Log Aktivitas
         Route::get('/log-aktivitas', [OperatorLogAktivitas::class, 'index'])->name('log.index');
+
+        // Master Program Studi
+        Route::prefix('master/prodi')->name('master.prodi.')->group(function () {
+            Route::get('/',          [OperatorMasterProdi::class, 'index'])->name('index');
+            Route::post('/',         [OperatorMasterProdi::class, 'store'])->name('store');
+            Route::put('/{prodi}',   [OperatorMasterProdi::class, 'update'])->name('update');
+            Route::delete('/{prodi}',[OperatorMasterProdi::class, 'destroy'])->name('destroy');
+        });
 
         // Master Bidang Strategis
         Route::prefix('master/bidang')->name('master.bidang.')->group(function () {
