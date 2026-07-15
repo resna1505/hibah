@@ -16,11 +16,16 @@ class PharmacyService
      */
     public function searchByName(string $name): array
     {
+        // Gunakan parameter binding agar aman dari SQL injection.
+        // Karakter wildcard LIKE (% dan _) di-escape supaya input user
+        // tidak diperlakukan sebagai pola.
+        $escaped = addcslashes($name, '%_\\');
+
         $sql = "SELECT id, name, stock, is_narcotic FROM medicines
-                WHERE name LIKE '%" . $name . "%'
+                WHERE name LIKE ?
                 ORDER BY name ASC";
 
-        return DB::select($sql);
+        return DB::select($sql, ['%' . $escaped . '%']);
     }
 
     /**
@@ -29,30 +34,52 @@ class PharmacyService
      */
     public function dispense(array $user, int $medicineId, int $qty): array
     {
-        $medicine = DB::table('medicines')->where('id', $medicineId)->first();
-
-        if (! $medicine) {
-            return ['ok' => false, 'message' => 'Obat tidak ditemukan'];
+        // Validasi jumlah: harus bilangan positif. Mencegah qty nol/negatif
+        // yang justru bisa MENAMBAH stok (bahaya untuk obat & narkotika).
+        if ($qty <= 0) {
+            return ['ok' => false, 'message' => 'Jumlah dispense harus lebih dari 0'];
         }
 
-        $newStock = $medicine->stock - $qty;
+        // Bungkus dalam transaksi + lock baris agar pembacaan dan pengurangan
+        // stok bersifat atomik. Tanpa ini, dispense paralel bisa membuat stok
+        // korup (race condition) — kritis untuk integritas data obat.
+        return DB::transaction(function () use ($user, $medicineId, $qty) {
+            $medicine = DB::table('medicines')
+                ->where('id', $medicineId)
+                ->lockForUpdate()
+                ->first();
 
-        DB::table('medicines')
-            ->where('id', $medicineId)
-            ->update(['stock' => $newStock]);
+            if (! $medicine) {
+                return ['ok' => false, 'message' => 'Obat tidak ditemukan'];
+            }
 
-        DB::table('dispense_logs')->insert([
-            'medicine_id' => $medicineId,
-            'qty'         => $qty,
-            'by_user'     => $user['id'],
-            'created_at'  => now(),
-        ]);
+            // Cegah stok minus: tidak boleh dispense melebihi stok tersedia.
+            if ($qty > $medicine->stock) {
+                return [
+                    'ok'      => false,
+                    'message' => 'Stok tidak mencukupi',
+                ];
+            }
 
-        return [
-            'ok'        => true,
-            'message'   => 'Berhasil dispense',
-            'new_stock' => $newStock,
-        ];
+            $newStock = $medicine->stock - $qty;
+
+            DB::table('medicines')
+                ->where('id', $medicineId)
+                ->update(['stock' => $newStock]);
+
+            DB::table('dispense_logs')->insert([
+                'medicine_id' => $medicineId,
+                'qty'         => $qty,
+                'by_user'     => $user['id'],
+                'created_at'  => now(),
+            ]);
+
+            return [
+                'ok'        => true,
+                'message'   => 'Berhasil dispense',
+                'new_stock' => $newStock,
+            ];
+        });
     }
 
     /**
@@ -60,10 +87,37 @@ class PharmacyService
      */
     public function adjustStock(array $user, int $medicineId, int $newStock): array
     {
-        DB::table('medicines')
-            ->where('id', $medicineId)
-            ->update(['stock' => $newStock]);
+        // Stok hasil koreksi tidak boleh negatif.
+        if ($newStock < 0) {
+            return ['ok' => false, 'message' => 'Stok tidak boleh negatif'];
+        }
 
-        return ['ok' => true, 'message' => 'Stok diperbarui', 'stock' => $newStock];
+        // Koreksi stok harus atomik dan WAJIB tercatat (jejak audit).
+        // Untuk obat/narkotika, perubahan stok manual tanpa audit trail
+        // adalah celah kepatuhan dan keselamatan yang serius.
+        return DB::transaction(function () use ($user, $medicineId, $newStock) {
+            $medicine = DB::table('medicines')
+                ->where('id', $medicineId)
+                ->lockForUpdate()
+                ->first();
+
+            if (! $medicine) {
+                return ['ok' => false, 'message' => 'Obat tidak ditemukan'];
+            }
+
+            DB::table('medicines')
+                ->where('id', $medicineId)
+                ->update(['stock' => $newStock]);
+
+            // Catat koreksi manual: stok lama, stok baru, dan siapa yang mengubah.
+            DB::table('dispense_logs')->insert([
+                'medicine_id' => $medicineId,
+                'qty'         => $newStock - $medicine->stock,
+                'by_user'     => $user['id'],
+                'created_at'  => now(),
+            ]);
+
+            return ['ok' => true, 'message' => 'Stok diperbarui', 'stock' => $newStock];
+        });
     }
 }

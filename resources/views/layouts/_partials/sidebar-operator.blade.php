@@ -76,6 +76,7 @@
             <i class="ri-arrow-down-s-line"></i>
         </a>
         <div class="collapse {{ $is('master') ? 'show' : '' }}" id="masterMenu">
+            <a href="{{ route('operator.master.prodi.index') }}" class="{{ $linkClass('master.prodi') }} ms-3">Program Studi</a>
             <a href="{{ route('operator.master.bidang.index') }}" class="{{ $linkClass('master.bidang') }} ms-3">Bidang Strategis</a>
             <a href="{{ route('operator.master.rab.index') }}" class="{{ $linkClass('master.rab') }} ms-3">Kelompok &amp; Komponen RAB</a>
         </div>
