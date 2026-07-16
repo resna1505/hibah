@@ -14,6 +14,7 @@ use App\Http\Controllers\Operator\DashboardController as OperatorDashboard;
 use App\Http\Controllers\Operator\JadwalController as OperatorJadwal;
 use App\Http\Controllers\Operator\AkunDosenController as OperatorAkunDosen;
 use App\Http\Controllers\Operator\MasterBidangStrategisController as OperatorMasterBidang;
+use App\Http\Controllers\Operator\MasterFakultasController as OperatorMasterFakultas;
 use App\Http\Controllers\Operator\MasterProdiController as OperatorMasterProdi;
 use App\Http\Controllers\Operator\LogAktivitasController as OperatorLogAktivitas;
 use App\Http\Controllers\Operator\MasterRabController as OperatorMasterRab;
@@ -140,9 +141,14 @@ Route::middleware('auth')->group(function () {
         // Log Aktivitas
         Route::get('/log-aktivitas', [OperatorLogAktivitas::class, 'index'])->name('log.index');
 
-        // Master Program Studi
+        // Master Fakultas & Program Studi (satu halaman: fakultas header, prodi children)
+        Route::prefix('master/fakultas')->name('master.fakultas.')->group(function () {
+            Route::get('/',              [OperatorMasterFakultas::class, 'index'])->name('index');
+            Route::post('/',             [OperatorMasterFakultas::class, 'store'])->name('store');
+            Route::put('/{fakultas}',    [OperatorMasterFakultas::class, 'update'])->name('update');
+            Route::delete('/{fakultas}', [OperatorMasterFakultas::class, 'destroy'])->name('destroy');
+        });
         Route::prefix('master/prodi')->name('master.prodi.')->group(function () {
-            Route::get('/',          [OperatorMasterProdi::class, 'index'])->name('index');
             Route::post('/',         [OperatorMasterProdi::class, 'store'])->name('store');
             Route::put('/{prodi}',   [OperatorMasterProdi::class, 'update'])->name('update');
             Route::delete('/{prodi}',[OperatorMasterProdi::class, 'destroy'])->name('destroy');

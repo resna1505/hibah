@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Operator;
 
 use App\Http\Controllers\Controller;
 use App\Models\Master\Dosen;
-use App\Models\Master\Fakultas;
 use App\Models\Master\Prodi;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -12,32 +11,6 @@ use Illuminate\Validation\Rule;
 class MasterProdiController extends Controller
 {
     private array $jenjangOpsi = ['D3', 'D4', 'S1', 'S2', 'S3', 'Profesi'];
-
-    public function index(Request $request)
-    {
-        $list = Prodi::with('fakultas')
-            ->when($request->fakultas_id, fn($q, $id) => $q->where('fakultas_id', $id))
-            ->when($request->search, fn($q, $s) => $q->where(fn($w) => $w
-                ->where('nama', 'like', "%{$s}%")
-                ->orWhere('kode', 'like', "%{$s}%")))
-            ->orderBy('fakultas_id')
-            ->orderBy('kode')
-            ->get();
-
-        // Jumlah dosen yang memakai tiap prodi (untuk peringatan sebelum hapus).
-        $usage = Dosen::selectRaw('prodi_id, COUNT(*) AS jumlah')
-            ->whereNotNull('prodi_id')
-            ->groupBy('prodi_id')
-            ->pluck('jumlah', 'prodi_id');
-
-        return view('operator.master.prodi.index', [
-            'list'         => $list,
-            'usage'        => $usage,
-            'fakultasList' => Fakultas::orderBy('nama')->get(),
-            'jenjangOpsi'  => $this->jenjangOpsi,
-            'filters'      => $request->only(['search', 'fakultas_id']),
-        ]);
-    }
 
     public function store(Request $request)
     {
