@@ -60,7 +60,7 @@
                                     @endforeach
                                 </select>
                             </div>
-                            <div class="col-md-5"><input type="text" name="anggota_bidang_tugas[]" class="form-control" placeholder="Bidang tugas" value="{{ $a->bidang_tugas }}"></div>
+                            <div class="col-md-5"><input type="text" name="anggota_bidang_tugas[]" maxlength="5000" class="form-control" placeholder="Bidang tugas" value="{{ $a->bidang_tugas }}"></div>
                             <div class="col-md-1"><button type="button" class="btn btn-outline-danger w-100" onclick="this.closest('.anggota-row').remove()"><i class="ri-delete-bin-line"></i></button></div>
                         </div>
                     @endforeach
@@ -72,10 +72,10 @@
                 <div id="anggotaMahasiswa">
                     @foreach ($mahasiswa as $m)
                         <div class="row g-2 mb-2 mahasiswa-row">
-                            <div class="col-md-3"><input type="text" name="mahasiswa_nama[]" class="form-control" placeholder="Nama" value="{{ $m->nama_mahasiswa }}"></div>
-                            <div class="col-md-2"><input type="text" name="mahasiswa_nim[]" class="form-control" placeholder="NIM" value="{{ $m->nim }}"></div>
-                            <div class="col-md-3"><input type="text" name="mahasiswa_prodi[]" class="form-control" placeholder="Program Studi" value="{{ $m->program_studi }}"></div>
-                            <div class="col-md-3"><input type="text" name="mahasiswa_bidang_tugas[]" class="form-control" placeholder="Bidang tugas" value="{{ $m->bidang_tugas }}"></div>
+                            <div class="col-md-3"><input type="text" name="mahasiswa_nama[]" maxlength="200" class="form-control" placeholder="Nama" value="{{ $m->nama_mahasiswa }}"></div>
+                            <div class="col-md-2"><input type="text" name="mahasiswa_nim[]" maxlength="30" class="form-control" placeholder="NIM" value="{{ $m->nim }}"></div>
+                            <div class="col-md-3"><input type="text" name="mahasiswa_prodi[]" maxlength="150" class="form-control" placeholder="Program Studi" value="{{ $m->program_studi }}"></div>
+                            <div class="col-md-3"><input type="text" name="mahasiswa_bidang_tugas[]" maxlength="5000" class="form-control" placeholder="Bidang tugas" value="{{ $m->bidang_tugas }}"></div>
                             <div class="col-md-1"><button type="button" class="btn btn-outline-danger w-100" onclick="this.closest('.mahasiswa-row').remove()"><i class="ri-delete-bin-line"></i></button></div>
                         </div>
                     @endforeach
@@ -97,8 +97,8 @@
                         <div class="card mb-2 mitra-row">
                             <div class="card-body p-3">
                                 <div class="row g-2">
-                                    <div class="col-md-5"><input type="text" name="mitra_nama[]" class="form-control" placeholder="Nama Mitra" value="{{ $m->nama_mitra }}"></div>
-                                    <div class="col-md-5"><input type="text" name="mitra_pimpinan[]" class="form-control" placeholder="Pimpinan Mitra" value="{{ $m->pimpinan_mitra }}"></div>
+                                    <div class="col-md-5"><input type="text" name="mitra_nama[]" maxlength="200" class="form-control" placeholder="Nama Mitra" value="{{ $m->nama_mitra }}"></div>
+                                    <div class="col-md-5"><input type="text" name="mitra_pimpinan[]" maxlength="200" class="form-control" placeholder="Pimpinan Mitra" value="{{ $m->pimpinan_mitra }}"></div>
                                     <div class="col-md-2"><button type="button" class="btn btn-outline-danger w-100" onclick="this.closest('.mitra-row').remove()"><i class="ri-delete-bin-line"></i> Hapus</button></div>
                                     <div class="col-md-12"><input type="text" name="mitra_alamat[]" class="form-control" placeholder="Alamat Mitra" value="{{ $m->alamat_mitra }}"></div>
                                     <div class="col-md-12"><textarea name="mitra_permasalahan[]" rows="2" class="form-control" placeholder="Permasalahan yang dihadapi mitra">{{ $m->permasalahan_mitra }}</textarea></div>
@@ -244,9 +244,9 @@
                                                 <option value="{{ $j->id }}" @selected($rl->jenis_luaran_id == $j->id)>{{ $j->nama }}</option>
                                             @endforeach
                                         </select>
-                                        <input type="text" name="luaran_jenis_text[]" class="form-control form-control-sm" placeholder="atau isi bebas" value="{{ $rl->jenis_luaran_text }}">
+                                        <input type="text" name="luaran_jenis_text[]" maxlength="2000" class="form-control form-control-sm" placeholder="atau isi bebas" value="{{ $rl->jenis_luaran_text }}">
                                     </td>
-                                    <td><input type="text" name="luaran_status_target[]" class="form-control form-control-sm" placeholder="Submitted/Accepted/Published/Granted" value="{{ $rl->status_target }}"></td>
+                                    <td><input type="text" name="luaran_status_target[]" maxlength="255" class="form-control form-control-sm" placeholder="Submitted/Accepted/Published/Granted" value="{{ $rl->status_target }}"></td>
                                     <td><textarea name="luaran_keterangan[]" rows="1" class="form-control form-control-sm">{{ $rl->keterangan }}</textarea></td>
                                     <td><button type="button" class="btn btn-sm btn-outline-danger" onclick="this.closest('.luaran-row').remove()"><i class="ri-delete-bin-line"></i></button></td>
                                 </tr>
@@ -316,10 +316,10 @@
                                         @endforeach
                                     </select>
                                 </td>
-                                <td><input type="text" name="rab_item[]" class="form-control form-control-sm" value="{{ $r->item }}"></td>
-                                <td><input type="text" name="rab_justifikasi[]" class="form-control form-control-sm" value="{{ $r->justifikasi }}"></td>
+                                <td><input type="text" name="rab_item[]" maxlength="2000" class="form-control form-control-sm" value="{{ $r->item }}"></td>
+                                <td><input type="text" name="rab_justifikasi[]" maxlength="5000" class="form-control form-control-sm" value="{{ $r->justifikasi }}"></td>
                                 <td><input type="number" step="0.01" name="rab_kuantitas[]" class="form-control form-control-sm rab-qty" value="{{ $r->kuantitas }}"></td>
-                                <td><input type="text" name="rab_satuan[]" class="form-control form-control-sm" value="{{ $r->satuan }}"></td>
+                                <td><input type="text" name="rab_satuan[]" maxlength="50" class="form-control form-control-sm" value="{{ $r->satuan }}"></td>
                                 <td><input type="number" name="rab_harga_satuan[]" class="form-control form-control-sm rab-harga" value="{{ $r->harga_satuan }}"></td>
                                 <td class="rab-subtotal text-end small">Rp {{ number_format($r->sub_total, 0, ',', '.') }}</td>
                                 <td><button type="button" class="btn btn-sm btn-outline-danger" onclick="removeRab(this)"><i class="ri-delete-bin-line"></i></button></td>
@@ -425,17 +425,17 @@
                     @endforeach
                 </select>
             </div>
-            <div class="col-md-5"><input type="text" name="anggota_bidang_tugas[]" class="form-control" placeholder="Bidang tugas"></div>
+            <div class="col-md-5"><input type="text" name="anggota_bidang_tugas[]" maxlength="5000" class="form-control" placeholder="Bidang tugas"></div>
             <div class="col-md-1"><button type="button" class="btn btn-outline-danger w-100" onclick="this.closest('.anggota-row').remove()"><i class="ri-delete-bin-line"></i></button></div>
         </div>
     </template>
 
     <template id="mahasiswaTpl">
         <div class="row g-2 mb-2 mahasiswa-row">
-            <div class="col-md-3"><input type="text" name="mahasiswa_nama[]" class="form-control" placeholder="Nama"></div>
-            <div class="col-md-2"><input type="text" name="mahasiswa_nim[]" class="form-control" placeholder="NIM"></div>
-            <div class="col-md-3"><input type="text" name="mahasiswa_prodi[]" class="form-control" placeholder="Program Studi"></div>
-            <div class="col-md-3"><input type="text" name="mahasiswa_bidang_tugas[]" class="form-control" placeholder="Bidang tugas"></div>
+            <div class="col-md-3"><input type="text" name="mahasiswa_nama[]" maxlength="200" class="form-control" placeholder="Nama"></div>
+            <div class="col-md-2"><input type="text" name="mahasiswa_nim[]" maxlength="30" class="form-control" placeholder="NIM"></div>
+            <div class="col-md-3"><input type="text" name="mahasiswa_prodi[]" maxlength="150" class="form-control" placeholder="Program Studi"></div>
+            <div class="col-md-3"><input type="text" name="mahasiswa_bidang_tugas[]" maxlength="5000" class="form-control" placeholder="Bidang tugas"></div>
             <div class="col-md-1"><button type="button" class="btn btn-outline-danger w-100" onclick="this.closest('.mahasiswa-row').remove()"><i class="ri-delete-bin-line"></i></button></div>
         </div>
     </template>
@@ -444,8 +444,8 @@
         <div class="card mb-2 mitra-row">
             <div class="card-body p-3">
                 <div class="row g-2">
-                    <div class="col-md-5"><input type="text" name="mitra_nama[]" class="form-control" placeholder="Nama Mitra"></div>
-                    <div class="col-md-5"><input type="text" name="mitra_pimpinan[]" class="form-control" placeholder="Pimpinan Mitra"></div>
+                    <div class="col-md-5"><input type="text" name="mitra_nama[]" maxlength="200" class="form-control" placeholder="Nama Mitra"></div>
+                    <div class="col-md-5"><input type="text" name="mitra_pimpinan[]" maxlength="200" class="form-control" placeholder="Pimpinan Mitra"></div>
                     <div class="col-md-2"><button type="button" class="btn btn-outline-danger w-100" onclick="this.closest('.mitra-row').remove()"><i class="ri-delete-bin-line"></i> Hapus</button></div>
                     <div class="col-md-12"><input type="text" name="mitra_alamat[]" class="form-control" placeholder="Alamat Mitra"></div>
                     <div class="col-md-12"><textarea name="mitra_permasalahan[]" rows="2" class="form-control" placeholder="Permasalahan yang dihadapi mitra"></textarea></div>
@@ -475,9 +475,9 @@
                         <option value="{{ $j->id }}">{{ $j->nama }}</option>
                     @endforeach
                 </select>
-                <input type="text" name="luaran_jenis_text[]" class="form-control form-control-sm" placeholder="atau isi bebas">
+                <input type="text" name="luaran_jenis_text[]" maxlength="2000" class="form-control form-control-sm" placeholder="atau isi bebas">
             </td>
-            <td><input type="text" name="luaran_status_target[]" class="form-control form-control-sm" placeholder="Submitted/Accepted/Published/Granted"></td>
+            <td><input type="text" name="luaran_status_target[]" maxlength="255" class="form-control form-control-sm" placeholder="Submitted/Accepted/Published/Granted"></td>
             <td><textarea name="luaran_keterangan[]" rows="1" class="form-control form-control-sm"></textarea></td>
             <td><button type="button" class="btn btn-sm btn-outline-danger" onclick="this.closest('.luaran-row').remove()"><i class="ri-delete-bin-line"></i></button></td>
         </tr>
@@ -502,10 +502,10 @@
                     @endforeach
                 </select>
             </td>
-            <td><input type="text" name="rab_item[]" class="form-control form-control-sm"></td>
-            <td><input type="text" name="rab_justifikasi[]" class="form-control form-control-sm"></td>
+            <td><input type="text" name="rab_item[]" maxlength="2000" class="form-control form-control-sm"></td>
+            <td><input type="text" name="rab_justifikasi[]" maxlength="5000" class="form-control form-control-sm"></td>
             <td><input type="number" step="0.01" name="rab_kuantitas[]" class="form-control form-control-sm rab-qty" value="1"></td>
-            <td><input type="text" name="rab_satuan[]" class="form-control form-control-sm"></td>
+            <td><input type="text" name="rab_satuan[]" maxlength="50" class="form-control form-control-sm"></td>
             <td><input type="number" name="rab_harga_satuan[]" class="form-control form-control-sm rab-harga" value="0"></td>
             <td class="rab-subtotal text-end small">Rp 0</td>
             <td><button type="button" class="btn btn-sm btn-outline-danger" onclick="removeRab(this)"><i class="ri-delete-bin-line"></i></button></td>
