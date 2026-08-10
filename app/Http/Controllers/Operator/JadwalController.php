@@ -44,6 +44,9 @@ class JadwalController extends Controller
             'tahapan_id' => 'required|array',
             'tgl_mulai'  => 'required|array',
             'tgl_selesai'=> 'required|array',
+            'batas_submit' => 'array',
+            // Sebagian browser menyertakan detik pada nilai datetime-local.
+            'batas_submit.*' => 'nullable|date_format:Y-m-d\\TH:i,Y-m-d\\TH:i:s',
             'tahapan_status' => 'required|array',
 
             // Periode laporan (dynamic add per skema)
@@ -103,6 +106,9 @@ class JadwalController extends Controller
             'tahapan_id' => 'required|array',
             'tgl_mulai'  => 'required|array',
             'tgl_selesai'=> 'required|array',
+            'batas_submit' => 'array',
+            // Sebagian browser menyertakan detik pada nilai datetime-local.
+            'batas_submit.*' => 'nullable|date_format:Y-m-d\\TH:i,Y-m-d\\TH:i:s',
             'tahapan_status' => 'required|array',
 
             'laporan_skema' => 'array',
@@ -161,6 +167,7 @@ class JadwalController extends Controller
                 'tahapan_hibah_id'  => $tahapanId,
                 'tgl_mulai'         => $data['tgl_mulai'][$i],
                 'tgl_selesai'       => $data['tgl_selesai'][$i],
+                'batas_submit'      => JadwalTahapan::parseBatasSubmit($data['batas_submit'][$i] ?? null),
                 'status'            => $data['tahapan_status'][$i] ?? 'belum_mulai',
             ]);
         }

@@ -11,6 +11,50 @@
     $jadwalBulan   = $jadwalJson['bulan_mulai'] ?? '';
     $jadwalLegacy  = $jadwalJson['text'] ?? '';
     $durasiAwal    = $proposal?->durasi_bulan ?? 12;
+
+    // Pertahankan isian tabel berulang saat validasi gagal. Tanpa ini, satu error
+    // validasi membuat seluruh baris yang baru diketik dosen hilang karena tabel
+    // di bawah selalu dirender dari database, bukan dari old input.
+    $anggotaDosen = \App\Support\OldInput::rows('anggota_dosen_id', [
+        'dosen_id'     => 'anggota_dosen_id',
+        'bidang_tugas' => 'anggota_bidang_tugas',
+    ]) ?? $anggotaDosen;
+
+    $mahasiswa = \App\Support\OldInput::rows('mahasiswa_nama', [
+        'nama_mahasiswa' => 'mahasiswa_nama',
+        'nim'            => 'mahasiswa_nim',
+        'program_studi'  => 'mahasiswa_prodi',
+        'bidang_tugas'   => 'mahasiswa_bidang_tugas',
+    ]) ?? $mahasiswa;
+
+    $mitraList = \App\Support\OldInput::rows('mitra_nama', [
+        'nama_mitra'         => 'mitra_nama',
+        'pimpinan_mitra'     => 'mitra_pimpinan',
+        'alamat_mitra'       => 'mitra_alamat',
+        'permasalahan_mitra' => 'mitra_permasalahan',
+        'dokumen_path'       => 'mitra_dokumen_existing',
+    ]) ?? $mitraList;
+
+    $rencanaLuaran = \App\Support\OldInput::rows('luaran_tahun_ke', [
+        'tahun_ke'          => 'luaran_tahun_ke',
+        'kategori'          => 'luaran_kategori',
+        'jenis_luaran_id'   => 'luaran_jenis_id',
+        'jenis_luaran_text' => 'luaran_jenis_text',
+        'status_target'     => 'luaran_status_target',
+        'keterangan'        => 'luaran_keterangan',
+    ]) ?? $rencanaLuaran;
+
+    $rabItems = \App\Support\OldInput::rows('rab_item', [
+        'kategori_rab_id' => 'rab_kategori_id',
+        'komponen_rab_id' => 'rab_komponen_id',
+        'item'            => 'rab_item',
+        'justifikasi'     => 'rab_justifikasi',
+        'kuantitas'       => 'rab_kuantitas',
+        'satuan'          => 'rab_satuan',
+        'harga_satuan'    => 'rab_harga_satuan',
+    ])?->each(fn ($r) => $r->sub_total = (int) round((float) $r->kuantitas * (float) $r->harga_satuan))
+        ?? $rabItems;
+
     $hasilJson = $proposal?->hasil_diharapkan_json ?? [
         ['jenis' => 'Publikasi ilmiah di Jurnal Scopus/Sinta (1-4)', 'target' => 'Published/LOA'],
         ['jenis' => 'Peningkatan pengetahuan/keahlian mitra PKM', 'target' => 'Ada'],
@@ -28,6 +72,24 @@
             <i class="ri-arrow-left-line"></i> Kembali
         </a>
     </div>
+
+
+    @if ($batasSubmit)
+        <div class="alert {{ $submitDitutup ? 'alert-danger' : 'alert-info' }} d-flex align-items-start small">
+            <i class="ri-time-line me-2 mt-1"></i>
+            <div>
+                @if ($submitDitutup)
+                    <strong>Batas waktu submit sudah berakhir</strong>
+                    ({{ $batasSubmit->translatedFormat('l, d F Y, H:i') }} WIB).
+                    Proposal masih dapat disimpan sebagai draft, tetapi tidak dapat dikirim lagi.
+                @else
+                    <strong>Batas waktu submit proposal:</strong>
+                    {{ $batasSubmit->translatedFormat('l, d F Y, H:i') }} WIB.
+                    Simpan draft secara berkala agar isian tidak hilang.
+                @endif
+            </div>
+        </div>
+    @endif
 
     <form method="POST" action="{{ $action }}" enctype="multipart/form-data" id="formProposal">
         @csrf
@@ -345,9 +407,20 @@
                 <div class="d-flex justify-content-between">
                     <button type="submit" class="btn btn-outline-primary"><i class="ri-save-line me-1"></i> Simpan {{ $isEdit ? 'Perubahan' : 'Draft' }}</button>
                     @if ($isEdit && in_array($proposal->status, ['draft', 'dikembalikan', 'revisi_minor', 'revisi_mayor']))
-                        <button type="button" class="btn btn-success" onclick="document.getElementById('formSubmit').submit()">
-                            <i class="ri-send-plane-line me-1"></i> Submit Proposal PKM
-                        </button>
+                        @if ($submitDitutup)
+                            <div class="text-end">
+                                <button type="button" class="btn btn-success" disabled>
+                                    <i class="ri-lock-line me-1"></i> Submit Ditutup
+                                </button>
+                                <div class="small text-danger mt-1">
+                                    Tenggat {{ $batasSubmit->translatedFormat('d F Y, H:i') }} WIB sudah lewat.
+                                </div>
+                            </div>
+                        @else
+                            <button type="button" class="btn btn-success" onclick="document.getElementById('formSubmit').submit()">
+                                <i class="ri-send-plane-line me-1"></i> Submit Proposal PKM
+                            </button>
+                        @endif
                     @endif
                 </div>
             </div>

@@ -2,8 +2,10 @@
 
 namespace App\Services;
 
+use App\Models\Transaction\JadwalTahapan;
 use App\Models\Transaction\PeriodeHibah;
 use App\Models\Transaction\Proposal;
+use Carbon\CarbonInterface;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
@@ -168,6 +170,38 @@ class ProposalService
             ->whereHas('tahapanHibah', fn($q) => $q->where('kode', 'pengajuan'))
             ->where('status', 'berjalan')
             ->exists();
+    }
+
+    /**
+     * Baris jadwal tahapan "pengajuan" pada periode aktif.
+     */
+    public function tahapanPengajuan(): ?JadwalTahapan
+    {
+        return PeriodeHibah::aktif()->first()
+            ?->jadwalTahapan()
+            ->whereHas('tahapanHibah', fn($q) => $q->where('kode', 'pengajuan'))
+            ->first();
+    }
+
+    /**
+     * Batas akhir submit proposal (WIB), atau null bila periode/tahapan belum diatur.
+     */
+    public function batasSubmit(): ?CarbonInterface
+    {
+        return $this->tahapanPengajuan()?->batasSubmitEfektif();
+    }
+
+    /**
+     * Apakah jendela submit sudah lewat batas waktu?
+     *
+     * Bila batas belum bisa ditentukan, kembalikan false — jangan sampai periode
+     * yang belum dikonfigurasi justru mengunci semua dosen.
+     */
+    public function submitDitutup(): bool
+    {
+        $batas = $this->batasSubmit();
+
+        return $batas !== null && now()->greaterThan($batas);
     }
 
     /**

@@ -79,6 +79,8 @@ class UsulanController extends Controller
             'proposal'      => null,
             'skema'         => $skema,
             'periode'       => $periode,
+            'batasSubmit'   => $this->service->batasSubmit(),
+            'submitDitutup' => $this->service->submitDitutup(),
             'dosenList'     => Dosen::where('id', '!=', $dosen->id)->orderBy('nama_lengkap')->get(['id', 'nama_lengkap', 'nidn']),
             'kategoriRab'   => KategoriRab::with('komponen')->orderBy('urutan')->get(),
             'bidangList'    => BidangStrategis::where('is_active', true)->orderBy('kode')->get(),
@@ -135,6 +137,8 @@ class UsulanController extends Controller
             'proposal'      => $pkm,
             'skema'         => $pkm->skemaHibah,
             'periode'       => $pkm->periodeHibah,
+            'batasSubmit'   => $this->service->batasSubmit(),
+            'submitDitutup' => $pkm->tgl_submit === null && $this->service->submitDitutup(),
             'dosenList'     => Dosen::where('id', '!=', $request->user()->dosen->id)->orderBy('nama_lengkap')->get(['id', 'nama_lengkap', 'nidn']),
             'kategoriRab'   => KategoriRab::with('komponen')->orderBy('urutan')->get(),
             'bidangList'    => BidangStrategis::where('is_active', true)->orderBy('kode')->get(),
@@ -172,6 +176,15 @@ class UsulanController extends Controller
         $this->authorizeOwner($request, $pkm);
         abort_unless(in_array($pkm->status, ['draft', 'dikembalikan', 'revisi_minor', 'revisi_mayor']),
             403, 'Status tidak valid untuk submit.');
+
+        // Tenggat pengajuan hanya mengikat pengiriman pertama. Proposal yang sudah
+        // pernah masuk pipeline (dikembalikan operator / revisi reviewer) tetap boleh
+        // dikirim ulang, karena alurnya diatur tahapan review — bukan tenggat pengajuan.
+        if ($pkm->tgl_submit === null && $this->service->submitDitutup()) {
+            return back()->with('error', 'Batas waktu submit proposal sudah berakhir pada '
+                . $this->service->batasSubmit()->translatedFormat('d F Y, H:i') . ' WIB. '
+                . 'Proposal masih dapat disimpan sebagai draft, tetapi tidak dapat dikirim.');
+        }
 
         $errors = $this->service->validateForSubmit($pkm);
         if (! empty($errors)) {

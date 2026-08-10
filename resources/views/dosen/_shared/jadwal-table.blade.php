@@ -15,12 +15,57 @@
         </button>
     </div>
     <div class="card-body">
+        @php
+            // Pertahankan baris jadwal yang baru diketik bila validasi gagal.
+            if (old('jadwal_keterangan') !== null) {
+                $jadwalRows = collect(array_keys((array) old('jadwal_keterangan')))->map(fn ($i) => [
+                    'keterangan' => old("jadwal_keterangan.{$i}"),
+                    'start'      => old("jadwal_start.{$i}") ?: 1,
+                    'end'        => old("jadwal_end.{$i}") ?: 1,
+                ])->all();
+            }
+
+            // `<input type="month">` tidak didukung Firefox & Safari — di sana field itu
+            // jatuh jadi input teks biasa, dosen mengetik bebas ("Juli 2026"), lalu ditolak
+            // aturan date_format:Y-m sehingga seluruh form gagal disimpan. Dua select di
+            // bawah + hidden input menghasilkan format YYYY-MM yang sama di semua browser.
+            $bulanMulaiVal = old('jadwal_bulan_mulai', $jadwalBulan);
+            $bmTahun = $bmBulan = null;
+            if ($bulanMulaiVal && preg_match('/^(\d{4})-(\d{2})$/', $bulanMulaiVal, $m)) {
+                [$bmTahun, $bmBulan] = [(int) $m[1], $m[2]];
+            }
+            $namaBulanId = [
+                '01' => 'Januari', '02' => 'Februari', '03' => 'Maret', '04' => 'April',
+                '05' => 'Mei', '06' => 'Juni', '07' => 'Juli', '08' => 'Agustus',
+                '09' => 'September', '10' => 'Oktober', '11' => 'November', '12' => 'Desember',
+            ];
+            // Rentang tahun selalu mencakup nilai tersimpan, supaya proposal lama tetap tampil.
+            $tahunMin = min((int) date('Y') - 1, $bmTahun ?: PHP_INT_MAX);
+            $tahunMax = max((int) date('Y') + 5, $bmTahun ?: 0);
+        @endphp
+
         <div class="row g-3 mb-3">
             <div class="col-md-4">
                 <label class="form-label">Bulan Mulai Pelaksanaan <span class="text-danger">*</span></label>
-                <input type="month" name="jadwal_bulan_mulai" id="jadwalBulanMulai" class="form-control"
-                    value="{{ old('jadwal_bulan_mulai', $jadwalBulan) }}"
-                    onchange="renderJadwalGantt()">
+                <div class="row g-2">
+                    <div class="col-7">
+                        <select id="jadwalBulanMulaiBulan" class="form-select" onchange="syncBulanMulai()">
+                            <option value="">-- Bulan --</option>
+                            @foreach ($namaBulanId as $val => $nama)
+                                <option value="{{ $val }}" @selected($bmBulan === $val)>{{ $nama }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-5">
+                        <select id="jadwalBulanMulaiTahun" class="form-select" onchange="syncBulanMulai()">
+                            <option value="">-- Tahun --</option>
+                            @for ($y = $tahunMin; $y <= $tahunMax; $y++)
+                                <option value="{{ $y }}" @selected($bmTahun === $y)>{{ $y }}</option>
+                            @endfor
+                        </select>
+                    </div>
+                </div>
+                <input type="hidden" name="jadwal_bulan_mulai" id="jadwalBulanMulai" value="{{ $bulanMulaiVal }}">
                 <small class="text-muted">Akan jadi "Bulan 1" di kolom tabel.</small>
             </div>
             <div class="col-md-8 align-self-end small text-muted">
@@ -85,6 +130,15 @@ function getDurasiBulan() {
     return Math.max(1, parseInt(el?.value || 1));
 }
 
+// Gabungkan dua select menjadi satu nilai YYYY-MM di hidden input yang dikirim ke server.
+function syncBulanMulai() {
+    const bulan = document.getElementById('jadwalBulanMulaiBulan')?.value || '';
+    const tahun = document.getElementById('jadwalBulanMulaiTahun')?.value || '';
+    const hidden = document.getElementById('jadwalBulanMulai');
+    if (hidden) hidden.value = (bulan && tahun) ? (tahun + '-' + bulan) : '';
+    renderJadwalGantt();
+}
+
 function bulanLabel(idx /* 1-based */) {
     const mulai = document.getElementById('jadwalBulanMulai')?.value; // YYYY-MM
     if (!mulai) return 'Bulan ' + idx;
@@ -110,7 +164,12 @@ function rebuildBulanColumns() {
 
     // rebuild start/end dropdowns
     document.querySelectorAll('.jadwal-start, .jadwal-end').forEach(sel => {
-        const cur = sel.dataset.val || sel.value;
+        // Pilihan user adalah sumber kebenaran. `data-val` hanya seed dari server
+        // untuk build pertama (saat select masih kosong) dan dikonsumsi sekali saja:
+        // selama data-val masih dibaca, setiap onchange menimpa balik pilihan user
+        // ke nilai tersimpan sehingga bulan tampak "tidak bisa diubah".
+        const cur = sel.value || sel.dataset.val;
+        delete sel.dataset.val;
         sel.innerHTML = '';
         for (let i = 1; i <= durasi; i++) {
             const opt = document.createElement('option');

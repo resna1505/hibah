@@ -71,6 +71,7 @@
                             <th>Tahapan</th>
                             <th width="180">Tanggal Mulai</th>
                             <th width="180">Tanggal Selesai</th>
+                            <th width="210">Batas Submit (WIB)</th>
                             <th width="160">Status</th>
                         </tr>
                     </thead>
@@ -108,6 +109,21 @@
                                 <td>
                                     <input type="date" name="tgl_selesai[]" required class="form-control form-control-sm"
                                         value="{{ $existing?->tgl_selesai?->toDateString() ?? $defaultSelesai }}">
+                                </td>
+                                <td>
+                                    @if ($t->kode === 'pengajuan')
+                                        <input type="datetime-local" name="batas_submit[]" class="form-control form-control-sm"
+                                            value="{{ $existing?->batas_submit?->copy()->setTimezone(\App\Models\Transaction\JadwalTahapan::TZ_LOKAL)->format('Y-m-d\TH:i') }}">
+                                        <small class="text-muted" style="font-size:.7rem;">
+                                            Lewat jam ini proposal tidak bisa di-submit.
+                                            Kosongkan = pakai akhir hari Tanggal Selesai (23:59).
+                                        </small>
+                                    @else
+                                        {{-- Kolom hanya relevan untuk tahapan pengajuan; kirim placeholder
+                                             agar indeks array tetap sejajar dengan tahapan_id[]. --}}
+                                        <input type="hidden" name="batas_submit[]" value="">
+                                        <span class="text-muted small">&mdash;</span>
+                                    @endif
                                 </td>
                                 <td>
                                     <select name="tahapan_status[]" class="form-select form-select-sm">
