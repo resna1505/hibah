@@ -29,7 +29,7 @@ class ProfilController extends Controller
         $stats['persen_revisi']    = $totalReview > 0 ? round($stats['revisi'] / $totalReview * 100, 2) : 0;
         $stats['persen_ditolak']   = $totalReview > 0 ? round($stats['ditolak'] / $totalReview * 100, 2) : 0;
 
-        $riwayatReview = PenugasanReviewer::with(['proposal.ketua', 'proposal.skemaHibah', 'penilaian'])
+        $riwayatReview = PenugasanReviewer::with(['proposal', 'proposal.skemaHibah', 'penilaian'])
             ->where('reviewer_dosen_id', $dosen->id)
             ->where('status', 'selesai')
             ->latest('updated_at')

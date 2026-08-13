@@ -15,7 +15,7 @@ class HasilReviewController extends Controller
     {
         $dosen = $request->user()->dosen;
 
-        $list = PenugasanReviewer::with(['proposal.ketua', 'proposal.skemaHibah', 'penilaian'])
+        $list = PenugasanReviewer::with(['proposal', 'proposal.skemaHibah', 'penilaian'])
             ->where('reviewer_dosen_id', $dosen->id)
             ->where('status', 'selesai')
             ->latest('updated_at')
@@ -41,7 +41,6 @@ class HasilReviewController extends Controller
 
         $penugasan->load([
             'proposal.skemaHibah',
-            'proposal.ketua',
             'penilaian.detail.kriteria',
         ]);
 

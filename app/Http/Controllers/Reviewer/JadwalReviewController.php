@@ -14,7 +14,7 @@ class JadwalReviewController extends Controller
         $dosen = $request->user()->dosen;
         $periodeAktif = PeriodeHibah::aktif()->latest('tahun')->first();
 
-        $list = PenugasanReviewer::with(['proposal.ketua', 'proposal.skemaHibah'])
+        $list = PenugasanReviewer::with(['proposal', 'proposal.skemaHibah'])
             ->where('reviewer_dosen_id', $dosen->id)
             ->when($periodeAktif, fn($q) => $q->whereHas('proposal', fn($q2) => $q2->where('periode_hibah_id', $periodeAktif->id)))
             ->orderBy('deadline')

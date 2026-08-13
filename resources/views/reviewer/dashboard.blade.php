@@ -50,14 +50,14 @@
                 <div class="card-body p-0">
                     <table class="table mb-0 align-middle">
                         <thead class="table-light">
-                            <tr><th>Judul Proposal</th><th>Ketua</th><th>Tgl Penugasan</th><th>Deadline</th><th class="text-end">Aksi</th></tr>
+                            <tr><th>Judul Proposal</th><th>Kode</th><th>Tgl Penugasan</th><th>Deadline</th><th class="text-end">Aksi</th></tr>
                         </thead>
                         <tbody>
                             @forelse ($proposalHarusReview as $pr)
                                 @php $isLate = $pr->deadline->lt(now()); @endphp
                                 <tr>
                                     <td class="text-truncate" style="max-width:240px;" title="{{ $pr->proposal->judul }}">{{ $pr->proposal->judul }}</td>
-                                    <td class="small">{{ $pr->proposal->ketua?->nama_lengkap }}</td>
+                                    <td class="small"><code>{{ $pr->proposal->no_registrasi ?? '-' }}</code></td>
                                     <td class="small">{{ $pr->created_at->format('d M Y') }}</td>
                                     <td class="small {{ $isLate ? 'text-danger' : 'text-muted' }}">
                                         {{ $pr->deadline->format('d M Y') }}

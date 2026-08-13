@@ -32,7 +32,7 @@
             <div class="table-responsive">
                 <table class="table mb-0 align-middle">
                     <thead class="table-light">
-                        <tr><th>#</th><th>Judul Proposal</th><th>Ketua</th><th>Skema</th><th class="text-end">Nilai Akhir</th><th>Rekomendasi</th><th>Tgl Selesai</th><th class="text-end">Aksi</th></tr>
+                        <tr><th>#</th><th>Judul Proposal</th><th>Kode</th><th>Skema</th><th class="text-end">Nilai Akhir</th><th>Rekomendasi</th><th>Tgl Selesai</th><th class="text-end">Aksi</th></tr>
                     </thead>
                     <tbody>
                         @forelse ($list as $i => $pr)
@@ -43,7 +43,7 @@
                             <tr>
                                 <td>{{ $list->firstItem() + $i }}</td>
                                 <td class="text-truncate" style="max-width:260px;" title="{{ $pr->proposal->judul }}">{{ $pr->proposal->judul }}</td>
-                                <td class="small">{{ $pr->proposal->ketua?->nama_lengkap }}</td>
+                                <td class="small"><code>{{ $pr->proposal->no_registrasi ?? '-' }}</code></td>
                                 <td class="small">{{ $pr->proposal->skemaHibah?->nama }}</td>
                                 <td class="text-end fw-bold">{{ number_format($pr->penilaian?->nilai_total ?? 0, 2) }}</td>
                                 <td><span class="badge {{ $cls }}">{{ $lbl }}</span></td>

@@ -21,7 +21,6 @@ class PenilaianController extends Controller
 
         $penugasan->load([
             'proposal.skemaHibah.kriteriaPenilaian',
-            'proposal.ketua.fakultas',
             'proposal.anggota.dosen',
             'proposal.mitra',
             'proposal.rab.kategori',
@@ -88,7 +87,7 @@ class PenilaianController extends Controller
 
         $penilaian = $this->service->simpan($penugasan, $rows, $data['rekomendasi'], $data['catatan_umum']);
 
-        $penugasan->load('proposal.skemaHibah', 'proposal.ketua', 'reviewer');
+        $penugasan->load('proposal.skemaHibah', 'reviewer');
         $this->notif->onPenilaianSubmitted($penugasan->proposal, $penugasan->reviewer, (float) $penilaian->nilai_total);
 
         return redirect()->route('reviewer.hasil.index')

@@ -52,7 +52,7 @@
             <div class="table-responsive">
                 <table class="table mb-0 align-middle">
                     <thead class="table-light">
-                        <tr><th>#</th><th>Judul</th><th>Ketua</th><th>Fakultas</th><th>Skema</th><th>Status</th><th>Penugasan</th><th class="text-end">Aksi</th></tr>
+                        <tr><th>#</th><th>Judul</th><th>Kode</th><th>Skema</th><th>Status</th><th>Penugasan</th><th class="text-end">Aksi</th></tr>
                     </thead>
                     <tbody>
                         @forelse ($list as $i => $p)
@@ -60,8 +60,7 @@
                             <tr>
                                 <td>{{ $list->firstItem() + $i }}</td>
                                 <td class="text-truncate" style="max-width:240px;" title="{{ $p->judul }}">{{ $p->judul }}</td>
-                                <td class="small">{{ $p->ketua?->nama_lengkap }}</td>
-                                <td class="small">{{ $p->ketua?->fakultas?->kode }}</td>
+                                <td class="small"><code>{{ $p->no_registrasi ?? '-' }}</code></td>
                                 <td class="small">{{ $p->skemaHibah?->nama }}</td>
                                 <td><x-status-badge :status="$p->status" tooltip /></td>
                                 <td class="small">

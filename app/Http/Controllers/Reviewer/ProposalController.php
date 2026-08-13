@@ -22,17 +22,23 @@ class ProposalController extends Controller
             ->exists();
         abort_unless($isAssigned, 403, 'Anda bukan reviewer yang ditugaskan untuk proposal ini.');
 
-        $proposal->load(['skemaHibah', 'periodeHibah', 'ketua.fakultas', 'ketua.prodi',
-            'anggota.dosen.prodi', 'mitra', 'rab.kategori', 'rab.komponen',
-            'bidangStrategis', 'rencanaLuaran.jenisLuaran', 'dokumen']);
+        // Blind review: identitas pengusul tidak dimuat sama sekali — bukan sekadar
+        // disembunyikan di tampilan. Dokumen pendukung (KTP, SK, pakta) juga tidak diikutkan.
+        $proposal->load(['skemaHibah', 'periodeHibah', 'anggota', 'mitra',
+            'rab.kategori', 'rab.komponen', 'bidangStrategis', 'rencanaLuaran.jenisLuaran']);
 
-        $view = $proposal->skemaHibah?->jenis === 'pkm' ? 'dosen.pkm.pdf' : 'dosen.penelitian.pdf';
-        $jenis = $proposal->skemaHibah?->jenis === 'pkm' ? 'PKM' : 'Penelitian';
+        $isPkm = $proposal->skemaHibah?->jenis === 'pkm';
+        $jenis = $isPkm ? 'PKM' : 'Penelitian';
         $totalRab = (int) $proposal->rab->sum('sub_total');
 
-        $pdf = Pdf::loadView($view, ['p' => $proposal, 'totalRab' => $totalRab])->setPaper('a4');
-        $filename = "Proposal_{$jenis}_" . preg_replace('/[^A-Za-z0-9_-]/', '_', $proposal->judul) . '.pdf';
-        return $pdf->download($filename);
+        $pdf = Pdf::loadView('reviewer.pdf-proposal', [
+            'p'        => $proposal,
+            'totalRab' => $totalRab,
+            'isPkm'    => $isPkm,
+        ])->setPaper('a4');
+
+        $kode = preg_replace('/[^A-Za-z0-9_-]/', '_', $proposal->no_registrasi ?: ('ID' . $proposal->id));
+        return $pdf->download("Proposal_{$jenis}_{$kode}.pdf");
     }
 
     public function index(Request $request)
@@ -41,11 +47,13 @@ class ProposalController extends Controller
         $periodeAktif = PeriodeHibah::aktif()->latest('tahun')->first();
         $tab = $request->tab ?? 'ditugaskan';
 
-        $base = Proposal::with(['ketua.fakultas', 'skemaHibah', 'penugasanReviewer' => fn($q) => $q->where('reviewer_dosen_id', $dosen->id)])
+        // Pencarian sengaja dibatasi pada judul & nomor registrasi. Mencari berdasarkan
+        // nama dosen akan membocorkan identitas pengusul yang sedang disamarkan.
+        $base = Proposal::with(['skemaHibah', 'penugasanReviewer' => fn($q) => $q->where('reviewer_dosen_id', $dosen->id)])
             ->when($periodeAktif, fn($q) => $q->where('periode_hibah_id', $periodeAktif->id))
             ->when($request->search, fn($q, $s) => $q->where(function ($q2) use ($s) {
                 $q2->where('judul', 'like', "%{$s}%")
-                    ->orWhereHas('ketua', fn($q3) => $q3->where('nama_lengkap', 'like', "%{$s}%"));
+                    ->orWhere('no_registrasi', 'like', "%{$s}%");
             }));
 
         $list = match ($tab) {
@@ -81,9 +89,11 @@ class ProposalController extends Controller
         $dosen = $request->user()->dosen;
 
         // Reviewer bisa lihat semua proposal (transparansi), tapi action nilai hanya kalau ditugaskan
-        $proposal->load(['skemaHibah', 'periodeHibah', 'ketua.fakultas', 'ketua.prodi',
-            'anggota.dosen', 'mitra', 'rab.kategori', 'rab.komponen',
-            'bidangStrategis', 'rencanaLuaran.jenisLuaran', 'dokumen',
+        // Blind review: relasi ketua & dokumen pendukung tidak di-load agar identitas
+        // pengusul tidak ikut terkirim ke halaman reviewer.
+        $proposal->load(['skemaHibah', 'periodeHibah',
+            'anggota', 'mitra', 'rab.kategori', 'rab.komponen',
+            'bidangStrategis', 'rencanaLuaran.jenisLuaran',
             'penugasanReviewer' => fn($q) => $q->where('reviewer_dosen_id', $dosen->id)->with('penilaian.detail.kriteria')]);
 
         $myPenugasan = $proposal->penugasanReviewer->first(); // assignment khusus reviewer ini

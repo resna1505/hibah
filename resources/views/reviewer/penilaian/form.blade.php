@@ -25,8 +25,8 @@
                     <strong>{{ $proposal->judul }}</strong>
                 </div>
                 <div class="col-md-3">
-                    <small class="text-muted">Ketua Peneliti</small><br>
-                    {{ $proposal->ketua->nama_lengkap }}
+                    <small class="text-muted">Kode Proposal</small><br>
+                    <code>{{ $proposal->no_registrasi ?? '-' }}</code>
                 </div>
                 <div class="col-md-3">
                     <small class="text-muted">Skema / Anggaran</small><br>

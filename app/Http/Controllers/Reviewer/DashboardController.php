@@ -26,7 +26,7 @@ class DashboardController extends Controller
             'terlambat'=> (clone $base)->whereIn('status', ['ditugaskan', 'sedang_review'])->where('deadline', '<', $today)->count(),
         ];
 
-        $proposalHarusReview = PenugasanReviewer::with(['proposal.ketua'])
+        $proposalHarusReview = PenugasanReviewer::with(['proposal'])
             ->where('reviewer_dosen_id', $dosen->id)
             ->whereIn('status', ['ditugaskan', 'sedang_review'])
             ->orderBy('deadline')

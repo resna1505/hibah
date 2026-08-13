@@ -36,8 +36,6 @@
                         @if ($p->no_registrasi)
                             <tr><td width="30%" class="text-muted small">No. Registrasi</td><td><code>{{ $p->no_registrasi }}</code></td></tr>
                         @endif
-                        <tr><td width="30%" class="text-muted small">Ketua</td><td>{{ $p->ketua->nama_lengkap }}</td></tr>
-                        <tr><td class="text-muted small">Fakultas / Prodi</td><td>{{ $p->ketua->fakultas?->nama }} / {{ $p->ketua->prodi?->nama }}</td></tr>
                         <tr><td class="text-muted small">Skema</td><td>{{ $p->skemaHibah->nama }}</td></tr>
                         @if ($p->bidangStrategis)
                             <tr><td class="text-muted small">Bidang Strategis</td><td>{{ $p->bidangStrategis->kode }}. {{ $p->bidangStrategis->nama }}</td></tr>
@@ -74,19 +72,19 @@
         </div>
 
         <div class="col-lg-4">
+            {{-- Blind review: identitas pengusul tidak ditampilkan. Yang tersisa hanya
+                 komposisi tim, agar kecukupan tim tetap bisa dinilai tanpa mengenali orangnya. --}}
             <div class="card border-0 shadow-sm mb-3">
-                <div class="card-header bg-white"><h6 class="mb-0">Tim Pengusul</h6></div>
+                <div class="card-header bg-white"><h6 class="mb-0">Komposisi Tim</h6></div>
                 <div class="card-body small">
-                    <p class="mb-1"><strong>Ketua:</strong><br>{{ $p->ketua->nama_lengkap }}</p>
-                    @foreach ($p->anggota as $a)
-                        <div class="border-top pt-2 mt-2">
-                            @if ($a->peran === 'anggota_dosen')
-                                <strong>Anggota Dosen:</strong><br>{{ $a->dosen?->nama_lengkap }}
-                            @else
-                                <strong>Mahasiswa:</strong><br>{{ $a->nama_mahasiswa }}
-                            @endif
-                        </div>
-                    @endforeach
+                    @php
+                        $jmlDosen = $p->anggota->where('peran', 'anggota_dosen')->count();
+                        $jmlMhs   = $p->anggota->where('peran', '!=', 'anggota_dosen')->count();
+                    @endphp
+                    <p class="mb-1">1 ketua &middot; {{ $jmlDosen }} anggota dosen &middot; {{ $jmlMhs }} mahasiswa</p>
+                    <p class="text-muted mb-0" style="font-size:.75rem;">
+                        <i class="ri-eye-off-line"></i> Identitas pengusul disembunyikan untuk menjaga objektivitas penilaian.
+                    </p>
                 </div>
             </div>
 
@@ -97,12 +95,8 @@
                         @foreach ($p->mitra as $m)
                             <div class="mb-2 pb-2 border-bottom">
                                 <strong>{{ $m->nama_mitra }}</strong>
-                                @if ($m->pimpinan_mitra) <br><span class="text-muted">Pimpinan: {{ $m->pimpinan_mitra }}</span>@endif
                                 @if ($m->alamat_mitra) <br><span class="text-muted">{{ $m->alamat_mitra }}</span>@endif
                                 @if ($m->permasalahan_mitra) <br><em class="text-muted">{{ $m->permasalahan_mitra }}</em>@endif
-                                @if ($m->dokumen_path)
-                                    <br><a href="{{ asset('storage/' . $m->dokumen_path) }}" download class="btn btn-sm btn-outline-danger mt-1"><i class="ri-download-2-line"></i> Download PDF Mitra</a>
-                                @endif
                             </div>
                         @endforeach
                     </div>
@@ -133,25 +127,8 @@
                 </div>
             @endif
 
-            @if ($p->dokumen->isNotEmpty())
-                <div class="card border-0 shadow-sm mb-3">
-                    <div class="card-header bg-white"><h6 class="mb-0">Dokumen Pendukung</h6></div>
-                    <div class="card-body p-0">
-                        <table class="table mb-0 small">
-                            <thead class="table-light"><tr><th width="220">Jenis</th><th>Nama File</th><th width="120">Ukuran</th></tr></thead>
-                            <tbody>
-                                @foreach ($p->dokumen as $d)
-                                    <tr>
-                                        <td><span class="badge bg-secondary-subtle text-dark">{{ $d->jenis }}</span></td>
-                                        <td><a href="{{ asset('storage/' . $d->path) }}" target="_blank">{{ $d->nama_file }}</a></td>
-                                        <td class="text-muted">{{ number_format($d->ukuran / 1024, 1) }} KB</td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            @endif
+            {{-- Dokumen pendukung (KTP, SK Mengajar, Pakta Integritas, dokumen mitra)
+                 sengaja tidak ditampilkan ke reviewer: seluruhnya memuat nama & tanda tangan. --}}
 
             <div class="card border-0 shadow-sm">
                 <div class="card-header bg-white d-flex justify-content-between"><h6 class="mb-0">RAB</h6><strong class="text-primary">Total: Rp {{ number_format($totalRab, 0, ',', '.') }}</strong></div>
