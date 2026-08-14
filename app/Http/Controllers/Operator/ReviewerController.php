@@ -183,43 +183,63 @@ class ReviewerController extends Controller
             }
         }
 
-        DB::transaction(function () use ($data, $proposal, $request) {
-            // Reset assignment lama
-            $proposal->penugasanReviewer()->delete();
+        $diinginkan = array_filter([
+            'reviewer_1' => $data['reviewer_1_id'],
+            'reviewer_2' => $data['reviewer_2_id'] ?? null,
+        ]);
 
-            PenugasanReviewer::create([
-                'proposal_id'       => $proposal->id,
-                'reviewer_dosen_id' => $data['reviewer_1_id'],
-                'peran'             => 'reviewer_1',
-                'deadline'          => $data['deadline'],
-                'status'            => 'ditugaskan',
-                'ditugaskan_oleh'   => $request->user()->id,
-            ]);
+        // Penugasan yang benar-benar baru dibuat — hanya mereka yang perlu dinotifikasi,
+        // agar reviewer lama tidak dikirimi ulang saat operator sekadar menambah rekan.
+        $baru = [];
 
-            if (! empty($data['reviewer_2_id'])) {
+        DB::transaction(function () use ($data, $proposal, $request, $diinginkan, &$baru) {
+            $terpasang = $proposal->penugasanReviewer()->get()->keyBy('peran');
+
+            // Tahap 1 — cabut penugasan yang tidak lagi sesuai: perannya dikosongkan,
+            // atau reviewernya diganti orang. Penilaian ikut terhapus (cascade) memang
+            // karena itu penilaian milik reviewer yang dicabut.
+            // Dijalankan terpisah sebelum tahap 2 supaya penukaran Reviewer 1 <-> 2
+            // tidak menabrak unique (proposal_id, reviewer_dosen_id).
+            foreach ($terpasang as $peran => $penugasan) {
+                if (($diinginkan[$peran] ?? null) != $penugasan->reviewer_dosen_id) {
+                    $penugasan->delete();
+                    $terpasang->forget($peran);
+                }
+            }
+
+            // Tahap 2 — reviewer yang tetap cukup diperbarui deadline-nya. Penugasan
+            // TIDAK dibuat ulang, sehingga penilaian yang sudah masuk tetap aman.
+            foreach ($diinginkan as $peran => $dosenId) {
+                if ($penugasan = $terpasang->get($peran)) {
+                    $penugasan->update(['deadline' => $data['deadline']]);
+                    continue;
+                }
+
                 PenugasanReviewer::create([
                     'proposal_id'       => $proposal->id,
-                    'reviewer_dosen_id' => $data['reviewer_2_id'],
-                    'peran'             => 'reviewer_2',
+                    'reviewer_dosen_id' => $dosenId,
+                    'peran'             => $peran,
                     'deadline'          => $data['deadline'],
                     'status'            => 'ditugaskan',
                     'ditugaskan_oleh'   => $request->user()->id,
                 ]);
+
+                $baru[$peran] = $dosenId;
             }
 
             $proposal->update(['status' => 'direview']);
         });
 
-        // Notifikasi ke reviewer
-        $r1 = Dosen::find($data['reviewer_1_id']);
-        $this->notif->onReviewerAssigned($proposal, $r1, 'reviewer_1', $data['deadline']);
-        if (! empty($data['reviewer_2_id'])) {
-            $r2 = Dosen::find($data['reviewer_2_id']);
-            $this->notif->onReviewerAssigned($proposal, $r2, 'reviewer_2', $data['deadline']);
+        foreach ($baru as $peran => $dosenId) {
+            if ($reviewer = Dosen::find($dosenId)) {
+                $this->notif->onReviewerAssigned($proposal, $reviewer, $peran, $data['deadline']);
+            }
         }
 
+        $jumlah = count($diinginkan);
+
         return redirect()->route('operator.reviewer.penugasan')
-            ->with('success', 'Reviewer berhasil ditugaskan. Status proposal: direview.');
+            ->with('success', "Penugasan disimpan: {$jumlah} reviewer. Status proposal: direview.");
     }
 
     /**
