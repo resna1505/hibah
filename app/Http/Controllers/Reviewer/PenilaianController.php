@@ -18,6 +18,7 @@ class PenilaianController extends Controller
     public function form(Request $request, PenugasanReviewer $penugasan)
     {
         $this->authorizeReviewer($request, $penugasan);
+        $this->pastikanBelumTerkunci($penugasan);
 
         $penugasan->load([
             'proposal.skemaHibah.kriteriaPenilaian',
@@ -46,14 +47,17 @@ class PenilaianController extends Controller
     public function submit(Request $request, PenugasanReviewer $penugasan)
     {
         $this->authorizeReviewer($request, $penugasan);
+        $this->pastikanBelumTerkunci($penugasan);
 
         $data = $request->validate([
             'skor'              => 'required|array',
             'skor.*'            => 'required|integer|min:1|max:5',
             'catatan_kriteria'  => 'array',
-            'catatan_kriteria.*'=> 'nullable|string|max:500',
+            // Kolom DB bertipe TEXT; batas 500 sebelumnya artifisial dan membuat
+            // catatan reviewer yang panjang ditolak diam-diam.
+            'catatan_kriteria.*'=> 'nullable|string|max:5000',
             'rekomendasi'       => 'required|in:disetujui,revisi_minor,revisi_mayor,ditolak',
-            'catatan_umum'      => 'required|string|max:500',
+            'catatan_umum'      => 'required|string|max:5000',
         ], [
             'skor.required'        => 'Semua kriteria wajib diberi skor.',
             'skor.*.required'      => 'Skor wajib diisi.',
@@ -62,6 +66,8 @@ class PenilaianController extends Controller
             'skor.*.max'           => 'Skor maksimal 5.',
             'rekomendasi.required' => 'Rekomendasi wajib dipilih.',
             'catatan_umum.required'=> 'Catatan untuk peneliti wajib diisi.',
+            'catatan_umum.max'     => 'Catatan untuk peneliti maksimal 5000 karakter.',
+            'catatan_kriteria.*.max'=> 'Catatan per komponen maksimal 5000 karakter.',
         ]);
 
         // Validasi kriteria_id valid untuk skema proposal
@@ -92,6 +98,18 @@ class PenilaianController extends Controller
 
         return redirect()->route('reviewer.hasil.index')
             ->with('success', 'Penilaian berhasil disimpan. Nilai akhir: ' . number_format($penilaian->nilai_total, 2));
+    }
+
+    /**
+     * Penilaian yang sudah disubmit terkunci. Untuk memperbaikinya, operator harus
+     * membukanya kembali (status kembali ke 'sedang_review'). Tanpa penjagaan ini
+     * reviewer masih bisa menimpa nilainya lewat URL, sehingga tombol operator
+     * tidak ada artinya.
+     */
+    private function pastikanBelumTerkunci(PenugasanReviewer $penugasan): void
+    {
+        abort_if($penugasan->status === 'selesai', 403,
+            'Penilaian Anda sudah disubmit dan terkunci. Silakan hubungi operator LPPM bila perlu diperbaiki.');
     }
 
     private function authorizeReviewer(Request $request, PenugasanReviewer $penugasan): void

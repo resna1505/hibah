@@ -75,8 +75,9 @@
                                 <tbody>
                                     @foreach ($kriteriaList as $k)
                                         @php
-                                            $existSkor = $existingDetail[$k->id]?->skor ?? '';
-                                            $existCatatan = $existingDetail[$k->id]?->catatan ?? '';
+                                            // old() didahulukan agar isian tidak hilang saat validasi gagal.
+                                            $existSkor = old("skor.{$k->id}", $existingDetail[$k->id]?->skor ?? '');
+                                            $existCatatan = old("catatan_kriteria.{$k->id}", $existingDetail[$k->id]?->catatan ?? '');
                                         @endphp
                                         <tr class="kriteria-row" data-bobot="{{ $k->bobot_persen }}">
                                             <td>{{ $loop->iteration }}</td>
@@ -120,7 +121,8 @@
                         <div class="tab-content">
                             @foreach ($kriteriaList as $k)
                                 <div class="tab-pane fade {{ $loop->first ? 'show active' : '' }}" id="c{{ $k->id }}">
-                                    <textarea name="catatan_kriteria[{{ $k->id }}]" rows="3" maxlength="500" class="form-control" placeholder="Catatan untuk komponen {{ $k->nama }}">{{ $existingDetail[$k->id]?->catatan ?? '' }}</textarea>
+                                    <textarea name="catatan_kriteria[{{ $k->id }}]" rows="3" maxlength="5000" class="form-control catatan-hitung" placeholder="Catatan untuk komponen {{ $k->nama }}">{{ old("catatan_kriteria.{$k->id}", $existingDetail[$k->id]?->catatan ?? '') }}</textarea>
+                                    <small class="text-muted"><span class="sisa-karakter"></span> karakter tersisa</small>
                                 </div>
                             @endforeach
                         </div>
@@ -141,15 +143,25 @@
                         <select name="rekomendasi" required class="form-select">
                             <option value="">-- Pilih --</option>
                             @foreach (['disetujui' => 'Disetujui (tanpa revisi)', 'revisi_minor' => 'Revisi Minor', 'revisi_mayor' => 'Revisi Mayor', 'ditolak' => 'Ditolak'] as $val => $label)
-                                <option value="{{ $val }}" @selected($penugasan->penilaian?->rekomendasi === $val)>{{ $label }}</option>
+                                <option value="{{ $val }}" @selected(old('rekomendasi', $penugasan->penilaian?->rekomendasi) === $val)>{{ $label }}</option>
                             @endforeach
                         </select>
 
                         <div class="mt-3">
                             <label class="form-label">Catatan untuk Peneliti <span class="text-danger">*</span></label>
-                            <textarea name="catatan_umum" rows="6" maxlength="500" required class="form-control">{{ $penugasan->penilaian?->catatan_umum ?? '' }}</textarea>
-                            <small class="text-muted">Catatan akan ditampilkan kepada dosen.</small>
+                            <textarea name="catatan_umum" rows="6" maxlength="5000" required class="form-control catatan-hitung">{{ old('catatan_umum', $penugasan->penilaian?->catatan_umum ?? '') }}</textarea>
+                            <small class="text-muted">Catatan akan ditampilkan kepada dosen. <span class="sisa-karakter"></span> karakter tersisa.</small>
                         </div>
+
+                        @if ($errors->any())
+                            <div class="alert alert-danger small mt-3 mb-0">
+                                <strong>Penilaian belum tersimpan:</strong>
+                                <ul class="mb-0 mt-1">
+                                    @foreach ($errors->all() as $err)<li>{{ $err }}</li>@endforeach
+                                </ul>
+                                <div class="mt-1">Isian Anda masih ada di form, silakan perbaiki lalu simpan lagi.</div>
+                            </div>
+                        @endif
 
                         <button type="submit" class="btn btn-primary w-100 mt-3"><i class="ri-save-line me-1"></i> Simpan Penilaian</button>
                     </div>
@@ -174,5 +186,24 @@ function recalcTotal() {
     document.getElementById('totalNilaiBig').innerHTML = total.toFixed(2) + '<small class="text-muted fs-6"> / 100</small>';
 }
 document.querySelectorAll('.skor-input').forEach(el => el.addEventListener('change', recalcTotal));
+
+// Penghitung sisa karakter, supaya reviewer tahu batasnya sebelum menekan simpan
+// dan tidak kaget catatannya terpotong.
+function hitungSisa(el) {
+    const wadah = el.closest('div');
+    const label = wadah ? wadah.querySelector('.sisa-karakter') : null;
+    if (! label) return;
+    const sisa = (parseInt(el.getAttribute('maxlength')) || 5000) - el.value.length;
+    label.textContent = sisa.toLocaleString('id-ID');
+    label.className = 'sisa-karakter' + (sisa < 200 ? ' text-danger fw-semibold' : '');
+}
+document.querySelectorAll('.catatan-hitung').forEach(el => {
+    hitungSisa(el);
+    el.addEventListener('input', () => hitungSisa(el));
+});
+
+// Total ikut dihitung ulang saat halaman dibuka, termasuk ketika form
+// dikembalikan berisi old input setelah validasi gagal.
+document.addEventListener('DOMContentLoaded', recalcTotal);
 </script>
 @endsection

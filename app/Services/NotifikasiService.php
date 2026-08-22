@@ -114,6 +114,23 @@ class NotifikasiService
     }
 
     /**
+     * Operator membuka kembali penilaian → reviewer diminta memperbaiki.
+     */
+    public function onPenilaianDibukaKembali(Proposal $proposal, Dosen $reviewer, string $alasan): void
+    {
+        $userId = $reviewer->user_id;
+        if (! $userId) return;
+
+        $this->notify(
+            userId: $userId,
+            judul: "Penilaian dibuka kembali",
+            pesan: "Operator membuka kembali penilaian Anda atas '{$proposal->judul}' agar dapat diperbaiki. Alasan: {$alasan}",
+            link:  route('reviewer.proposal.index'),
+            icon:  'ri-lock-unlock-line',
+        );
+    }
+
+    /**
      * Reviewer submit penilaian → notify operator.
      */
     public function onPenilaianSubmitted(Proposal $proposal, Dosen $reviewer, float $nilai): void

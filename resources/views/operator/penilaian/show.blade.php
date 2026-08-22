@@ -122,9 +122,25 @@
                                     <strong>Catatan untuk Peneliti:</strong><br>
                                     {{ $pr->penilaian->catatan_umum }}
                                 </div>
+
+                                {{-- Buka kembali agar reviewer bisa memperbaiki penilaiannya.
+                                     Hanya selama proposal belum difinalisasi. --}}
+                                @if ($p->status === 'direview')
+                                    <form method="POST" action="{{ route('operator.penilaian.buka', [$p, $pr]) }}"
+                                          class="mt-2" onsubmit="return konfirmasiBuka(this);">
+                                        @csrf
+                                        <input type="hidden" name="alasan" value="">
+                                        <button type="submit" class="btn btn-sm btn-outline-warning">
+                                            <i class="ri-lock-unlock-line me-1"></i> Buka Kembali Penilaian
+                                        </button>
+                                        <span class="text-muted ms-1" style="font-size:.75rem;">
+                                            Reviewer dapat mengedit nilainya kembali.
+                                        </span>
+                                    </form>
+                                @endif
                             @else
                                 <p class="text-muted small mb-0">
-                                    {{ $pr->penilaian ? 'Proposal telah direvisi — menunggu reviewer melakukan penilaian ulang.' : 'Reviewer belum menyelesaikan penilaian.' }}
+                                    {{ $pr->penilaian ? 'Penilaian sedang dibuka — menunggu reviewer submit ulang. Nilai lama tidak dihitung dalam rata-rata.' : 'Reviewer belum menyelesaikan penilaian.' }}
                                     Deadline: {{ $pr->deadline->format('d M Y') }}
                                 </p>
                             @endif
@@ -195,4 +211,20 @@
             @endif
         </div>
     </div>
+@endsection
+
+@section('scripts')
+<script>
+// Alasan wajib diisi agar tercatat di Log Aktivitas.
+function konfirmasiBuka(form) {
+    const alasan = prompt('Alasan membuka kembali penilaian ini?\n\nContoh: Reviewer meminta koreksi skor metodologi.');
+    if (alasan === null) return false;
+    if (! alasan.trim()) {
+        alert('Alasan wajib diisi.');
+        return false;
+    }
+    form.querySelector('input[name="alasan"]').value = alasan.trim();
+    return true;
+}
+</script>
 @endsection

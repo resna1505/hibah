@@ -112,6 +112,7 @@ Route::middleware('auth')->group(function () {
             Route::get('/',                     [OperatorPenilaian::class, 'index'])->name('index');
             Route::get('/{proposal}',           [OperatorPenilaian::class, 'show'])->name('show');
             Route::post('/{proposal}/finalize', [OperatorPenilaian::class, 'finalize'])->name('finalize');
+            Route::post('/{proposal}/buka/{penugasan}', [OperatorPenilaian::class, 'bukaPenilaian'])->name('buka');
         });
 
         // Export Laporan dedicated page

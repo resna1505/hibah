@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Operator;
 
 use App\Http\Controllers\Controller;
 use App\Models\Transaction\LogAktivitas;
+use App\Models\Transaction\PenugasanReviewer;
 use App\Models\Transaction\PeriodeHibah;
 use App\Models\Transaction\Proposal;
 use App\Services\NotifikasiService;
@@ -136,5 +137,63 @@ class PenilaianController extends Controller
 
         return redirect()->route('operator.penilaian.show', $proposal)
             ->with('success', 'Keputusan tersimpan. ' . $msg);
+    }
+
+    /**
+     * Buka kembali penilaian seorang reviewer yang sudah disubmit, agar ia bisa
+     * memperbaikinya. Cukup mengembalikan status penugasan ke 'sedang_review':
+     * seluruh halaman reviewer sudah mendukung status itu, dan penilaian lama
+     * tetap tersimpan sehingga otomatis menjadi isian awal form.
+     *
+     * Penutupnya memakai mekanisme yang sudah ada — reviewer submit ulang
+     * (status kembali 'selesai'), atau operator memfinalisasi proposal.
+     */
+    public function bukaPenilaian(Request $request, Proposal $proposal, PenugasanReviewer $penugasan)
+    {
+        abort_unless($penugasan->proposal_id === $proposal->id, 404);
+
+        // Setelah difinalisasi, penilaian terkunci — keputusan sudah disampaikan ke dosen.
+        if ($proposal->status !== 'direview') {
+            return back()->with('error', 'Penilaian hanya dapat dibuka selama proposal masih dalam tahap review.');
+        }
+
+        if ($penugasan->status !== 'selesai') {
+            return back()->with('error', 'Penilaian reviewer ini memang belum disubmit, jadi masih bisa diisi.');
+        }
+
+        $data = $request->validate([
+            'alasan' => 'required|string|max:500',
+        ], [
+            'alasan.required' => 'Alasan pembukaan wajib diisi.',
+        ]);
+
+        $penugasan->load('reviewer', 'penilaian');
+        $nilaiLama = $penugasan->penilaian?->nilai_total;
+
+        DB::transaction(function () use ($penugasan, $proposal, $request, $data, $nilaiLama) {
+            $penugasan->update(['status' => 'sedang_review']);
+
+            LogAktivitas::create([
+                'user_id'    => $request->user()->id,
+                'modul'      => 'penilaian',
+                'aktivitas'  => 'buka_penilaian',
+                'deskripsi'  => "Membuka kembali penilaian {$penugasan->peran} ("
+                                . ($penugasan->reviewer?->nama_lengkap ?? 'reviewer') . ") "
+                                . "pada proposal #{$proposal->id} '{$proposal->judul}'. "
+                                . 'Nilai sebelumnya: ' . ($nilaiLama !== null ? number_format($nilaiLama, 2) : '-')
+                                . ". Alasan: {$data['alasan']}",
+                'ip_address' => $request->ip(),
+                'created_at' => now(),
+            ]);
+        });
+
+        if ($penugasan->reviewer) {
+            $this->notif->onPenilaianDibukaKembali($proposal, $penugasan->reviewer, $data['alasan']);
+        }
+
+        $nama = $penugasan->reviewer?->nama_lengkap ?? 'Reviewer';
+
+        return back()->with('success', "Penilaian {$nama} dibuka kembali. "
+            . 'Nilainya tidak dihitung dalam rata-rata sampai ia submit ulang.');
     }
 }
